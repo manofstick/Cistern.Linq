@@ -9,3 +9,6 @@ In my spare time I have been working on this project for a number of years, orig
 So although I have tried to get those PRs mainlined, understandably the project owners have balked at the
 implied risk associated with such a venture. (And really this is just a spare time thing for me so I haven't
 had the time to keep pushing...)
+
+The code was originally from on the corefx System.Linq code for bootstrapping - the vast bulk of the code
+has been rewritten, except for the tests and some algorithmic code (i.e. sorting).
