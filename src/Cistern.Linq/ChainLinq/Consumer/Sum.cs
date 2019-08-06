@@ -1,7 +1,24 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
+    static class SumHelper
+    {
+        internal static double Sum(double[] span, Func<double, bool> predicate)
+        {
+            double result = 0.0;
+            foreach (double item in span)
+            {
+                if (predicate(item))
+                {
+                    result += item;
+                }
+            }
+            return result;
+        }
+    }
+
     sealed class SumInt : Consumer<int, int>
     {
         public SumInt() : base(0) { }
@@ -95,7 +112,9 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumDouble : Consumer<double, double>
+    sealed class SumDouble 
+        : Consumer<double, double>
+        , Optimizations.IWhereArray
     {
         public SumDouble() : base(0.0) { }
 
@@ -104,6 +123,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result += input;
             return ChainStatus.Flow;
         }
+        public void Where<T>(T[] memory, Func<T, bool> predicate) =>
+            Result = SumHelper.Sum((double[])(object)memory, (Func<double, bool>)(object)predicate);
     }
 
     sealed class SumNullableDouble : Consumer<double?, double?>

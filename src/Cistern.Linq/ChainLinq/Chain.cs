@@ -51,7 +51,7 @@ namespace Cistern.Linq.ChainLinq
 
     abstract class Activity<T, U> : Chain<T>
     {
-        private readonly Chain<U> next;
+        readonly internal Chain<U> next;
 
         protected Activity(Chain<U> next) =>
             this.next = next;

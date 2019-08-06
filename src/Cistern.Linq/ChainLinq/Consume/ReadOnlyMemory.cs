@@ -25,7 +25,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        private static void Pipeline<T>(ReadOnlyMemory<T> memory, Chain<T> chain)
+        internal static void Pipeline<T>(ReadOnlyMemory<T> memory, Chain<T> chain)
         {
             foreach (var item in memory.Span)
             {
