@@ -5,20 +5,103 @@ namespace Cistern.Linq.ChainLinq.Consumer
 {
     static class SumHelper
     {
-        internal static double Sum(double[] span, Func<double, bool> predicate)
+        public static double Sum(Span<double> data, Func<double, bool> predicate)
         {
-            double result = 0.0;
-            foreach (double item in span)
+            // We can't rely on predicate returning 0/1 for the bool, as the CLI specification
+            // only specifies that 0=false (and any other 8-bit pattern is true), so we use a "!" on bool to
+            // ensure 0/1 value in bool slot so that we can then rely on the cast to byte.
+            Span<Bool8> bools = stackalloc Bool8[1];
+            Span<Byte8> bytes = MemoryMarshal.Cast<Bool8, Byte8>(bools);
+
+            return Summer(data, predicate, ref bools[0], ref bytes[0]);
+        }
+
+        unsafe static double Summer(Span<double> data, Func<double, bool> predicate, ref Bool8 bools, ref Byte8 bytes)
+        {
+            // An implementation of Sum that avoids branching logic by summing all elements multipled by 0 if excluded
+            // or 1 if included. NaNs are handled gracefully (with NaN result handled with short-circuit).
+            // 
+            // NB: Uses some trickery to cast bool to byte ==> ((byte)(!bool) ^ (int)1) should ensure false=0, true=1
+            checked
             {
-                if (predicate(item))
+                double sum = 0.0;
+
+                var data8 = MemoryMarshal.Cast<double, Double8>(data);
+                var i8 = 0; // index in data8
+                for (; i8 < data8.Length; ++i8)
                 {
-                    result += item;
+                    var tmp = sum;
+
+                    // Relying on implemenation detail of the "boolean not (!)" such that it stores a 0 or a 1 in the bool slot.
+                    // Current c# implementation generates the following code, where I believe it is exceedingly unlikely that 
+                    // this would change such that values other that 0 or 1 would be stored (although inline IL to enforce
+                    // would be nice...)
+                    //
+                    // <<result of predicate on top of stack. i.e. any bit pattern from 0b0000_0000 to 0b1111_1111>>
+                    // ldc.i4.0
+                    // ceq
+                    // stfld <<bools._{x}>>
+                    //
+                    // where "ceq" states (https://docs.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.ceq):
+                    // Compares two values. If they are equal, the integer value 1 (int32) is pushed onto the evaluation stack;
+                    // otherwise 0 (int32) is pushed onto the evaluation stack.
+                    bools._0 = !predicate(data8[i8]._0);
+                    bools._1 = !predicate(data8[i8]._1);
+                    bools._2 = !predicate(data8[i8]._2);
+                    bools._3 = !predicate(data8[i8]._3);
+                    bools._4 = !predicate(data8[i8]._4);
+                    bools._5 = !predicate(data8[i8]._5);
+                    bools._6 = !predicate(data8[i8]._6);
+                    bools._7 = !predicate(data8[i8]._7);
+
+                    // the xor here is used to invert the boolean bit which was stored in << bools._{x} >>
+                    // we store the sum in a temporary variable as we have to deal with the possibility that NaN will
+                    // be introduced as "0 * ((Postive|Negative)Infinity|NaN) == NaN", so fall-back to branching loop
+                    tmp += (bytes._0 ^ 1) * data8[i8]._0;
+                    tmp += (bytes._1 ^ 1) * data8[i8]._1;
+                    tmp += (bytes._2 ^ 1) * data8[i8]._2;
+                    tmp += (bytes._3 ^ 1) * data8[i8]._3;
+                    tmp += (bytes._4 ^ 1) * data8[i8]._4;
+                    tmp += (bytes._5 ^ 1) * data8[i8]._5;
+                    tmp += (bytes._6 ^ 1) * data8[i8]._6;
+                    tmp += (bytes._7 ^ 1) * data8[i8]._7;
+                    if (Double.IsNaN(tmp))
+                        goto foundNaN;
+
+                    sum = tmp;
                 }
+                goto remainingElements;
+
+                foundNaN:
+                if (!bools._0) sum += data8[i8]._0;
+                if (!bools._1) sum += data8[i8]._1;
+                if (!bools._2) sum += data8[i8]._2;
+                if (!bools._3) sum += data8[i8]._3;
+                if (!bools._4) sum += data8[i8]._4;
+                if (!bools._5) sum += data8[i8]._5;
+                if (!bools._6) sum += data8[i8]._6;
+                if (!bools._7) sum += data8[i8]._7;
+                if (Double.IsNaN(sum))
+                    goto done;
+                ++i8;
+
+                remainingElements:
+                // handle the remaining fields either at tail of collection or after NaN
+                for (var i = i8 * 8; i < data.Length; ++i)
+                {
+                    var x = data[i];
+                    if (predicate(x))
+                    {
+                        sum += x;
+                    }
+                }
+
+                done:
+                return sum;
             }
-            return result;
         }
     }
-
+     
     sealed class SumInt : Consumer<int, int>
     {
         public SumInt() : base(0) { }
