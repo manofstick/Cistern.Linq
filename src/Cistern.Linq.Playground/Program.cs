@@ -18,7 +18,7 @@ namespace Cistern.Linq.Playground
             switch(plaything)
             {
                 case Playthings.mikednCisternLinq: mikedn.CisternLinq.Program.mikedn(); break;
-                case Playthings.mikednSystemLinq: mikedn.CisternLinq.Program.mikedn(); break;
+                case Playthings.mikednSystemLinq: mikedn.SystemLinq.Program.mikedn(); break;
             }
         }
     }
