@@ -5,6 +5,45 @@ namespace Cistern.Linq.ChainLinq.Consumer
 {
     static class SumHelper
     {
+        [StructLayout(LayoutKind.Sequential, Pack = 0)]
+        struct Bool8
+        {
+            public bool _0;
+            public bool _1;
+            public bool _2;
+            public bool _3;
+            public bool _4;
+            public bool _5;
+            public bool _6;
+            public bool _7;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 0)]
+        struct Byte8
+        {
+            public byte _0;
+            public byte _1;
+            public byte _2;
+            public byte _3;
+            public byte _4;
+            public byte _5;
+            public byte _6;
+            public byte _7;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 0)]
+        struct Double8
+        {
+            public double _0;
+            public double _1;
+            public double _2;
+            public double _3;
+            public double _4;
+            public double _5;
+            public double _6;
+            public double _7;
+        }
+
         public static double Sum(Span<double> data, Func<double, bool> predicate)
         {
             // We can't rely on predicate returning 0/1 for the bool, as the CLI specification
@@ -16,7 +55,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return Summer(data, predicate, ref bools[0], ref bytes[0]);
         }
 
-        unsafe static double Summer(Span<double> data, Func<double, bool> predicate, ref Bool8 bools, ref Byte8 bytes)
+        static double Summer(Span<double> data, Func<double, bool> predicate, ref Bool8 bools, ref Byte8 bytes)
         {
             // An implementation of Sum that avoids branching logic by summing all elements multipled by 0 if excluded
             // or 1 if included. NaNs are handled gracefully (with NaN result handled with short-circuit).
