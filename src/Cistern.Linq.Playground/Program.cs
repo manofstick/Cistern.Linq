@@ -23,8 +23,8 @@ namespace Cistern.Linq.Playground
             {
                 case Playthings.mikednCisternLinq: mikedn.CisternLinq.Program.mikedn(); break;
                 case Playthings.mikednSystemLinq: mikedn.SystemLinq.Program.mikedn(); break;
-                case Playthings.cartlinqSystemLinq: cartlinq.CisternLinq.Program.cartlinq(); break;
-                case Playthings.cartlinqCisternLinq: cartlinq.SystemLinq.Program.cartlinq(); break;
+                case Playthings.cartlinqCisternLinq: cartlinq.CisternLinq.Program.cartlinq(); break;
+                case Playthings.cartlinqSystemLinq: cartlinq.SystemLinq.Program.cartlinq(); break;
             }
         }
     }
