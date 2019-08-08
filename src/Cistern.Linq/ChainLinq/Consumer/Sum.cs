@@ -4,6 +4,11 @@ using System.Runtime.InteropServices;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
+    interface ISelectMany<T>
+    {
+        ChainStatus SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector);
+    }
+
     static class SumHelper
     {
 #if SIMPLE_SUM
@@ -334,6 +339,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
     sealed class SumDouble 
         : Consumer<double, double>
         , Optimizations.IWhereArray
+        , ISelectMany<double>
         , Optimizations.IPipeline<ReadOnlyMemory<double>>
         , Optimizations.IPipeline<List<double>>
         , Optimizations.IPipeline<IEnumerable<double>>
@@ -378,6 +384,17 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         public void Where<T>(T[] memory, Func<T, bool> predicate) =>
             Result = SumHelper.Sum((double[])(object)memory, (Func<double, bool>)(object)predicate);
+
+        public ChainStatus SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, double> resultSelector)
+        {
+            var sum = Result;
+            foreach (var item in span)
+            {
+                sum += resultSelector(source, item);
+            }
+            Result = sum;
+            return ChainStatus.Flow;
+        }
     }
 
     sealed class SumNullableDouble : Consumer<double?, double?>

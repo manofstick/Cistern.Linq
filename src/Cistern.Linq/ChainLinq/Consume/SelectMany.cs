@@ -64,11 +64,18 @@ namespace Cistern.Linq.ChainLinq.Consume
                 }
                 else if (input.Item2 is TCollection[] array)
                 {
-                    foreach (var item in array)
+                    if (_chainT is ChainLinq.Consumer.ISelectMany<T> sm)
                     {
-                        state = _chainT.ProcessNext(_resultSelector(input.Item1, item));
-                        if (state.IsStopped())
-                            break;
+                        state = sm.SelectMany(input.Item1, array, _resultSelector);
+                    }
+                    else
+                    {
+                        foreach (var item in array)
+                        {
+                            state = _chainT.ProcessNext(_resultSelector(input.Item1, item));
+                            if (state.IsStopped())
+                                break;
+                        }
                     }
                 }
                 else if (input.Item2 is List<TCollection> list)
