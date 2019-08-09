@@ -5,8 +5,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
 {
     abstract class SumGeneric<T, Accumulator, Maths>
         : Consumer<T, T>
-        , Optimizations.IWhereArray<T>
-        , Optimizations.ISelectMany<T>
+        , Optimizations.ITailWhere<T>
+        , Optimizations.ITailSelectMany<T>
         , Optimizations.IPipeline<ReadOnlyMemory<T>>
         , Optimizations.IPipeline<List<T>>
         , Optimizations.IPipeline<IEnumerable<T>>
@@ -58,7 +58,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        public void Where(T[] memory, Func<T, bool> predicate)
+        void Optimizations.ITailWhere<T>.Where(ReadOnlySpan<T> memory, Func<T, bool> predicate)
         {
             Maths maths = default;
 
@@ -72,7 +72,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        public ChainStatus SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
+        ChainStatus Optimizations.ITailSelectMany<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
         {
             Maths maths = default;
 
@@ -89,8 +89,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
     abstract class SumGenericNullable<T, Accumulator, Maths>
         : Consumer<T?, T>
-        , Optimizations.IWhereArray<T?>
-        , Optimizations.ISelectMany<T?>
+        , Optimizations.ITailWhere<T?>
+        , Optimizations.ITailSelectMany<T?>
         , Optimizations.IPipeline<ReadOnlyMemory<T?>>
         , Optimizations.IPipeline<List<T?>>
         , Optimizations.IPipeline<IEnumerable<T?>>
@@ -142,7 +142,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        public void Where(T?[] memory, Func<T?, bool> predicate)
+        void Optimizations.ITailWhere<T?>.Where(ReadOnlySpan<T?> memory, Func<T?, bool> predicate)
         {
             Maths maths = default;
 
@@ -156,7 +156,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        public ChainStatus SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T?> resultSelector)
+        ChainStatus Optimizations.ITailSelectMany<T?>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T?> resultSelector)
         {
             Maths maths = default;
 
@@ -188,7 +188,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
     }
-
 
     sealed class SumFloat : SumGeneric<float, double, Maths.OpsFloat>
     {

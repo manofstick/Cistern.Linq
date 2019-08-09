@@ -2,7 +2,7 @@
 
 namespace Cistern.Linq.ChainLinq.Optimizations
 {
-    interface ISelectMany<T>
+    interface ITailSelectMany<T>
     {
         ChainStatus SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector);
     }

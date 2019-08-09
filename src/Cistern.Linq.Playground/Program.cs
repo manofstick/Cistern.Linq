@@ -13,7 +13,7 @@ namespace Cistern.Linq.Playground
 
     class Program
     {
-        static Playthings plaything = Playthings.cartlinqSystemLinq;
+        static Playthings plaything = Playthings.mikednCisternLinq;
 
         static void Main(string[] args)
         {

@@ -14,7 +14,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             (Underlying, Predicate) = (array, predicate);
 
         public override void Consume(Consumer<T> consumer) =>
-            ChainLinq.Consume.Array.Invoke(Underlying, new Links.Where<T>(Predicate), consumer);
+            ChainLinq.Consume.ReadOnlyMemory.Invoke(Underlying, new Links.Where<T>(Predicate), consumer);
 
         internal override ConsumableEnumerator<T> Clone() =>
             new WhereArray<T>(Underlying, Predicate);

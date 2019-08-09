@@ -7,8 +7,8 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         Consumable<T> MergeWhere(ConsumableForMerging<T> consumable, Func<T, bool> predicate);
     }
 
-    interface IWhereArray<T>
+    interface ITailWhere<T>
     {
-        void Where(T[] array, Func<T, bool> predicate);
+        void Where(ReadOnlySpan<T> array, Func<T, bool> predicate);
     }
 }

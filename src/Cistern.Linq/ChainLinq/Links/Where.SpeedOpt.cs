@@ -15,31 +15,18 @@ namespace Cistern.Linq.ChainLinq.Links
 
         sealed partial class Activity
             : Optimizations.IPipeline<ReadOnlyMemory<T>>
-            , Optimizations.IPipeline<T[]>
             , Optimizations.IPipeline<List<T>>
             , Optimizations.IPipeline<IEnumerable<T>>
         {
             public void Pipeline(ReadOnlyMemory<T> memory)
             {
-                foreach (var item in memory.Span)
+                if (next is Optimizations.ITailWhere<T> optimized)
                 {
-                    if (_predicate(item))
-                    {
-                        var state = Next(item);
-                        if (state.IsStopped())
-                            break;
-                    }
-                }
-            }
-            public void Pipeline(T[] array)
-            {
-                if (next is Optimizations.IWhereArray<T> optimized)
-                {
-                    optimized.Where(array, _predicate);
+                    optimized.Where(memory.Span, _predicate);
                 }
                 else
                 {
-                    foreach (var item in array)
+                    foreach (var item in memory.Span)
                     {
                         if (_predicate(item))
                         {
