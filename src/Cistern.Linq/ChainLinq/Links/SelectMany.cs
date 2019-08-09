@@ -15,21 +15,42 @@ namespace Cistern.Linq.ChainLinq.Links
 
         private sealed class Activity
             : Activity<T, (T, IEnumerable<U>)>
-            , Optimizations.IPipeline<ReadOnlyMemory<T>>
+            , Optimizations.IHeadStart<T>
         {
             private readonly Func<T, IEnumerable<U>> collectionSelector;
 
             public Activity(Chain<(T, IEnumerable<U>)> next, Func<T, IEnumerable<U>> collectionSelector) : base(next) =>
                 this.collectionSelector = collectionSelector;
 
-            public void Pipeline(ReadOnlyMemory<T> source)
+            public override ChainStatus ProcessNext(T input) =>
+                Next((input, collectionSelector(input)));
+
+            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
-                foreach (var item in source.Span)
+                foreach (var item in source)
                     Next((item, collectionSelector(item)));
             }
 
-            public override ChainStatus ProcessNext(T input) =>
-                Next((input, collectionSelector(input)));
+            void Optimizations.IHeadStart<T>.Execute(List<T> source)
+            {
+                foreach (var item in source)
+                    Next((item, collectionSelector(item)));
+            }
+
+            void Optimizations.IHeadStart<T>.Execute(IList<T> source, int start, int count)
+            {
+                for (var i = start; i < start + count; ++i)
+                {
+                    var item = source[i];
+                    Next((item, collectionSelector(item)));
+                }
+            }
+
+            void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> source)
+            {
+                foreach (var item in source)
+                    Next((item, collectionSelector(item)));
+            }
         }
     }
 }

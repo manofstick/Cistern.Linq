@@ -7,9 +7,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         : Consumer<T, T>
         , Optimizations.ITailWhere<T>
         , Optimizations.ITailSelectMany<T>
-        , Optimizations.IPipeline<ReadOnlyMemory<T>>
-        , Optimizations.IPipeline<List<T>>
-        , Optimizations.IPipeline<IEnumerable<T>>
+        , Optimizations.IHeadStart<T>
         where T : struct
         where Accumulator : struct
         where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
@@ -20,19 +18,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         public override void ChainComplete() => Result = default(Maths).Cast(accumulator);
 
-        public void Pipeline(ReadOnlyMemory<T> source)
-        {
-            Maths maths = default;
-
-            Accumulator sum = accumulator;
-            foreach (var x in source.Span)
-            {
-                sum = maths.Add(sum, x);
-            }
-
-            accumulator = sum;
-        }
-        public void Pipeline(List<T> source)
+        void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
         {
             Maths maths = default;
 
@@ -45,7 +31,33 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        public void Pipeline(IEnumerable<T> source)
+        void Optimizations.IHeadStart<T>.Execute(List<T> source)
+        {
+            Maths maths = default;
+
+            Accumulator sum = accumulator;
+            foreach (var x in source)
+            {
+                sum = maths.Add(sum, x);
+            }
+
+            accumulator = sum;
+        }
+
+        void Optimizations.IHeadStart<T>.Execute(IList<T> source, int start, int length)
+        {
+            Maths maths = default;
+
+            Accumulator sum = accumulator;
+            for(var i=start; i < start+length; ++i)
+            {
+                sum = maths.Add(sum, source[i]);
+            }
+
+            accumulator = sum;
+        }
+
+        void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> source)
         {
             Maths maths = default;
 
@@ -91,9 +103,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         : Consumer<T?, T>
         , Optimizations.ITailWhere<T?>
         , Optimizations.ITailSelectMany<T?>
-        , Optimizations.IPipeline<ReadOnlyMemory<T?>>
-        , Optimizations.IPipeline<List<T?>>
-        , Optimizations.IPipeline<IEnumerable<T?>>
+        , Optimizations.IHeadStart<T?>
         where T : struct
         where Accumulator : struct
         where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
@@ -104,19 +114,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         public override void ChainComplete() => Result = default(Maths).Cast(accumulator);
 
-        public void Pipeline(ReadOnlyMemory<T?> source)
-        {
-            Maths maths = default;
-
-            Accumulator sum = accumulator;
-            foreach (var x in source.Span)
-            {
-                sum = maths.Add(sum, x);
-            }
-
-            accumulator = sum;
-        }
-        public void Pipeline(List<T?> source)
+        void Optimizations.IHeadStart<T?>.Execute(ReadOnlySpan<T?> source)
         {
             Maths maths = default;
 
@@ -129,7 +127,33 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        public void Pipeline(IEnumerable<T?> source)
+        void Optimizations.IHeadStart<T?>.Execute(List<T?> source)
+        {
+            Maths maths = default;
+
+            Accumulator sum = accumulator;
+            foreach (var x in source)
+            {
+                sum = maths.Add(sum, x);
+            }
+
+            accumulator = sum;
+        }
+
+        void Optimizations.IHeadStart<T?>.Execute(IList<T?> source, int start, int length)
+        {
+            Maths maths = default;
+
+            Accumulator sum = accumulator;
+            for(var i=start; i < start+length; ++i)
+            {
+                sum = maths.Add(sum, source[i]);
+            }
+
+            accumulator = sum;
+        }
+
+        void Optimizations.IHeadStart<T?>.Execute(IEnumerable<T?> source)
         {
             Maths maths = default;
 

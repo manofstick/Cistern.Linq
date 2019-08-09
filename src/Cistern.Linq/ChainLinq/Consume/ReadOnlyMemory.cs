@@ -9,9 +9,9 @@ namespace Cistern.Linq.ChainLinq.Consume
             var chain = composition.Compose(consumer);
             try
             {
-                if (chain is Optimizations.IPipeline<ReadOnlyMemory<T>> optimized)
+                if (chain is Optimizations.IHeadStart<T> optimized)
                 {
-                    optimized.Pipeline(array);
+                    optimized.Execute(array.Span);
                 }
                 else
                 {

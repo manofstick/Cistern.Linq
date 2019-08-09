@@ -13,13 +13,11 @@ namespace Cistern.Linq.ChainLinq.Links
         public Link<T, U> Skip(int toSkip) => this;
 
         sealed partial class Activity
-            : Optimizations.IPipeline<ReadOnlyMemory<T>>
-            , Optimizations.IPipeline<List<T>>
-            , Optimizations.IPipeline<IEnumerable<T>>
+            : Optimizations.IHeadStart<T>
         {
-            public void Pipeline(ReadOnlyMemory<T> memory)
+            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> memory)
             {
-                foreach (var item in memory.Span)
+                foreach (var item in memory)
                 {
                     var state = Next(_selector(item));
                     if (state.IsStopped())
@@ -27,7 +25,7 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            public void Pipeline(IEnumerable<T> e)
+            void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> e)
             {
                 foreach (var item in e)
                 {
@@ -37,11 +35,21 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            public void Pipeline(List<T> list)
+            void Optimizations.IHeadStart<T>.Execute(List<T> list)
             {
                 foreach (var item in list)
                 {
                     var state = Next(_selector(item));
+                    if (state.IsStopped())
+                        break;
+                }
+            }
+
+            void Optimizations.IHeadStart<T>.Execute(IList<T> list, int start, int count)
+            {
+                for(var i=start; i < start+count; ++i)
+                {
+                    var state = Next(_selector(list[i]));
                     if (state.IsStopped())
                         break;
                 }

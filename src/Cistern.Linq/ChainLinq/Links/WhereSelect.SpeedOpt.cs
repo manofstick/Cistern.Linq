@@ -21,9 +21,7 @@ namespace Cistern.Linq.ChainLinq.Links
 
         sealed class Activity
             : Activity<T, U>
-            , Optimizations.IPipeline<ReadOnlyMemory<T>>
-            , Optimizations.IPipeline<List<T>>
-            , Optimizations.IPipeline<IEnumerable<T>>
+            , Optimizations.IHeadStart<T>
         {
             private readonly Func<T, bool> _predicate;
             private readonly Func<T, U> _selector; 
@@ -34,9 +32,9 @@ namespace Cistern.Linq.ChainLinq.Links
             public override ChainStatus ProcessNext(T input) =>
                 _predicate(input) ? Next(_selector(input)) : ChainStatus.Filter;
             
-            public void Pipeline(ReadOnlyMemory<T> memory)
+            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> memory)
             {
-                foreach (var item in memory.Span)
+                foreach (var item in memory)
                 {
                     if (_predicate(item))
                     {
@@ -47,7 +45,7 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            public void Pipeline(List<T> list)
+            void Optimizations.IHeadStart<T>.Execute(List<T> list)
             {
                 foreach (var item in list)
                 {
@@ -60,7 +58,21 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            public void Pipeline(IEnumerable<T> enumerable)
+            void Optimizations.IHeadStart<T>.Execute(IList<T> list, int start, int count)
+            {
+                for(var i=start; i < start+count; ++i)
+                {
+                    var item = list[i];
+                    if (_predicate(item))
+                    {
+                        var state = Next(_selector(item));
+                        if (state.IsStopped())
+                            break;
+                    }
+                }
+            }
+
+            void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> enumerable)
             {
                 foreach (var item in enumerable)
                 {

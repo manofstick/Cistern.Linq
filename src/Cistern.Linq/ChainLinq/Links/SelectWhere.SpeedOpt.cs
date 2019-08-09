@@ -21,9 +21,7 @@ namespace Cistern.Linq.ChainLinq.Links
 
         sealed class Activity
             : Activity<T, U>
-            , Optimizations.IPipeline<ReadOnlyMemory<T>>
-            , Optimizations.IPipeline<List<T>>
-            , Optimizations.IPipeline<IEnumerable<T>>
+            , Optimizations.IHeadStart<T>
         {
             private readonly Func<T, U> _selector;
             private readonly Func<U, bool> _predicate;
@@ -37,9 +35,9 @@ namespace Cistern.Linq.ChainLinq.Links
                 return _predicate(item) ? Next(item) : ChainStatus.Filter;
             }
 
-            public void Pipeline(ReadOnlyMemory<T> memory)
+            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> memory)
             {
-                foreach (var t in memory.Span)
+                foreach (var t in memory)
                 {
                     var u = _selector(t);
                     if (_predicate(u))
@@ -51,7 +49,7 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            public void Pipeline(List<T> list)
+            void Optimizations.IHeadStart<T>.Execute(List<T> list)
             {
                 foreach (var t in list)
                 {
@@ -65,7 +63,21 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            public void Pipeline(IEnumerable<T> enumerable)
+            void Optimizations.IHeadStart<T>.Execute(IList<T> list, int start, int count)
+            {
+                for(var i=start; i < start+count; ++i)
+                {
+                    var u = _selector(list[i]);
+                    if (_predicate(u))
+                    {
+                        var state = Next(u);
+                        if (state.IsStopped())
+                            break;
+                    }
+                }
+            }
+
+            void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> enumerable)
             {
                 foreach (var t in enumerable)
                 {

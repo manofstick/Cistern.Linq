@@ -14,19 +14,17 @@ namespace Cistern.Linq.ChainLinq.Links
             consumable.ReplaceTailLink(new Where2<T>(Predicate, second));
 
         sealed partial class Activity
-            : Optimizations.IPipeline<ReadOnlyMemory<T>>
-            , Optimizations.IPipeline<List<T>>
-            , Optimizations.IPipeline<IEnumerable<T>>
+            : Optimizations.IHeadStart<T>
         {
-            public void Pipeline(ReadOnlyMemory<T> memory)
+            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
                 if (next is Optimizations.ITailWhere<T> optimized)
                 {
-                    optimized.Where(memory.Span, _predicate);
+                    optimized.Where(source, _predicate);
                 }
                 else
                 {
-                    foreach (var item in memory.Span)
+                    foreach (var item in source)
                     {
                         if (_predicate(item))
                         {
@@ -38,7 +36,7 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            public void Pipeline(List<T> list)
+            void Optimizations.IHeadStart<T>.Execute(List<T> list)
             {
                 foreach (var item in list)
                 {
@@ -50,8 +48,21 @@ namespace Cistern.Linq.ChainLinq.Links
                     }
                 }
             }
+            void Optimizations.IHeadStart<T>.Execute(IList<T> list, int start, int count)
+            {
+                for(var i=start; i < start+count; ++i)
+                {
+                    var item = list[i];
+                    if (_predicate(item))
+                    {
+                        var state = Next(item);
+                        if (state.IsStopped())
+                            break;
+                    }
+                }
+            }
 
-            public void Pipeline(IEnumerable<T> enumerable)
+            void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> enumerable)
             {
                 foreach (var item in enumerable)
                 {
