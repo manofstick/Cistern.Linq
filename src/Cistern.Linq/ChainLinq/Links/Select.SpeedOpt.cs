@@ -15,13 +15,20 @@ namespace Cistern.Linq.ChainLinq.Links
         sealed partial class Activity
             : Optimizations.IHeadStart<T>
         {
-            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> memory)
+            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
-                foreach (var item in memory)
+                if (next is Optimizations.ITailSelect<U> optimized)
                 {
-                    var state = Next(_selector(item));
-                    if (state.IsStopped())
-                        break;
+                    optimized.Select(source, _selector);
+                }
+                else
+                {
+                    foreach (var item in source)
+                    {
+                        var state = Next(_selector(item));
+                        if (state.IsStopped())
+                            break;
+                    }
                 }
             }
 
