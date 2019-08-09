@@ -33,7 +33,7 @@ namespace Cistern.Linq.ChainLinq.Links
             }
             public void Pipeline(T[] array)
             {
-                if (next is Optimizations.IWhereArray optimized)
+                if (next is Optimizations.IWhereArray<T> optimized)
                 {
                     optimized.Where(array, _predicate);
                 }

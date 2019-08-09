@@ -64,7 +64,7 @@ namespace Cistern.Linq.ChainLinq.Consume
                 }
                 else if (input.Item2 is TCollection[] array)
                 {
-                    if (_chainT is ChainLinq.Consumer.ISelectMany<T> sm)
+                    if (_chainT is Optimizations.ISelectMany<T> sm)
                     {
                         state = sm.SelectMany(input.Item1, array, _resultSelector);
                     }
