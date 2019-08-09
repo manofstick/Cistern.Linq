@@ -52,8 +52,8 @@ namespace Cistern.Linq.Maths
     struct OpsDecimal : IMathsOperations<Decimal, Decimal>
     {
         public Decimal Zero => 0M;
-        public Decimal Add(Decimal lhs, Decimal rhs) { checked { return lhs + rhs; } }
-        public Decimal Add(Decimal lhs, Decimal? rhs) { checked { return lhs + rhs.GetValueOrDefault(); } }
+        public Decimal Add(Decimal lhs, Decimal rhs) => lhs + rhs;
+        public Decimal Add(Decimal lhs, Decimal? rhs) => lhs + rhs.GetValueOrDefault();
         public Decimal Cast(Decimal a) => a;
     }
 }

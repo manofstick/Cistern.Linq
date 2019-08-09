@@ -263,8 +263,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
     {
         public override ChainStatus ProcessNext(int input)
         {
-            accumulator += input;
-            return ChainStatus.Flow;
+            checked
+            {
+                accumulator += input;
+                return ChainStatus.Flow;
+            }
         }
     }
 
@@ -272,8 +275,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
     {
         public override ChainStatus ProcessNext(int? input)
         {
-            accumulator += input.GetValueOrDefault();
-            return ChainStatus.Flow;
+            checked
+            {
+                accumulator += input.GetValueOrDefault();
+                return ChainStatus.Flow;
+            }
         }
     }
 
@@ -281,8 +287,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
     {
         public override ChainStatus ProcessNext(long input)
         {
-            accumulator += input;
-            return ChainStatus.Flow;
+            checked
+            {
+                accumulator += input;
+                return ChainStatus.Flow;
+            }
         }
     }
 
@@ -290,8 +299,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
     {
         public override ChainStatus ProcessNext(long? input)
         {
-            accumulator += input.GetValueOrDefault();
-            return ChainStatus.Flow;
+            checked
+            {
+                accumulator += input.GetValueOrDefault();
+                return ChainStatus.Flow;
+            }
         }
     }
 
