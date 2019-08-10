@@ -60,7 +60,7 @@ cartlinqCisternLinq
 1000000 779     (4.620816E+07)
 */
 
-namespace Cistern.Linq.Playground.cartlinq.SystemLinq
+namespace Playground.cartlinq.SystemLinq
 {
     using System;
     using System.Diagnostics;
@@ -99,7 +99,7 @@ namespace Cistern.Linq.Playground.cartlinq.SystemLinq
     }
 }
 
-namespace Cistern.Linq.Playground.cartlinq.CisternLinq
+namespace Playground.cartlinq.CisternLinq
 {
     using System;
     using System.Diagnostics;

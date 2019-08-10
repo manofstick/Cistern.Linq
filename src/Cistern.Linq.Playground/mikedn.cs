@@ -10,7 +10,7 @@ sum=4001980000000 time=8742.4558
 
 */
 
-namespace Cistern.Linq.Playground.mikedn.SystemLinq
+namespace Playground.mikedn.SystemLinq
 {
     using System;
     using System.Diagnostics;
@@ -75,7 +75,7 @@ namespace Cistern.Linq.Playground.mikedn.SystemLinq
     }
 }
 
-namespace Cistern.Linq.Playground.mikedn.CisternLinq
+namespace Playground.mikedn.CisternLinq
 {
     using System;
     using System.Diagnostics;

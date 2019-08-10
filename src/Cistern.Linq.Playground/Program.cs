@@ -1,7 +1,7 @@
 ﻿using System;
 using Cistern.Linq;
 
-namespace Cistern.Linq.Playground
+namespace Playground
 {
     enum Playthings
     {
@@ -9,11 +9,13 @@ namespace Cistern.Linq.Playground
         mikednCisternLinq,
         cartlinqSystemLinq,
         cartlinqCisternLinq,
+        jamesqoSystemLinq,
+        jamesqoCisternLinq,
     }
 
     class Program
     {
-        static Playthings plaything = Playthings.mikednCisternLinq;
+        static Playthings plaything = Playthings.jamesqoCisternLinq;
 
         static void Main(string[] args)
         {
@@ -23,8 +25,12 @@ namespace Cistern.Linq.Playground
             {
                 case Playthings.mikednCisternLinq: mikedn.CisternLinq.Program.mikedn(); break;
                 case Playthings.mikednSystemLinq: mikedn.SystemLinq.Program.mikedn(); break;
+
                 case Playthings.cartlinqCisternLinq: cartlinq.CisternLinq.Program.cartlinq(); break;
                 case Playthings.cartlinqSystemLinq: cartlinq.SystemLinq.Program.cartlinq(); break;
+
+                case Playthings.jamesqoCisternLinq: jamesko.CisternLinq.Program.jamesqo(); break;
+                case Playthings.jamesqoSystemLinq: jamesko.SystemLinq.Program.jamesqo(); break;
             }
         }
     }
