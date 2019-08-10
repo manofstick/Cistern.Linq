@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed class Empty<T> : ConsumableForAddition<T>, IEnumerator<T>, IConsumableInternal
+    sealed class Empty<T> : ConsumableForMerging<T>, IEnumerator<T>, IConsumableInternal
     {
         public static Consumable<T> Instance = new Empty<T>();
 
@@ -32,7 +32,12 @@ namespace Cistern.Linq.ChainLinq.Consumables
         void IDisposable.Dispose() { }
         bool IEnumerator.MoveNext() => false;
         void IEnumerator.Reset() { }
+
+        
         object IEnumerator.Current => default;
         T IEnumerator<T>.Current => default;
+
+        public override object TailLink => null;
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new InvalidOperationException();
     }
 }

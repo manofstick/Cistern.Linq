@@ -49,11 +49,17 @@ namespace Cistern.Linq.ChainLinq
             }
             else if (source is TSource[] array)
             {
-                return new Consumables.WhereArray<TSource>(array, predicate);
+                if (array.Length == 0)
+                    return Consumables.Empty<TSource>.Instance;
+                else
+                    return new Consumables.WhereArray<TSource>(array, predicate);
             }
             else if (source is List<TSource> list)
             {
-                return new Consumables.WhereList<TSource>(list, predicate);
+                if (list.Count == 0)
+                    return Consumables.Empty<TSource>.Instance;
+                else
+                    return new Consumables.WhereList<TSource>(list, predicate);
             }
             else
             {
@@ -74,11 +80,17 @@ namespace Cistern.Linq.ChainLinq
             }
             else if (source is TSource[] array)
             {
-                return new Consumables.SelectArray<TSource, TResult>(array, selector);
+                if (array.Length == 0)
+                    return Consumables.Empty<TResult>.Instance;
+                else
+                    return new Consumables.SelectArray<TSource, TResult>(array, selector);
             }
             else if (source is List<TSource> list)
             {
-                return new Consumables.SelectList<TSource, TResult>(list, selector);
+                if (list.Count == 0)
+                    return Consumables.Empty<TResult>.Instance;
+                else
+                    return new Consumables.SelectList<TSource, TResult>(list, selector);
             }
             else
             {
