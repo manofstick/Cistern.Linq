@@ -9,7 +9,7 @@ namespace Cistern.Linq.ChainLinq.Optimizations
 
     interface ITailSelect<T>
     {
-        void Select<S> (ReadOnlySpan<S> array, Func<S, T> predicate);
+        void Select<S> (ReadOnlySpan<S> source, Func<S, T> selector);
     }
 
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consume
 {
@@ -32,7 +33,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
             else if (input is T[] array)
             {
-                return ConsumerArray(array, chain);
+                return ConsumerSpan(array, chain);
             }
             else if (input is List<T> list)
             {
@@ -44,40 +45,64 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        private static ChainStatus ConsumerEnumerable<T>(IEnumerable<T> input, Chain<T> chain)
+        private static ChainStatus ConsumerEnumerable<T>(IEnumerable<T> source, Chain<T> chain)
         {
-            var status = ChainStatus.Flow;
-            foreach (var item in input)
+            if (chain is Optimizations.IHeadStart<T> optimized)
             {
-                status = chain.ProcessNext(item);
-                if (status.IsStopped())
-                    break;
+                optimized.Execute(source);
+                return ChainStatus.Flow;
             }
-            return status;
+            else
+            {
+                var status = ChainStatus.Flow;
+                foreach (var item in source)
+                {
+                    status = chain.ProcessNext(item);
+                    if (status.IsStopped())
+                        break;
+                }
+                return status;
+            }
         }
 
-        private static ChainStatus ConsumerArray<T>(T[] array, Chain<T> chain)
+        private static ChainStatus ConsumerSpan<T>(ReadOnlySpan<T> source, Chain<T> chain)
         {
-            var status = ChainStatus.Flow;
-            foreach (var item in array)
+            if (chain is Optimizations.IHeadStart<T> optimized)
             {
-                status = chain.ProcessNext(item);
-                if (status.IsStopped())
-                    break;
+                optimized.Execute(source);
+                return ChainStatus.Flow;
             }
-            return status;
+            else
+            {
+                var status = ChainStatus.Flow;
+                foreach (var item in source)
+                {
+                    status = chain.ProcessNext(item);
+                    if (status.IsStopped())
+                        break;
+                }
+                return status;
+            }
         }
 
-        private static ChainStatus ConsumerList<T>(List<T> list, Chain<T> chain)
+        private static ChainStatus ConsumerList<T>(List<T> source, Chain<T> chain)
         {
-            var status = ChainStatus.Flow;
-            foreach (var item in list)
+            if (chain is Optimizations.IHeadStart<T> optimized)
             {
-                status = chain.ProcessNext(item);
-                if (status.IsStopped())
-                    break;
+                optimized.Execute(source);
+                return ChainStatus.Flow;
             }
-            return status;
+            else
+            {
+                var status = ChainStatus.Flow;
+                foreach (var item in source)
+                {
+                    status = chain.ProcessNext(item);
+                    if (status.IsStopped())
+                        break;
+                }
+                return status;
+            }
         }
     }
 }

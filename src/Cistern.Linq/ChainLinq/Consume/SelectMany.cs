@@ -23,7 +23,9 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        sealed class SelectManyOuterConsumer<T> : Consumer<IEnumerable<T>, ChainEnd>
+        sealed class SelectManyOuterConsumer<T>
+            : Consumer<IEnumerable<T>, ChainEnd>
+            , Optimizations.ITailSelect<IEnumerable<T>>
         {
             private readonly Chain<T> _chainT;
             private UnknownEnumerable.ChainConsumer<T> _inner;
@@ -33,6 +35,16 @@ namespace Cistern.Linq.ChainLinq.Consume
 
             public override ChainStatus ProcessNext(IEnumerable<T> input) =>
                 UnknownEnumerable.Consume(input, _chainT, ref _inner);
+
+            void Optimizations.ITailSelect<IEnumerable<T>>.Select<S>(ReadOnlySpan<S> source, Func<S, IEnumerable<T>> selector)
+            {
+                foreach(var s in source)
+                {
+                    var status = UnknownEnumerable.Consume(selector(s), _chainT, ref _inner);
+                    if (status.IsStopped())
+                        break;
+                }
+            }
         }
 
         sealed class SelectManyOuterConsumer<TSource, TCollection, T> : Consumer<(TSource, IEnumerable<TCollection>), ChainEnd>

@@ -32,15 +32,15 @@ namespace Cistern.Linq.ChainLinq.Links
             public override ChainStatus ProcessNext(T input) =>
                 _predicate(input) ? Next(_selector(input)) : ChainStatus.Filter;
             
-            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> span)
+            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
                 if (next is Optimizations.ITailWhereSelect<U> optimized)
                 {
-                    optimized.WhereSelect(span, _predicate, _selector);
+                    optimized.WhereSelect(source, _predicate, _selector);
                 }
                 else
                 {
-                    foreach (var item in span)
+                    foreach (var item in source)
                     {
                         if (_predicate(item))
                         {
