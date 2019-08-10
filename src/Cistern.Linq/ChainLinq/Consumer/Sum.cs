@@ -8,6 +8,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         , Optimizations.ITailWhere<T>
         , Optimizations.ITailSelect<T>
         , Optimizations.ITailSelectMany<T>
+        , Optimizations.ITailWhereSelect<T>
         , Optimizations.IHeadStart<T>
         where T : struct
         where Accumulator : struct
@@ -111,6 +112,20 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
             return ChainStatus.Flow;
         }
+
+        void Optimizations.ITailWhereSelect<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
+        {
+            Maths maths = default;
+
+            Accumulator sum = accumulator;
+            foreach (var x in source)
+            {
+                if (predicate(x))
+                    sum = maths.Add(sum, selector(x));
+            }
+
+            accumulator = sum;
+        }
     }
 
     abstract class SumGenericNullable<T, Accumulator, Maths>
@@ -118,6 +133,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         , Optimizations.ITailWhere<T?>
         , Optimizations.ITailSelect<T?>
         , Optimizations.ITailSelectMany<T?>
+        , Optimizations.ITailWhereSelect<T?>
         , Optimizations.IHeadStart<T?>
         where T : struct
         where Accumulator : struct
@@ -220,6 +236,19 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
 
             return ChainStatus.Flow;
+        }
+        void Optimizations.ITailWhereSelect<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
+        {
+            Maths maths = default;
+
+            Accumulator sum = accumulator;
+            foreach (var x in source)
+            {
+                if (predicate(x))
+                    sum = maths.Add(sum, selector(x));
+            }
+
+            accumulator = sum;
         }
     }
 

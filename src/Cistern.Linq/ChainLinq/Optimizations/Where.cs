@@ -9,6 +9,6 @@ namespace Cistern.Linq.ChainLinq.Optimizations
 
     interface ITailWhere<T>
     {
-        void Where(ReadOnlySpan<T> array, Func<T, bool> predicate);
+        void Where(ReadOnlySpan<T> source, Func<T, bool> predicate);
     }
 }
