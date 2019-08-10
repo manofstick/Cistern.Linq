@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
@@ -16,7 +17,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class ToArrayViaBuilder<T> : Consumer<T, T[]>
+    sealed class ToArrayViaBuilder<T>
+        : Consumer<T, T[]>
+        , Optimizations.IHeadStart<T>
+
     {
         List<T> builder;
 
@@ -32,6 +36,30 @@ namespace Cistern.Linq.ChainLinq.Consumer
         public override void ChainComplete()
         {
             Result = builder.ToArray();
+        }
+
+        void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+        {
+            foreach (var item in source)
+                builder.Add(item);
+        }
+
+        void Optimizations.IHeadStart<T>.Execute(List<T> source)
+        {
+            foreach (var item in source)
+                builder.Add(item);
+        }
+
+        void Optimizations.IHeadStart<T>.Execute(IList<T> source, int start, int length)
+        {
+            for (var i = start; i < start + length; ++i)
+                builder.Add(source[i]);
+        }
+
+        void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> source)
+        {
+            foreach (var item in source)
+                builder.Add(item);
         }
     }
 }
