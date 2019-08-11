@@ -7,9 +7,4 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         Consumable<U> MergeSelect<U>(ConsumableForMerging<T> consumable, Func<T, U> selector);
     }
 
-    interface ITailSelect<T>
-    {
-        void Select<S> (ReadOnlySpan<S> source, Func<S, T> selector);
-    }
-
 }

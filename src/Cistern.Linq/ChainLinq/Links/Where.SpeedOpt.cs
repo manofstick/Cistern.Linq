@@ -18,7 +18,7 @@ namespace Cistern.Linq.ChainLinq.Links
         {
             void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
-                if (next is Optimizations.ITailWhere<T> optimized)
+                if (next is Optimizations.ITailEnd<T> optimized)
                 {
                     optimized.Where(source, _predicate);
                 }

@@ -1,4 +1,12 @@
-﻿
+﻿/*
+system_jamesqo
+...
+Total time=20797
+
+cistern_jamesqo
+...
+Total time = 13882
+*/
 namespace Playground.jamesko.SystemLinq
 {
     using System;

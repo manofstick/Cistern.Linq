@@ -5,11 +5,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
 {
     abstract class SumGeneric<T, Accumulator, Maths>
         : Consumer<T, T>
-        , Optimizations.ITailWhere<T>
-        , Optimizations.ITailSelect<T>
-        , Optimizations.ITailSelectMany<T>
-        , Optimizations.ITailWhereSelect<T>
         , Optimizations.IHeadStart<T>
+        , Optimizations.ITailEnd<T>
         where T : struct
         where Accumulator : struct
         where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
@@ -72,7 +69,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        void Optimizations.ITailWhere<T>.Where(ReadOnlySpan<T> memory, Func<T, bool> predicate)
+        void Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> memory, Func<T, bool> predicate)
         {
             Maths maths = default;
 
@@ -86,7 +83,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        void Optimizations.ITailSelect<T>.Select<S>(ReadOnlySpan<S> memory, Func<S, T> selector)
+        void Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> memory, Func<S, T> selector)
         {
             Maths maths = default;
 
@@ -99,7 +96,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        ChainStatus Optimizations.ITailSelectMany<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
+        ChainStatus Optimizations.ITailEnd<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
         {
             Maths maths = default;
 
@@ -113,7 +110,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailWhereSelect<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
+        void Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
         {
             Maths maths = default;
 
@@ -130,11 +127,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
     abstract class SumGenericNullable<T, Accumulator, Maths>
         : Consumer<T?, T>
-        , Optimizations.ITailWhere<T?>
-        , Optimizations.ITailSelect<T?>
-        , Optimizations.ITailSelectMany<T?>
-        , Optimizations.ITailWhereSelect<T?>
         , Optimizations.IHeadStart<T?>
+        , Optimizations.ITailEnd<T?>
         where T : struct
         where Accumulator : struct
         where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
@@ -197,7 +191,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        void Optimizations.ITailWhere<T?>.Where(ReadOnlySpan<T?> memory, Func<T?, bool> predicate)
+        void Optimizations.ITailEnd<T?>.Where(ReadOnlySpan<T?> memory, Func<T?, bool> predicate)
         {
             Maths maths = default;
 
@@ -211,7 +205,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        void Optimizations.ITailSelect<T?>.Select<S>(ReadOnlySpan<S> memory, Func<S, T?> selector)
+        void Optimizations.ITailEnd<T?>.Select<S>(ReadOnlySpan<S> memory, Func<S, T?> selector)
         {
             Maths maths = default;
 
@@ -224,7 +218,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        ChainStatus Optimizations.ITailSelectMany<T?>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T?> resultSelector)
+        ChainStatus Optimizations.ITailEnd<T?>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T?> resultSelector)
         {
             Maths maths = default;
 
@@ -237,7 +231,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
             return ChainStatus.Flow;
         }
-        void Optimizations.ITailWhereSelect<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
+        void Optimizations.ITailEnd<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
         {
             Maths maths = default;
 
