@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq
 {
-    internal abstract partial class OrderedEnumerable<TElement> : IOrderedEnumerable<TElement>
+    internal abstract partial class OrderedEnumerable<TElement> : System.Linq.IOrderedEnumerable<TElement>
     {
         internal IEnumerable<TElement> _source;
 
@@ -67,7 +67,7 @@ namespace Cistern.Linq
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        IOrderedEnumerable<TElement> IOrderedEnumerable<TElement>.CreateOrderedEnumerable<TKey>(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending) =>
+        System.Linq.IOrderedEnumerable<TElement> System.Linq.IOrderedEnumerable<TElement>.CreateOrderedEnumerable<TKey>(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending) =>
             new OrderedEnumerable<TElement, TKey>(_source, keySelector, comparer, @descending, this);
 
         public TElement TryGetFirst(Func<TElement, bool> predicate, out bool found)

@@ -141,7 +141,7 @@ And Immortality.".Split(new[] { ' ', '\n', '\r', '—' }, StringSplitOptions.Rem
         [Fact]
         public void NullSource()
         {
-            IOrderedEnumerable<int> source = null;
+            System.Linq.IOrderedEnumerable<int> source = null;
             AssertExtensions.Throws<ArgumentNullException>("source", () => source.ThenByDescending(i => i));
         }
 
@@ -155,7 +155,7 @@ And Immortality.".Split(new[] { ' ', '\n', '\r', '—' }, StringSplitOptions.Rem
         [Fact]
         public void NullSourceComparer()
         {
-            IOrderedEnumerable<int> source = null;
+            System.Linq.IOrderedEnumerable<int> source = null;
             AssertExtensions.Throws<ArgumentNullException>("source", () => source.ThenByDescending(i => i, null));
         }
 
@@ -176,7 +176,7 @@ And Immortality.".Split(new[] { ' ', '\n', '\r', '—' }, StringSplitOptions.Rem
             IEnumerable<int> expected = NumberRangeGuaranteedNotCollectionType(0, Items);
 
             IEnumerable<int> unordered = expected.Select(i => i);
-            IOrderedEnumerable<int> ordered = unordered.OrderBy(_ => 0);
+            System.Linq.IOrderedEnumerable<int> ordered = unordered.OrderBy(_ => 0);
             switch (thenBys)
             {
                 case 1: ordered = ordered.ThenByDescending(i => -i); break;
@@ -197,7 +197,7 @@ And Immortality.".Split(new[] { ' ', '\n', '\r', '—' }, StringSplitOptions.Rem
             IEnumerable<int> expected = NumberRangeGuaranteedNotCollectionType(0, Items);
 
             IEnumerable<int> unordered = expected.Select(i => Items - i - 1);
-            IOrderedEnumerable<int> ordered = unordered.OrderBy(_ => 0);
+            System.Linq.IOrderedEnumerable<int> ordered = unordered.OrderBy(_ => 0);
             switch (thenBys)
             {
                 case 1: ordered = ordered.ThenByDescending(i => -i); break;
@@ -219,7 +219,7 @@ And Immortality.".Split(new[] { ' ', '\n', '\r', '—' }, StringSplitOptions.Rem
 
             int[] randomized = Enumerable.Range(0, Items).Select(i => r.Next()).ToArray();
 
-            IOrderedEnumerable<int> orderedEnumerable = randomized.OrderBy(_ => 0);
+            System.Linq.IOrderedEnumerable<int> orderedEnumerable = randomized.OrderBy(_ => 0);
             switch (thenBys)
             {
                 case 1: orderedEnumerable = orderedEnumerable.ThenByDescending(i => -i); break;

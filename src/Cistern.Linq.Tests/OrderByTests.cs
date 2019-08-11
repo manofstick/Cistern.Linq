@@ -342,7 +342,7 @@ namespace Cistern.Linq.Tests
         public void OrderByIsCovariantTestWithCast()
         {
             var ordered = Enumerable.Range(0, 100).Select(i => i.ToString()).OrderBy(i => i.Length);
-            IOrderedEnumerable<IComparable> covariantOrdered = ordered;
+            System.Linq.IOrderedEnumerable<IComparable> covariantOrdered = ordered;
             covariantOrdered = covariantOrdered.ThenBy(i => i);
             string[] expected =
                 Enumerable.Range(0, 100).Select(i => i.ToString()).OrderBy(i => i.Length).ThenBy(i => i).ToArray();
@@ -353,7 +353,7 @@ namespace Cistern.Linq.Tests
         public void OrderByIsCovariantTestWithAssignToArgument()
         {
             var ordered = Enumerable.Range(0, 100).Select(i => i.ToString()).OrderBy(i => i.Length);
-            IOrderedEnumerable<IComparable> covariantOrdered = ordered.ThenByDescending<IComparable, IComparable>(i => i);
+            System.Linq.IOrderedEnumerable<IComparable> covariantOrdered = ordered.ThenByDescending<IComparable, IComparable>(i => i);
             string[] expected = Enumerable.Range(0, 100)
                 .Select(i => i.ToString())
                 .OrderBy(i => i.Length)
@@ -362,22 +362,26 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, covariantOrdered);
         }
 
-        [Fact(Skip = "CISTERN TBD - Outside scope maybe?")]
+        [Fact]
         public void CanObtainFromCovariantIOrderedQueryable()
         {
-#if ORDEREDQUERYABLE
             // If an ordered queryable is cast covariantly and then has ThenBy() called on it,
             // it depends on IOrderedEnumerable<TElement> also being covariant to allow for
             // that ThenBy() to be processed within Linq-to-objects, as otherwise there is no
             // equivalent ThenBy() overload to translate the call to.
 
-            IOrderedQueryable<IComparable> ordered =
-                Enumerable.Range(0, 100).AsQueryable().Select(i => i.ToString()).OrderBy(i => i.Length);
-            ordered = ordered.ThenBy(i => i);
+            System.Linq.IOrderedQueryable<IComparable> ordered =
+                System.Linq.Queryable.OrderBy(
+                    System.Linq.Queryable.Select(
+                        System.Linq.Queryable.AsQueryable(
+                            Enumerable.Range(0, 100)
+                        ),
+                        i => i.ToString()),
+                    i => i.Length);
+            ordered = System.Linq.Queryable.ThenBy(ordered, i => i);
             string[] expected =
                 Enumerable.Range(0, 100).Select(i => i.ToString()).OrderBy(i => i.Length).ThenBy(i => i).ToArray();
             Assert.Equal(expected, ordered);
-#endif
         }
 
         [Fact]
@@ -387,7 +391,7 @@ namespace Cistern.Linq.Tests
             IEnumerable<int> expected = NumberRangeGuaranteedNotCollectionType(0, Items);
 
             IEnumerable<int> unordered = expected.Select(i => i);
-            IOrderedEnumerable<int> ordered = unordered.OrderBy(i => i);
+            System.Linq.IOrderedEnumerable<int> ordered = unordered.OrderBy(i => i);
 
             Assert.Equal(expected, ordered);
         }
@@ -399,7 +403,7 @@ namespace Cistern.Linq.Tests
             IEnumerable<int> expected = NumberRangeGuaranteedNotCollectionType(0, Items);
 
             IEnumerable<int> unordered = expected.Select(i => Items - i - 1);
-            IOrderedEnumerable<int> ordered = unordered.OrderBy(i => i);
+            System.Linq.IOrderedEnumerable<int> ordered = unordered.OrderBy(i => i);
 
             Assert.Equal(expected, ordered);
         }

@@ -136,7 +136,7 @@ namespace Cistern.Linq.Tests
                     {
                         return t.GetGenericArguments()[0];
                     }
-                    if (g == typeof(IOrderedEnumerable<>) || g == typeof(System.Linq.IOrderedQueryable<>))
+                    if (g == typeof(System.Linq.IOrderedEnumerable<>) || g == typeof(System.Linq.IOrderedQueryable<>))
                     {
                         return typeof(System.Linq.IOrderedQueryable);
                     }
