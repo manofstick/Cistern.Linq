@@ -12,11 +12,10 @@ namespace Cistern.Linq.Tests
 {
     public partial class ToLookupTests : EnumerableTests
     {
-        [Theory(Skip = "CISTERN TBD. Need to support test properly")]
+        [Theory]
         [MemberData(nameof(DebuggerAttributesValid_Data))]
         public void DebuggerAttributesValid<TKey, TElement>(ILookup<TKey, TElement> lookup)
         {
-#if DEBUGGER_ATTRIBUTES
             Assert.Equal($"Count = {lookup.Count}", DebuggerAttributes.ValidateDebuggerDisplayReferences(lookup));
 
             object proxyObject = DebuggerAttributes.GetProxyObject(lookup);
@@ -40,7 +39,6 @@ namespace Cistern.Linq.Tests
             });
 
             Assert.Same(groupings, groupingsProperty.GetValue(proxyObject)); // The result should be cached, as Lookup is immutable.
-#endif
         }
 
         public static IEnumerable<object[]> DebuggerAttributesValid_Data()

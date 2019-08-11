@@ -12,11 +12,10 @@ namespace Cistern.Linq.Tests
 {
     public partial class GroupByTests : EnumerableTests
     {
-        [Theory(Skip = "CISTERN TBD. Need to support test properly")]
+        [Theory]
         [MemberData(nameof(DebuggerAttributesValid_Data))]
         public void DebuggerAttributesValid<TKey, TElement>(IGrouping<TKey, TElement> grouping, string keyString)
         {
-#if DEBUGGER_ATTRIBUTES
             Assert.Equal($"Key = {keyString}", DebuggerAttributes.ValidateDebuggerDisplayReferences(grouping));
 
             object proxyObject = DebuggerAttributes.GetProxyObject(grouping);
@@ -39,7 +38,6 @@ namespace Cistern.Linq.Tests
             Assert.IsType<TElement[]>(values); // Arrays can be covariant / of assignment-compatible types
             Assert.Equal(grouping, values);
             Assert.Same(values, valuesProperty.GetValue(proxyObject)); // The result should be cached, as Grouping is immutable.
-#endif
         }
         public static IEnumerable<object[]> DebuggerAttributesValid_Data()
         {
