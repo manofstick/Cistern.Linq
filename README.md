@@ -1,6 +1,6 @@
 # Cistern.Linq - it's part of the plumbing!
 
-A 100% compatible, drop in replacement for Linq-to-Objects that is, mostly, faster!
+Aiming at a 100% compatible, drop in replacement for Linq-to-Objects that is, mostly, faster!
 
 In my spare time I have been working on this project for a number of years, originally as a replacement for
 [F#'s Seq](https://github.com/dotnet/fsharp/pull/2745), and more recently as a placement for
