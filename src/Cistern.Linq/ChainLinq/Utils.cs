@@ -87,10 +87,7 @@ namespace Cistern.Linq.ChainLinq
             }
             else if (source is List<TSource> list)
             {
-                if (list.Count == 0)
-                    return Consumables.Empty<TResult>.Instance;
-                else
-                    return new Consumables.SelectList<TSource, TResult>(list, selector);
+                return new Consumables.SelectList<TSource, TResult>(list, selector);
             }
             else
             {
