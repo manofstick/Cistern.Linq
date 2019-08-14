@@ -126,176 +126,26 @@ namespace Cistern.Linq
             }
         }
 
-        public static int Max<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
+        public static int Max<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector) => source.Select(selector).Max();
 
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
+        public static int? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, int?> selector) => source.Select(selector).Max();
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxInt<TSource>(selector));
-        }
+        public static long Max<TSource>(this IEnumerable<TSource> source, Func<TSource, long> selector) => source.Select(selector).Max();
 
-        public static int? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, int?> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
+        public static long? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, long?> selector) => source.Select(selector).Max();
 
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
+        public static float Max<TSource>(this IEnumerable<TSource> source, Func<TSource, float> selector) => source.Select(selector).Max();
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxNullableInt<TSource>(selector));
-        }
+        public static float? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, float?> selector) => source.Select(selector).Max();
 
-        public static long Max<TSource>(this IEnumerable<TSource> source, Func<TSource, long> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
+        public static double Max<TSource>(this IEnumerable<TSource> source, Func<TSource, double> selector) => source.Select(selector).Max();
 
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
+        public static double? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, double?> selector) => source.Select(selector).Max();
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxLong<TSource>(selector));
-        }
+        public static decimal Max<TSource>(this IEnumerable<TSource> source, Func<TSource, decimal> selector) => source.Select(selector).Max();
 
-        public static long? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, long?> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
+        public static decimal? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, decimal?> selector) => source.Select(selector).Max();
 
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
-
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxNullableLong<TSource>(selector));
-        }
-
-        public static float Max<TSource>(this IEnumerable<TSource> source, Func<TSource, float> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
-
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
-
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxFloat<TSource>(selector));
-        }
-
-        public static float? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, float?> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
-
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
-
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxNullableFloat<TSource>(selector));
-        }
-
-        public static double Max<TSource>(this IEnumerable<TSource> source, Func<TSource, double> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
-
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
-
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxDouble<TSource>(selector));
-        }
-
-        public static double? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, double?> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
-
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
-
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxNullableDouble<TSource>(selector));
-        }
-
-        public static decimal Max<TSource>(this IEnumerable<TSource> source, Func<TSource, decimal> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
-
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
-
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxDecimal<TSource>(selector));
-        }
-
-        public static decimal? Max<TSource>(this IEnumerable<TSource> source, Func<TSource, decimal?> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
-
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
-
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxNullableDecimal<TSource>(selector));
-        }
-
-        public static TResult Max<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
-
-            if (selector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
-            }
-
-            if (default(TResult) == null)
-            {
-                return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxRefType<TSource, TResult>(selector));
-            }
-            else
-            {
-                return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxValueType<TSource, TResult>(selector));
-            }
-        }
+        public static TResult Max<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector) => source.Select(selector).Max();
     }
 }

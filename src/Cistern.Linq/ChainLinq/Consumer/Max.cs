@@ -3,31 +3,231 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
-    sealed class MaxInt : Consumer<int, int>
+    abstract class MaxGeneric<T, Accumulator, Maths>
+        : Consumer<T, T>
+        , Optimizations.IHeadStart<T>
+        , Optimizations.ITailEnd<T>
+        where T : struct
+        where Accumulator : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
     {
-        bool _first;
+        protected bool _noData;
 
-        public MaxInt() : base(int.MinValue) =>
-            _first = true;
+        public MaxGeneric() : base(default(Maths).MaxInit) =>
+            _noData = true;
 
+        public override void ChainComplete()
+        {
+            if (_noData)
+            {
+                ThrowHelper.ThrowNoElementsException();
+            }
+        }
+
+        void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            _noData &= source.Length == 0;
+            foreach (var input in source)
+            {
+                if (maths.GreaterThan(input, result) || maths.IsNaN(result))
+                    result = input;
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.IHeadStart<T>.Execute(List<T> source)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            foreach (var t in source)
+            {
+                _noData = false;
+                if (maths.GreaterThan(t, result) || maths.IsNaN(result))
+                    result = t;
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.IHeadStart<T>.Execute(IList<T> source, int start, int length)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            _noData &= length == 0;
+            foreach (var t in source)
+            {
+                if (maths.GreaterThan(t, result) || maths.IsNaN(result))
+                    result = t;
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> source)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            foreach (var t in source)
+            {
+                _noData = false;
+                if (maths.GreaterThan(t, result) || maths.IsNaN(result))
+                    result = t;
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            _noData &= source.Length == 0;
+            foreach (var s in source)
+            {
+                var t = selector(s);
+                if (maths.GreaterThan(t, result) || maths.IsNaN(result))
+                    result = t;
+            }
+
+            Result = result;
+        }
+
+        ChainStatus Optimizations.ITailEnd<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            _noData &= span.Length == 0;
+            foreach (var s in span)
+            {
+                var t = resultSelector(source, s);
+                if (maths.GreaterThan(t, result) || maths.IsNaN(result))
+                    result = t;
+            }
+
+            Result = result;
+
+            return ChainStatus.Flow;
+        }
+
+        void Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            _noData &= source.Length == 0;
+            foreach (var input in source)
+            {
+                if (predicate(input) && (maths.GreaterThan(input, result) || maths.IsNaN(result)))
+                    result = input;
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            _noData &= source.Length == 0;
+            foreach (var s in source)
+            {
+                if (predicate(s))
+                {
+                    var t = selector(s);
+                    if (maths.GreaterThan(t, result) || maths.IsNaN(result))
+                        result = t;
+                }
+            }
+
+            Result = result;
+        }
+    }
+
+    sealed class MaxInt : MaxGeneric<int, int, Maths.OpsInt>
+    {
         public override ChainStatus ProcessNext(int input)
         {
-            _first = false;
+            _noData = false;
             if (input > Result)
             {
                 Result = input;
             }
             return ChainStatus.Flow;
         }
+    }
 
-        public override void ChainComplete()
+    sealed class MaxLong : MaxGeneric<long, long, Maths.OpsLong>
+    {
+        public override ChainStatus ProcessNext(long input)
         {
-            if (_first)
+            _noData = false;
+            if (input > Result)
             {
-                ThrowHelper.ThrowNoElementsException();
+                Result = input;
             }
+            return ChainStatus.Flow;
         }
     }
+
+    sealed class MaxDouble : MaxGeneric<double, double, Maths.OpsDouble>
+    {
+        public override ChainStatus ProcessNext(double input)
+        {
+            _noData = false;
+            if (input > Result || double.IsNaN(Result))
+            {
+                Result = input;
+            }
+            return ChainStatus.Flow;
+        }
+    }
+
+    sealed class MaxFloat : MaxGeneric<float, double, Maths.OpsFloat>
+    {
+        public override ChainStatus ProcessNext(float input)
+        {
+            _noData = false;
+            if (input > Result || float.IsNaN(Result))
+            {
+                Result = input;
+            }
+            return ChainStatus.Flow;
+        }
+    }
+
+    sealed class MaxDecimal : MaxGeneric<decimal, decimal, Maths.OpsDecimal>
+    {
+        public override ChainStatus ProcessNext(decimal input)
+        {
+            _noData = false;
+            if (input > Result)
+            {
+                Result = input;
+            }
+            return ChainStatus.Flow;
+        }
+    }
+
+
+
 
     sealed class MaxNullableInt : Consumer<int?, int?>
     {
@@ -41,32 +241,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
                 Result = input;
             }
             return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxLong : Consumer<long, long>
-    {
-        bool _first;
-
-        public MaxLong() : base(long.MinValue) =>
-            _first = true;
-
-        public override ChainStatus ProcessNext(long input)
-        {
-            _first = false;
-            if (input > Result)
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-
-        public override void ChainComplete()
-        {
-            if (_first)
-            {
-                ThrowHelper.ThrowNoElementsException();
-            }
         }
     }
 
@@ -85,31 +259,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MaxFloat : Consumer<float, float>
-    {
-        bool _first;
-
-        public MaxFloat() : base(float.NaN) =>
-            _first = true;
-
-        public override ChainStatus ProcessNext(float input)
-        {
-            _first = false;
-            if (input > Result || float.IsNaN(Result))
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-
-        public override void ChainComplete()
-        {
-            if (_first)
-            {
-                ThrowHelper.ThrowNoElementsException();
-            }
-        }
-    }
 
     sealed class MaxNullableFloat : Consumer<float?, float?>
     {
@@ -138,32 +287,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxDouble : Consumer<double, double>
-    {
-        bool _first;
-
-        public MaxDouble() : base(double.NaN) =>
-            _first = true;
-
-        public override ChainStatus ProcessNext(double input)
-        {
-            _first = false;
-            if (input > Result || double.IsNaN(Result))
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-
-        public override void ChainComplete()
-        {
-            if (_first)
-            {
-                ThrowHelper.ThrowNoElementsException();
-            }
         }
     }
 
@@ -197,31 +320,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MaxDecimal : Consumer<decimal, decimal>
-    {
-        bool _first;
-
-        public MaxDecimal() : base(decimal.MinValue) =>
-            _first = true;
-
-        public override ChainStatus ProcessNext(decimal input)
-        {
-            _first = false;
-            if (input > Result)
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-
-        public override void ChainComplete()
-        {
-            if (_first)
-            {
-                ThrowHelper.ThrowNoElementsException();
-            }
-        }
-    }
 
     sealed class MaxNullableDecimal : Consumer<decimal?, decimal?>
     {
@@ -291,348 +389,4 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
     }
-
-    sealed class MaxInt<TSource> : Consumer<TSource, int>
-    {
-        private readonly Func<TSource, int> _selector;
-
-        bool _first;
-
-        public MaxInt(Func<TSource, int> selector) : base(int.MinValue) =>
-            (_selector, _first) = (selector, true);
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            _first = false;
-            if (input > Result)
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-
-        public override void ChainComplete()
-        {
-            if (_first)
-            {
-                ThrowHelper.ThrowNoElementsException();
-            }
-        }
-    }
-
-    sealed class MaxNullableInt<TSource> : Consumer<TSource, int?>
-    {
-        private readonly Func<TSource, int?> _selector;
-
-        public MaxNullableInt(Func<TSource, int?> selector) : base(null) =>
-            _selector = selector;
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            var maybeValue = input.GetValueOrDefault();
-            if (!Result.HasValue || (input.HasValue && maybeValue > Result))
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxLong<TSource> : Consumer<TSource, long>
-    {
-        private readonly Func<TSource, long> _selector;
-
-        bool _first;
-
-        public MaxLong(Func<TSource, long> selector) : base(long.MinValue) =>
-            (_selector, _first) = (selector, true);
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            _first = false;
-            if (input > Result)
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-
-        public override void ChainComplete()
-        {
-            if (_first)
-            {
-                ThrowHelper.ThrowNoElementsException();
-            }
-        }
-    }
-
-    sealed class MaxNullableLong<TSource> : Consumer<TSource, long?>
-    {
-        private readonly Func<TSource, long?> _selector;
-
-        public MaxNullableLong(Func<TSource, long?> selector) : base(null) =>
-            _selector = selector;
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            var maybeValue = input.GetValueOrDefault();
-            if (!Result.HasValue || (input.HasValue && maybeValue > Result))
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxFloat<TSource> : Consumer<TSource, float>
-    {
-        private readonly Func<TSource, float> _selector;
-
-        bool _first;
-
-        public MaxFloat(Func<TSource, float> selector) : base(float.NaN) =>
-            (_selector, _first) = (selector, true);
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            _first = false;
-            if (input > Result || float.IsNaN(Result))
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-
-        public override void ChainComplete()
-        {
-            if (_first)
-            {
-                ThrowHelper.ThrowNoElementsException();
-            }
-        }
-    }
-
-    sealed class MaxNullableFloat<TSource> : Consumer<TSource, float?>
-    {
-        private readonly Func<TSource, float?> _selector;
-
-        public MaxNullableFloat(Func<TSource, float?> selector) : base(null) =>
-            _selector = selector;
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            if (!Result.HasValue)
-            {
-                if (!input.HasValue)
-                {
-                    return ChainStatus.Flow;
-                }
-
-                Result = float.NaN;
-            }
-
-            if (input.HasValue)
-            {
-                var value = input.GetValueOrDefault();
-                var result = Result.GetValueOrDefault();
-                if (value > result || double.IsNaN(result))
-                {
-                    Result = value;
-                }
-            }
-
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxDouble<TSource> : Consumer<TSource, double>
-    {
-        private readonly Func<TSource, double> _selector;
-
-        bool _first;
-
-        public MaxDouble(Func<TSource, double> selector) : base(double.NaN) =>
-            (_selector, _first) = (selector, true);
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            _first = false;
-            if (input > Result || double.IsNaN(Result))
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-
-        public override void ChainComplete()
-        {
-            if (_first)
-            {
-                ThrowHelper.ThrowNoElementsException();
-            }
-        }
-    }
-
-    sealed class MaxNullableDouble<TSource> : Consumer<TSource, double?>
-    {
-        private readonly Func<TSource, double?> _selector;
-
-        public MaxNullableDouble(Func<TSource, double?> selector) : base(null) =>
-            _selector = selector;
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            if (!Result.HasValue)
-            {
-                if (!input.HasValue)
-                {
-                    return ChainStatus.Flow;
-                }
-
-                Result = double.NaN;
-            }
-
-            if (input.HasValue)
-            {
-                var value = input.GetValueOrDefault();
-                var result = Result.GetValueOrDefault();
-                if (value > result || double.IsNaN(result))
-                {
-                    Result = value;
-                }
-            }
-
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxDecimal<TSource> : Consumer<TSource, decimal>
-    {
-        private readonly Func<TSource, decimal> _selector;
-
-        bool _first;
-
-        public MaxDecimal(Func<TSource, decimal> selector) : base(decimal.MinValue) =>
-            (_selector, _first) = (selector, true);
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            _first = false;
-            if (input > Result)
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-
-        public override void ChainComplete()
-        {
-            if (_first)
-            {
-                ThrowHelper.ThrowNoElementsException();
-            }
-        }
-    }
-
-    sealed class MaxNullableDecimal<TSource> : Consumer<TSource, decimal?>
-    {
-        private readonly Func<TSource, decimal?> _selector;
-
-        public MaxNullableDecimal(Func<TSource, decimal?> selector) : base(null) =>
-            _selector = selector;
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            if (!Result.HasValue)
-            {
-                Result = input;
-            }
-            else if (input.HasValue)
-            {
-                var value = input.GetValueOrDefault();
-                if (value > Result.GetValueOrDefault())
-                {
-                    Result = value;
-                }
-            }
-
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxValueType<TSource, T> : Consumer<TSource, T>
-    {
-        private readonly Func<TSource, T> _selector;
-
-        bool _first;
-
-        public MaxValueType(Func<TSource, T> selector) : base(default) =>
-            (_selector, _first) = (selector, true);
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            if (_first)
-            {
-                _first = false;
-                Result = input;
-            }
-            else if (Comparer<T>.Default.Compare(input, Result) > 0)
-            {
-                Result = input;
-            }
-
-            return ChainStatus.Flow;
-        }
-
-        public override void ChainComplete()
-        {
-            if (_first)
-            {
-                ThrowHelper.ThrowNoElementsException();
-            }
-        }
-    }
-
-    sealed class MaxRefType<TSource, T> : Consumer<TSource, T>
-    {
-        private readonly Func<TSource, T> _selector;
-
-        public MaxRefType(Func<TSource, T> selector) : base(default) =>
-            _selector = selector;
-
-        public override ChainStatus ProcessNext(TSource source)
-        {
-            var input = _selector(source);
-
-            if (Result == null || (input != null && Comparer<T>.Default.Compare(input, Result) > 0))
-            {
-                Result = input;
-            }
-
-            return ChainStatus.Flow;
-        }
-    }
-
 }
