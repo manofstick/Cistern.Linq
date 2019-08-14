@@ -81,82 +81,30 @@ namespace Cistern.Linq.ChainLinq.Consumables
             new Array<T, V>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
     }
 
-    sealed partial class SelectList<T, U> : ConsumableEnumerator<U>
+    sealed partial class SelectEnumerable<TEnumerable, TEnumerator, T, U> : ConsumableEnumerator<U>
+        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+        where TEnumerator : IEnumerator<T>
     {
-        internal List<T> Underlying { get; }
+        internal TEnumerable Underlying { get; }
         internal Func<T, U> Selector { get; }
 
-        List<T>.Enumerator _enumerator;
+        TEnumerator _enumerator;
 
-        public SelectList(List<T> list, Func<T, U> selector) =>
-            (Underlying, Selector) = (list, selector);
-
-        public override void Consume(Consumer<U> consumer) =>
-            ChainLinq.Consume.List.Invoke(Underlying, new Links.Select<T, U>(Selector), consumer);
-
-        internal override ConsumableEnumerator<U> Clone() =>
-            new SelectList<T, U>(Underlying, Selector);
-
-        public override bool MoveNext()
-        {
-            switch (_state)
-            {
-                case 1:
-                    _enumerator = Underlying.GetEnumerator();
-                    _state = 2;
-                    goto case 2;
-
-                case 2:
-                    if (!_enumerator.MoveNext())
-                    {
-                        _state = int.MaxValue;
-                        goto default;
-                    }
-                    _current = Selector(_enumerator.Current);
-                    return true;
-
-                default:
-                    _current = default(U);
-                    return false;
-            }
-        }
-
-        public override object TailLink => this;
-
-        public override Consumable<V1> ReplaceTailLink<Unknown, V1>(Link<Unknown, V1> newLink)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Consumable<U> AddTail(Link<U, U> transform) =>
-            new List<T, U>(Underlying, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
-
-        public override Consumable<V> AddTail<V>(Link<U, V> transform) =>
-            new List<T, V>(Underlying, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
-    }
-
-    sealed partial class SelectEnumerable<T, U> : ConsumableEnumerator<U>
-    {
-        internal IEnumerable<T> Underlying { get; }
-        internal Func<T, U> Selector { get; }
-
-        IEnumerator<T> _enumerator;
-
-        public SelectEnumerable(IEnumerable<T> enumerable, Func<T, U> selector) =>
+        public SelectEnumerable(TEnumerable enumerable, Func<T, U> selector) =>
             (Underlying, Selector) = (enumerable, selector);
 
         public override void Consume(Consumer<U> consumer) =>
-            ChainLinq.Consume.Enumerable.Invoke(Underlying, new Links.Select<T, U>(Selector), consumer);
+            ChainLinq.Consume.Enumerable.Invoke< TEnumerable, TEnumerator, T, U>(Underlying, new Links.Select<T, U>(Selector), consumer);
 
         internal override ConsumableEnumerator<U> Clone() =>
-            new SelectEnumerable<T, U>(Underlying, Selector);
+            new SelectEnumerable<TEnumerable, TEnumerator, T, U>(Underlying, Selector);
 
         public override void Dispose()
         {
             if (_enumerator != null)
             {
                 _enumerator.Dispose();
-                _enumerator = null;
+                _enumerator = default;
             }
             base.Dispose();
         }
@@ -184,7 +132,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
                     if (_enumerator != null)
                     {
                         _enumerator.Dispose();
-                        _enumerator = null;
+                        _enumerator = default;
                     }
                     return false;
             }
@@ -196,9 +144,9 @@ namespace Cistern.Linq.ChainLinq.Consumables
             throw new NotImplementedException();
 
         public override Consumable<U> AddTail(Link<U, U> transform) =>
-            new Enumerable<T, U>(Underlying, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
+            new Enumerable<TEnumerable, TEnumerator, T, U>(Underlying, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
 
         public override Consumable<V> AddTail<V>(Link<U, V> transform) =>
-            new Enumerable<T, V>(Underlying, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
+            new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
     }
 }

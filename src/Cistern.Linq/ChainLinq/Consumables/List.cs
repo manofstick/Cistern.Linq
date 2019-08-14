@@ -13,7 +13,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override Consumable<W> Create<W>(Link<T, W> first) => new List<T, W>(Underlying, first);
 
         public override IEnumerator<V> GetEnumerator() =>
-            ChainLinq.GetEnumerator.List.Get(this);
+            new ConsumerEnumerators.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, V>(new Optimizations.ListEnumerable<T>(Underlying), Link);
 
         public override void Consume(Consumer<V> consumer) =>
             ChainLinq.Consume.List.Invoke(Underlying, Link, consumer);

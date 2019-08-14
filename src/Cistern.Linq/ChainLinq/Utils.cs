@@ -32,7 +32,7 @@ namespace Cistern.Linq.ChainLinq
             */
             else
             {
-                return new Consumables.Enumerable<T, U>(e, transform);
+                return new Consumables.Enumerable<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>, T, U>(new Optimizations.IEnumerableEnumerable<T>(e), transform);
             }
         }
 
@@ -59,11 +59,11 @@ namespace Cistern.Linq.ChainLinq
                 if (list.Count == 0)
                     return Consumables.Empty<TSource>.Instance;
                 else
-                    return new Consumables.WhereList<TSource>(list, predicate);
+                    return new Consumables.WhereEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource>(new Optimizations.ListEnumerable<TSource>(list), predicate);
             }
             else
             {
-                return new Consumables.WhereEnumerable<TSource>(source, predicate);
+                return new Consumables.WhereEnumerable<Optimizations.IEnumerableEnumerable<TSource>, IEnumerator<TSource>, TSource>(new Optimizations.IEnumerableEnumerable<TSource>(source), predicate);
             }
         }
 
@@ -87,11 +87,11 @@ namespace Cistern.Linq.ChainLinq
             }
             else if (source is List<TSource> list)
             {
-                return new Consumables.SelectList<TSource, TResult>(list, selector);
+                return new Consumables.SelectEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource, TResult>(new Optimizations.ListEnumerable<TSource>(list), selector);
             }
             else
             {
-                return new Consumables.SelectEnumerable<TSource, TResult>(source, selector);
+                return new Consumables.SelectEnumerable<Optimizations.IEnumerableEnumerable<TSource>, IEnumerator<TSource>, TSource, TResult>(new Optimizations.IEnumerableEnumerable<TSource>(source), selector);
             }
         }
 
@@ -155,7 +155,7 @@ namespace Cistern.Linq.ChainLinq
             }
             else
             {
-                ChainLinq.Consume.Enumerable.Invoke(e, Links.Identity<T>.Instance, consumer);
+                ChainLinq.Consume.Enumerable.Invoke<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>, T, T>(new Optimizations.IEnumerableEnumerable<T>(e), Links.Identity<T>.Instance, consumer);
             }
 
             return consumer.Result;

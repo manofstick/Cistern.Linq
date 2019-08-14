@@ -53,86 +53,30 @@ namespace Cistern.Linq.ChainLinq.Consumables
             new Array<T, U>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
     }
 
-    sealed partial class WhereList<T> : ConsumableEnumerator<T>
+    sealed partial class WhereEnumerable<TEnumerable, TEnumerator, T> : ConsumableEnumerator<T>
+        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+        where TEnumerator : IEnumerator<T>
     {
-        internal List<T> Underlying { get; }
+        internal TEnumerable Underlying { get; }
         internal Func<T, bool> Predicate { get; }
 
-        List<T>.Enumerator _enumerator;
+        TEnumerator _enumerator;
 
-        public WhereList(List<T> list, Func<T, bool> predicate) =>
-            (Underlying, Predicate) = (list, predicate);
-
-        public override void Consume(Consumer<T> consumer) =>
-            ChainLinq.Consume.List.Invoke(Underlying, new Links.Where<T>(Predicate), consumer);
-
-        internal override ConsumableEnumerator<T> Clone() =>
-            new WhereList<T>(Underlying, Predicate);
-
-        public override bool MoveNext()
-        {
-            switch (_state)
-            {
-                case 1:
-                    _enumerator = Underlying.GetEnumerator();
-                    _state = 2;
-                    goto case 2;
-
-                case 2:
-                    while (_enumerator.MoveNext())
-                    {
-                        var item = _enumerator.Current;
-                        if (Predicate(item))
-                        {
-                            _current = item;
-                            return true;
-                        }
-                    }
-                    _state = int.MaxValue;
-                    goto default;
-
-                default:
-                    _current = default(T);
-                    return false;
-            }
-        }
-
-        public override object TailLink => this;
-
-        public override Consumable<V1> ReplaceTailLink<Unknown, V1>(Link<Unknown, V1> newLink)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Consumable<T> AddTail(Link<T, T> transform) =>
-            new List<T, T>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
-
-        public override Consumable<V> AddTail<V>(Link<T, V> transform) =>
-            new List<T, V>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
-    }
-
-    sealed partial class WhereEnumerable<T> : ConsumableEnumerator<T>
-    {
-        internal IEnumerable<T> Underlying { get; }
-        internal Func<T, bool> Predicate { get; }
-
-        IEnumerator<T> _enumerator;
-
-        public WhereEnumerable(IEnumerable<T> enumerable, Func<T, bool> predicate) =>
+        public WhereEnumerable(TEnumerable enumerable, Func<T, bool> predicate) =>
             (Underlying, Predicate) = (enumerable, predicate);
 
         public override void Consume(Consumer<T> consumer) =>
-            ChainLinq.Consume.Enumerable.Invoke(Underlying, new Links.Where<T>(Predicate), consumer);
+            ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, T>(Underlying, new Links.Where<T>(Predicate), consumer);
 
         internal override ConsumableEnumerator<T> Clone() =>
-            new WhereEnumerable<T>(Underlying, Predicate);
+            new WhereEnumerable<TEnumerable, TEnumerator, T>(Underlying, Predicate);
 
         public override void Dispose()
         {
             if (_enumerator != null)
             {
                 _enumerator.Dispose();
-                _enumerator = null;
+                _enumerator = default;
             }
             base.Dispose();
         }
@@ -164,7 +108,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
                     if (_enumerator != null)
                     {
                         _enumerator.Dispose();
-                        _enumerator = null;
+                        _enumerator = default;
                     }
                     return false;
             }
@@ -176,9 +120,9 @@ namespace Cistern.Linq.ChainLinq.Consumables
             throw new NotImplementedException();
 
         public override Consumable<T> AddTail(Link<T, T> transform) =>
-            new Enumerable<T, T>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
+            new Enumerable<TEnumerable, TEnumerator, T, T>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
         public override Consumable<V> AddTail<V>(Link<T, V> transform) =>
-            new Enumerable<T, V>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
+            new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
     }
 }
