@@ -3,17 +3,19 @@ using System.Diagnostics;
 
 namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 {
-    internal sealed class Enumerable<T, TResult> : ConsumerEnumerator<TResult>
+    internal sealed class Enumerable<T, TResult, TEnumerable, TEnumerator> : ConsumerEnumerator<TResult>
+        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+        where TEnumerator : IEnumerator<T>
     {
-        private IEnumerable<T> _enumerable;
-        private IEnumerator<T> _enumerator;
+        private TEnumerable _enumerable;
+        private TEnumerator _enumerator;
         private Chain<T> _chain = null;
         int _state;
 
         Link<T, TResult> _factory;
         internal override Chain StartOfChain => _chain;
 
-        public Enumerable(IEnumerable<T> enumerable, Link<T, TResult> factory) =>
+        public Enumerable(TEnumerable enumerable, Link<T, TResult> factory) =>
             (_enumerable, _factory, _state) = (enumerable, factory, Initialization);
 
         public override void ChainDispose()
@@ -21,9 +23,9 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
             if (_enumerator != null)
             {
                 _enumerator.Dispose();
-                _enumerator = null;
+                _enumerator = default;
             }
-            _enumerable = null;
+            _enumerable = default;
             _factory = null;
             _chain = null;
         }
@@ -41,7 +43,7 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     _chain = _chain ?? _factory.Compose(this);
                     _factory = null;
                     _enumerator = _enumerable.GetEnumerator();
-                    _enumerable = null;
+                    _enumerable = default;
                     _state = ReadEnumerator;
                     goto case ReadEnumerator;
 
@@ -49,7 +51,7 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     if (status.IsStopped() || !_enumerator.MoveNext())
                     {
                         _enumerator.Dispose();
-                        _enumerator = null;
+                        _enumerator = default;
                         _state = Finished;
                         goto case Finished;
                     }
