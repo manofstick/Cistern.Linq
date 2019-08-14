@@ -52,19 +52,6 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            void Optimizations.IHeadStart<T>.Execute(List<T> list)
-            {
-                foreach (var item in list)
-                {
-                    if (_predicate(item))
-                    {
-                        var state = Next(_selector(item));
-                        if (state.IsStopped())
-                            break;
-                    }
-                }
-            }
-
             void Optimizations.IHeadStart<T>.Execute(IList<T> list, int start, int count)
             {
                 for(var i=start; i < start+count; ++i)
@@ -79,9 +66,9 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> enumerable)
+            void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
             {
-                foreach (var item in enumerable)
+                foreach (var item in source)
                 {
                     if (_predicate(item))
                     {

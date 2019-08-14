@@ -49,7 +49,7 @@ namespace Cistern.Linq.ChainLinq.Consume
         {
             if (chain is Optimizations.IHeadStart<T> optimized)
             {
-                optimized.Execute(source);
+                optimized.Execute(new Optimizations.IEnumerableEnumerable<T>(source));
                 return ChainStatus.Flow;
             }
             else
@@ -89,7 +89,7 @@ namespace Cistern.Linq.ChainLinq.Consume
         {
             if (chain is Optimizations.IHeadStart<T> optimized)
             {
-                optimized.Execute(source);
+                optimized.Execute(new Optimizations.ListEnumerable<T>(source));
                 return ChainStatus.Flow;
             }
             else

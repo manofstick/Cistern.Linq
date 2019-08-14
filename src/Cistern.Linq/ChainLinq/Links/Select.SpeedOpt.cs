@@ -32,19 +32,9 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> e)
+            void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
             {
-                foreach (var item in e)
-                {
-                    var state = Next(_selector(item));
-                    if (state.IsStopped())
-                        break;
-                }
-            }
-
-            void Optimizations.IHeadStart<T>.Execute(List<T> list)
-            {
-                foreach (var item in list)
+                foreach (var item in source)
                 {
                     var state = Next(_selector(item));
                     if (state.IsStopped())

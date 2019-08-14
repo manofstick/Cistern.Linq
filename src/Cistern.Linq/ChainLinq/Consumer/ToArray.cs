@@ -44,19 +44,13 @@ namespace Cistern.Linq.ChainLinq.Consumer
                 builder.Add(item);
         }
 
-        void Optimizations.IHeadStart<T>.Execute(List<T> source)
-        {
-            foreach (var item in source)
-                builder.Add(item);
-        }
-
         void Optimizations.IHeadStart<T>.Execute(IList<T> source, int start, int length)
         {
             for (var i = start; i < start + length; ++i)
                 builder.Add(source[i]);
         }
 
-        void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> source)
+        void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
         {
             foreach (var item in source)
                 builder.Add(item);

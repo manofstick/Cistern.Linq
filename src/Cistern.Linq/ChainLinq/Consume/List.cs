@@ -4,6 +4,7 @@ namespace Cistern.Linq.ChainLinq.Consume
 {
     static class List
     {
+
         public static void Invoke<T, V>(List<T> list, Link<T, V> composition, Chain<V> consumer)
         {
             var chain = composition.Compose(consumer);
@@ -11,7 +12,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             {
                 if (chain is Optimizations.IHeadStart<T> optimized)
                 {
-                    optimized.Execute(list);
+                    optimized.Execute(new Optimizations.ListEnumerable<T>(list));
                 }
                 else
                 {

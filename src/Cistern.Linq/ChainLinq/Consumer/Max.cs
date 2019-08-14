@@ -40,22 +40,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = result;
         }
 
-        void Optimizations.IHeadStart<T>.Execute(List<T> source)
-        {
-            Maths maths = default;
-
-            var result = Result;
-
-            foreach (var t in source)
-            {
-                _noData = false;
-                if (maths.GreaterThan(t, result) || maths.IsNaN(result))
-                    result = t;
-            }
-
-            Result = result;
-        }
-
         void Optimizations.IHeadStart<T>.Execute(IList<T> source, int start, int length)
         {
             Maths maths = default;
@@ -72,7 +56,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = result;
         }
 
-        void Optimizations.IHeadStart<T>.Execute(IEnumerable<T> source)
+        void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
         {
             Maths maths = default;
 

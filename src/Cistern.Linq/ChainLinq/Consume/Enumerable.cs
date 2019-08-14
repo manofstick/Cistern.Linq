@@ -11,7 +11,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             {
                 if (chain is Optimizations.IHeadStart<T> optimized)
                 {
-                    optimized.Execute(e);
+                    optimized.Execute(new Optimizations.IEnumerableEnumerable<T>(e));
                 }
                 else
                 {
