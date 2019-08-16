@@ -70,6 +70,20 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
+        void Optimizations.ITailEnd<T>.Where<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source, Func<T, bool> predicate)
+        {
+            Maths maths = default;
+
+            Accumulator sum = accumulator;
+            foreach (var x in source)
+            {
+                if (predicate(x))
+                    sum = maths.Add(sum, x);
+            }
+
+            accumulator = sum;
+        }
+
         void Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> memory, Func<S, T> selector)
         {
             Maths maths = default;
@@ -171,6 +185,20 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
             Accumulator sum = accumulator;
             foreach (var x in memory)
+            {
+                if (predicate(x))
+                    sum = maths.Add(sum, x);
+            }
+
+            accumulator = sum;
+        }
+
+        void Optimizations.ITailEnd<T?>.Where<Enumerator>(Optimizations.ITypedEnumerable<T?, Enumerator> source, Func<T?, bool> predicate)
+        {
+            Maths maths = default;
+
+            Accumulator sum = accumulator;
+            foreach (var x in source)
             {
                 if (predicate(x))
                     sum = maths.Add(sum, x);

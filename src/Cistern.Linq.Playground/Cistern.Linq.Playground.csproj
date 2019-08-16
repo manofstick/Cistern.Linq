@@ -6,11 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cistern.Linq.Immutable\Cistern.Linq.Immutable.csproj" />
     <ProjectReference Include="..\Cistern.Linq\Cistern.Linq.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="jamesqo\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Collections.Immutable" Version="1.6.0-preview8.19405.3" />
   </ItemGroup>
 
 </Project>

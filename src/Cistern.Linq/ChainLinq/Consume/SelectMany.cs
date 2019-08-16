@@ -49,6 +49,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             // Only Select and SelectIndexed are use for the outer part of SelectMany to collect the IEnumerable
             ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, IEnumerable<T>> resultSelector) => throw new NotSupportedException();
             void Optimizations.ITailEnd<IEnumerable<T>>.Where(ReadOnlySpan<IEnumerable<T>> source, Func<IEnumerable<T>, bool> predicate) => throw new NotSupportedException();
+            public void Where<Enumerator>(Optimizations.ITypedEnumerable<IEnumerable<T>, Enumerator> source, Func<IEnumerable<T>, bool> predicate) where Enumerator : IEnumerator<IEnumerable<T>> => throw new NotSupportedException();
             void Optimizations.ITailEnd<IEnumerable<T>>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, IEnumerable<T>> selector) => throw new NotSupportedException();
         }
 

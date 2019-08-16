@@ -112,17 +112,41 @@ namespace Cistern.Linq.ChainLinq.Consumer
         {
             Maths maths = default;
 
+            var noData = _noData;
             var result = Result;
 
-            _noData &= source.Length == 0;
             foreach (var input in source)
             {
                 if (predicate(input) && (maths.GreaterThan(input, result) || maths.IsNaN(result)))
+                {
+                    noData = false;
                     result = input;
+                }
             }
 
+            _noData = noData;
             Result = result;
         }
+        void Optimizations.ITailEnd<T>.Where<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source, Func<T, bool> predicate)
+        {
+            Maths maths = default;
+
+            var noData = _noData;
+            var result = Result;
+
+            foreach (var input in source)
+            {
+                if (predicate(input) && (maths.GreaterThan(input, result) || maths.IsNaN(result)))
+                {
+                    noData = false;
+                    result = input;
+                }
+            }
+
+            _noData = noData;
+            Result = result;
+        }
+
 
         void Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
         {

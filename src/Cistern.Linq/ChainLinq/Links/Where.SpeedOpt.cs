@@ -52,13 +52,20 @@ namespace Cistern.Linq.ChainLinq.Links
 
             void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
             {
-                foreach (var item in source)
+                if (next is Optimizations.ITailEnd<T> optimized)
                 {
-                    if (_predicate(item))
+                    optimized.Where(source, _predicate);
+                }
+                else
+                {
+                    foreach (var item in source)
                     {
-                        var state = Next(item);
-                        if (state.IsStopped())
-                            break;
+                        if (_predicate(item))
+                        {
+                            var state = Next(item);
+                            if (state.IsStopped())
+                                break;
+                        }
                     }
                 }
             }

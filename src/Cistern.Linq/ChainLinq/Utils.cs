@@ -5,6 +5,34 @@ namespace Cistern.Linq.ChainLinq
 {
     static class Utils
     {
+        internal interface ITryFindSpecificType
+        {
+            string Namespace { get; }
+
+            Consumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
+                where Construct : IConstruct<T, U>;
+        }
+
+        private static object sync = new object();
+        private static (string Namespace, ITryFindSpecificType TryFind)[] finders = Array.Empty<(string, ITryFindSpecificType)>();
+
+        internal static void Register(ITryFindSpecificType finder)
+        {
+            lock(sync)
+            {
+                foreach(var item in finders)
+                {
+                    if (ReferenceEquals(item.TryFind, finder))
+                        return;
+                }
+
+                var newArray = new (string, ITryFindSpecificType)[finders.Length + 1];
+                finders.CopyTo(newArray, 0);
+                newArray[newArray.Length - 1] = (finder.Namespace, finder);
+                finders = newArray;
+            }
+        }
+
         internal interface IConstruct<T, U>
         {
             Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
@@ -17,15 +45,25 @@ namespace Cistern.Linq.ChainLinq
         {
             var ty = e.GetType();
             var enumerableNamespace = ty.Namespace;
+            var enumerableName = ty.Name;
             if (enumerableNamespace == "System.Collections.Generic")
             {
-                var enumerableName = ty.Name;
                 var firstChar = enumerableName[0];
                 if (firstChar == 'H' && e is HashSet<T> hs)    return construct.Create<Optimizations.HashSetEnumerable<T>,    HashSet<T>.Enumerator>   (new Optimizations.HashSetEnumerable<T>(hs));
                 if (firstChar == 'S' && e is Stack<T> s)       return construct.Create<Optimizations.StackEnumerable<T>,      Stack<T>.Enumerator>     (new Optimizations.StackEnumerable<T>(s));
                 if (firstChar == 'S' && e is SortedSet<T> ss)  return construct.Create<Optimizations.SortedSetEnumerable<T>,  SortedSet<T>.Enumerator> (new Optimizations.SortedSetEnumerable<T>(ss));
                 if (firstChar == 'L' && e is LinkedList<T> ll) return construct.Create<Optimizations.LinkedListEnumerable<T>, LinkedList<T>.Enumerator>(new Optimizations.LinkedListEnumerable<T>(ll));
                 if (firstChar == 'Q' && e is Queue<T> q)       return construct.Create<Optimizations.QueueEnumerable<T>,      Queue<T>.Enumerator>     (new Optimizations.QueueEnumerable<T>(q));
+            }
+
+            foreach (var search in finders)
+            {
+                if (enumerableNamespace.Equals(search.Namespace))
+                {
+                    var found = search.TryFind.TryCreateSpecific<T, U, Construct>(construct, e, enumerableName);
+                    if (found != null)
+                        return found;
+                }
             }
 
             return construct.Create<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>>(new Optimizations.IEnumerableEnumerable<T>(e));

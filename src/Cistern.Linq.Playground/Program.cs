@@ -7,6 +7,8 @@ namespace Playground
     {
         system_mikedn,
         cistern_mikedn,
+        system_mikedn_immutable,
+        cistern_mikedn_immutable,
         system_cartlinq,
         cistern_cartlinq,
         system_jamesqo,
@@ -15,7 +17,7 @@ namespace Playground
 
     class Program
     {
-        static Playthings plaything = Playthings.cistern_jamesqo;
+        static Playthings plaything = Playthings.cistern_mikedn_immutable;
 
         static void Main(string[] args)
         {
@@ -25,6 +27,9 @@ namespace Playground
             {
                 case Playthings.cistern_mikedn: mikedn.CisternLinq.Program.mikedn(); break;
                 case Playthings.system_mikedn: mikedn.SystemLinq.Program.mikedn(); break;
+
+                case Playthings.cistern_mikedn_immutable: mikedn_immutable.CisternLinq.Program.mikedn_immutable(); break;
+                case Playthings.system_mikedn_immutable: mikedn_immutable.SystemLinq.Program.mikedn_immutable(); break;
 
                 case Playthings.cistern_cartlinq: cartlinq.CisternLinq.Program.cartlinq(); break;
                 case Playthings.system_cartlinq: cartlinq.SystemLinq.Program.cartlinq(); break;
