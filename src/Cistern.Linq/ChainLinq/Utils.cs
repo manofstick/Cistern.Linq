@@ -5,6 +5,45 @@ namespace Cistern.Linq.ChainLinq
 {
     static class Utils
     {
+        internal interface IConstruct<T, U>
+        {
+            Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerator : IEnumerator<T>;
+        }
+
+        internal static Consumable<U> CreateConsumableSearch<T, U, Construct>(Construct construct, IEnumerable<T> e)
+            where Construct : IConstruct<T, U>
+        {
+            var ty = e.GetType();
+            var enumerableNamespace = ty.Namespace;
+            if (enumerableNamespace == "System.Collections.Generic")
+            {
+                var enumerableName = ty.Name;
+                var firstChar = enumerableName[0];
+                if (firstChar == 'H' && e is HashSet<T> hs)    return construct.Create<Optimizations.HashSetEnumerable<T>,    HashSet<T>.Enumerator>   (new Optimizations.HashSetEnumerable<T>(hs));
+                if (firstChar == 'S' && e is Stack<T> s)       return construct.Create<Optimizations.StackEnumerable<T>,      Stack<T>.Enumerator>     (new Optimizations.StackEnumerable<T>(s));
+                if (firstChar == 'S' && e is SortedSet<T> ss)  return construct.Create<Optimizations.SortedSetEnumerable<T>,  SortedSet<T>.Enumerator> (new Optimizations.SortedSetEnumerable<T>(ss));
+                if (firstChar == 'L' && e is LinkedList<T> ll) return construct.Create<Optimizations.LinkedListEnumerable<T>, LinkedList<T>.Enumerator>(new Optimizations.LinkedListEnumerable<T>(ll));
+                if (firstChar == 'Q' && e is Queue<T> q)       return construct.Create<Optimizations.QueueEnumerable<T>,      Queue<T>.Enumerator>     (new Optimizations.QueueEnumerable<T>(q));
+            }
+
+            return construct.Create<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>>(new Optimizations.IEnumerableEnumerable<T>(e));
+        }
+
+        struct Construct<T, U>
+            : IConstruct<T, U>
+        {
+            private readonly Link<T, U> link;
+
+            public Construct(Link<T, U> link) => this.link = link;
+
+            public Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerator : IEnumerator<T> => new Consumables.Enumerable<TEnumerable, TEnumerator, T, U>(e, link);
+        }
+
+
         internal static Consumable<U> CreateConsumable<T, U>(IEnumerable<T> e, Link<T, U> transform)
         {
             if (e is T[] array)
@@ -32,8 +71,20 @@ namespace Cistern.Linq.ChainLinq
             */
             else
             {
-                return new Consumables.Enumerable<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>, T, U>(new Optimizations.IEnumerableEnumerable<T>(e), transform);
+                return CreateConsumableSearch<T, U, Construct<T, U>>(new Construct<T, U>(transform), e);
             }
+        }
+
+        struct ConstructWhere<T>
+            : IConstruct<T, T>
+        {
+            private readonly Func<T, bool> predicate;
+
+            public ConstructWhere(Func<T, bool> predicate) => this.predicate = predicate;
+
+            public Consumable<T> Create<TEnumerable, TEnumerator>(TEnumerable e)
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerator : IEnumerator<T> => new Consumables.WhereEnumerable<TEnumerable, TEnumerator, T>(e, predicate);
         }
 
         internal static Consumable<TSource> Where<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
@@ -63,8 +114,20 @@ namespace Cistern.Linq.ChainLinq
             }
             else
             {
-                return new Consumables.WhereEnumerable<Optimizations.IEnumerableEnumerable<TSource>, IEnumerator<TSource>, TSource>(new Optimizations.IEnumerableEnumerable<TSource>(source), predicate);
+                return CreateConsumableSearch<TSource, TSource,ConstructWhere<TSource>>(new ConstructWhere<TSource>(predicate), source);
             }
+        }
+
+        struct ConstructSelect<T, U>
+            : IConstruct<T, U>
+        {
+            private readonly Func<T, U> selector;
+
+            public ConstructSelect(Func<T, U> selector) => this.selector = selector;
+
+            public Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerator : IEnumerator<T> => new Consumables.SelectEnumerable<TEnumerable, TEnumerator, T, U>(e, selector);
         }
 
         internal static Consumable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
@@ -91,7 +154,7 @@ namespace Cistern.Linq.ChainLinq
             }
             else
             {
-                return new Consumables.SelectEnumerable<Optimizations.IEnumerableEnumerable<TSource>, IEnumerator<TSource>, TSource, TResult>(new Optimizations.IEnumerableEnumerable<TSource>(source), selector);
+                return CreateConsumableSearch<TSource, TResult, ConstructSelect<TSource, TResult>>(new ConstructSelect<TSource, TResult>(selector), source);
             }
         }
 
