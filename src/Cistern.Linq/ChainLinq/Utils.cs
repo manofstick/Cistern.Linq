@@ -235,6 +235,8 @@ namespace Cistern.Linq.ChainLinq
             }
         }
 
+
+
         internal static Result Consume<T, Result>(IEnumerable<T> e, Consumer<T, Result> consumer)
         {
             if (e is Consumable<T> consumable)
@@ -256,7 +258,13 @@ namespace Cistern.Linq.ChainLinq
             }
             else
             {
-                ChainLinq.Consume.Enumerable.Invoke<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>, T, T>(new Optimizations.IEnumerableEnumerable<T>(e), Links.Identity<T>.Instance, consumer);
+                //ChainLinq.Consume.Enumerable.Invoke<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>, T, T>(new Optimizations.IEnumerableEnumerable<T>(e), Links.Identity<T>.Instance, consumer);
+
+                // TODO: Maybe add a search which doesn't construct anything if no specialization is found to avoid
+                // the construction of the outer Consumable object which isn't really required
+
+                var c = CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(Links.Identity<T>.Instance), e);
+                c.Consume(consumer);
             }
 
             return consumer.Result;
