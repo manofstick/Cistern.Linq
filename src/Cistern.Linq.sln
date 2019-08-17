@@ -5,15 +5,15 @@ VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cistern.Linq", "Cistern.Linq\Cistern.Linq.csproj", "{14E0556F-C9F4-4374-A300-C3E08DA728D9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cistern.Linq.Playground.CSharp", "Cistern.Linq.Playground\Cistern.Linq.Playground.CSharp.csproj", "{F502B342-98EE-4E7E-8298-52155A88614B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cistern.Linq.Tests", "Cistern.Linq.Tests\Cistern.Linq.Tests.csproj", "{93FC9D40-7ECB-49FE-9EA2-9B3B2B9D1AAE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cistern.Linq.Immutable", "Cistern.Linq.Immutable\Cistern.Linq.Immutable.csproj", "{3B493EDE-CA35-49B1-93A8-04A34989F029}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Cistern.Linq.FSharp", "Cistern.Linq.FSharp\Cistern.Linq.FSharp.fsproj", "{B0B857B0-608F-4A6C-A227-EC42728C12D4}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Cistern.Linq.FSharp", "Cistern.Linq.FSharp\Cistern.Linq.FSharp.fsproj", "{B0B857B0-608F-4A6C-A227-EC42728C12D4}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Cistern.Linq.Playground.FSharp", "Cistern.Linq.Playground.FSharp\Cistern.Linq.Playground.FSharp.fsproj", "{3F699B16-4037-4EAA-8E9A-88E521622721}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Cistern.Linq.Playground.FSharp", "Cistern.Linq.Playground.FSharp\Cistern.Linq.Playground.FSharp.fsproj", "{3F699B16-4037-4EAA-8E9A-88E521622721}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cistern.Linq.Playground.CSharp", "Cistern.Linq.Playground.CSharp\Cistern.Linq.Playground.CSharp.csproj", "{3839E702-D1E7-4713-8525-ADCF83E27543}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,10 +25,6 @@ Global
 		{14E0556F-C9F4-4374-A300-C3E08DA728D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14E0556F-C9F4-4374-A300-C3E08DA728D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14E0556F-C9F4-4374-A300-C3E08DA728D9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F502B342-98EE-4E7E-8298-52155A88614B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F502B342-98EE-4E7E-8298-52155A88614B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F502B342-98EE-4E7E-8298-52155A88614B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F502B342-98EE-4E7E-8298-52155A88614B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{93FC9D40-7ECB-49FE-9EA2-9B3B2B9D1AAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{93FC9D40-7ECB-49FE-9EA2-9B3B2B9D1AAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93FC9D40-7ECB-49FE-9EA2-9B3B2B9D1AAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -45,6 +41,10 @@ Global
 		{3F699B16-4037-4EAA-8E9A-88E521622721}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F699B16-4037-4EAA-8E9A-88E521622721}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F699B16-4037-4EAA-8E9A-88E521622721}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3839E702-D1E7-4713-8525-ADCF83E27543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3839E702-D1E7-4713-8525-ADCF83E27543}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3839E702-D1E7-4713-8525-ADCF83E27543}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3839E702-D1E7-4713-8525-ADCF83E27543}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
