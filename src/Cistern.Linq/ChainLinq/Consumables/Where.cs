@@ -14,7 +14,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             (Underlying, Predicate) = (array, predicate);
 
         public override void Consume(Consumer<T> consumer) =>
-            ChainLinq.Consume.ReadOnlyMemory.Invoke(Underlying, new Links.Where<T>(Predicate), consumer);
+            ChainLinq.Consume.ReadOnlySpan.Invoke(Underlying, new Links.Where<T>(Predicate), consumer);
 
         internal override ConsumableEnumerator<T> Clone() =>
             new WhereArray<T>(Underlying, Predicate);
@@ -65,8 +65,13 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public WhereEnumerable(TEnumerable enumerable, Func<T, bool> predicate) =>
             (Underlying, Predicate) = (enumerable, predicate);
 
-        public override void Consume(Consumer<T> consumer) =>
-            ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, T>(Underlying, new Links.Where<T>(Predicate), consumer);
+        public override void Consume(Consumer<T> consumer)
+        {
+            if (Underlying.TryGetSourceAsSpan(out var span))
+                ChainLinq.Consume.ReadOnlySpan.Invoke(span, new Links.Where<T>(Predicate), consumer);
+            else
+                ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, T>(Underlying, new Links.Where<T>(Predicate), consumer);
+        }
 
         internal override ConsumableEnumerator<T> Clone() =>
             new WhereEnumerable<TEnumerable, TEnumerator, T>(Underlying, Predicate);

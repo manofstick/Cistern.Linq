@@ -20,6 +20,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
             ChainLinq.GetEnumerator.Array.Get(Underlying, _start, _length, Link);
 
         public override void Consume(Consumer<V> consumer) =>
-            ChainLinq.Consume.ReadOnlyMemory.Invoke(new ReadOnlyMemory<T>(Underlying, _start, _length), Link, consumer);
+            ChainLinq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<T>(Underlying, _start, _length), Link, consumer);
     }
 }

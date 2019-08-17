@@ -243,7 +243,7 @@ namespace Cistern.Linq.ChainLinq
             }
             else if (e is T[] array)
             {
-                ChainLinq.Consume.ReadOnlyMemory.Invoke(array, Links.Identity<T>.Instance, consumer);
+                ChainLinq.Consume.ReadOnlySpan.Invoke(array, Links.Identity<T>.Instance, consumer);
             }
             else if (e is List<T> list)
             {

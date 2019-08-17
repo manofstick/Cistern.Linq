@@ -49,7 +49,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             (Underlying, Selector) = (array, selector);
 
         public override void Consume(Consumer<U> consumer) =>
-            ChainLinq.Consume.ReadOnlyMemory.Invoke(Underlying, new Links.Select<T, U>(Selector), consumer);
+            ChainLinq.Consume.ReadOnlySpan.Invoke(Underlying, new Links.Select<T, U>(Selector), consumer);
 
         internal override ConsumableEnumerator<U> Clone() =>
             new SelectArray<T, U>(Underlying, Selector);
@@ -93,8 +93,13 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public SelectEnumerable(TEnumerable enumerable, Func<T, U> selector) =>
             (Underlying, Selector) = (enumerable, selector);
 
-        public override void Consume(Consumer<U> consumer) =>
-            ChainLinq.Consume.Enumerable.Invoke< TEnumerable, TEnumerator, T, U>(Underlying, new Links.Select<T, U>(Selector), consumer);
+        public override void Consume(Consumer<U> consumer)
+        {
+            if (Underlying.TryGetSourceAsSpan(out var span))
+                ChainLinq.Consume.ReadOnlySpan.Invoke(span, new Links.Select<T, U>(Selector), consumer);
+            else
+                ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, U>(Underlying, new Links.Select<T, U>(Selector), consumer);
+        }
 
         internal override ConsumableEnumerator<U> Clone() =>
             new SelectEnumerable<TEnumerable, TEnumerator, T, U>(Underlying, Selector);

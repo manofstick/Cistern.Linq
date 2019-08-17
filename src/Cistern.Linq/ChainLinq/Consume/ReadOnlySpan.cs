@@ -2,16 +2,16 @@
 
 namespace Cistern.Linq.ChainLinq.Consume
 {
-    static class ReadOnlyMemory
+    static class ReadOnlySpan
     {
-        public static void Invoke<T, V>(ReadOnlyMemory<T> array, Link<T, V> composition, Chain<V> consumer)
+        public static void Invoke<T, V>(ReadOnlySpan<T> array, Link<T, V> composition, Chain<V> consumer)
         {
             var chain = composition.Compose(consumer);
             try
             {
                 if (chain is Optimizations.IHeadStart<T> optimized)
                 {
-                    optimized.Execute(array.Span);
+                    optimized.Execute(array);
                 }
                 else
                 {
@@ -25,9 +25,9 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        internal static void Pipeline<T>(ReadOnlyMemory<T> memory, Chain<T> chain)
+        internal static void Pipeline<T>(ReadOnlySpan<T> memory, Chain<T> chain)
         {
-            foreach (var item in memory.Span)
+            foreach (var item in memory)
             {
                 var state = chain.ProcessNext(item);
                 if (state.IsStopped())

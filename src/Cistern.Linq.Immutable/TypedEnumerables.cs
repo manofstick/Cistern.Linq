@@ -30,5 +30,10 @@ namespace Cistern.Linq.Immutable
         public System.Collections.Generic.IEnumerable<T> Source => source;
 
         public ImmutableArrayEnumerator<T> GetEnumerator() => new ImmutableArrayEnumerator<T>(source);
+        public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
+        {
+            readOnlySpan = source.AsSpan();
+            return true;
+        }
     }
 }

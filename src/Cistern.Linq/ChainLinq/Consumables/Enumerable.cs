@@ -16,7 +16,12 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override IEnumerator<V> GetEnumerator() =>
             new ConsumerEnumerators.Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Link);
 
-        public override void Consume(Consumer<V> consumer) =>
-            ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, V>(Underlying, Link, consumer);
+        public override void Consume(Consumer<V> consumer)
+        {
+            if (Underlying.TryGetSourceAsSpan(out var span))
+                ChainLinq.Consume.ReadOnlySpan.Invoke(span, Link, consumer);
+            else
+                ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, V>(Underlying, Link, consumer);
+        }
     }
 }

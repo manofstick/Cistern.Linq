@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Optimizations
 {
@@ -6,6 +7,7 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         where Enumerator : IEnumerator<T>
     {
         IEnumerable<T> Source { get; }
+        bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan);
         Enumerator GetEnumerator();
     }
 
@@ -17,6 +19,14 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public IEnumerable<T> Source { get; }
 
         public IEnumerator<T> GetEnumerator() => Source.GetEnumerator();
+
+        public ReadOnlySpan<T> TryGetSourceAsSpan() => null;
+
+        public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
+        {
+            readOnlySpan = default;
+            return false;
+        }
     }
 
     struct ListEnumerable<T>
@@ -28,6 +38,12 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public IEnumerable<T> Source => source;
 
         public List<T>.Enumerator GetEnumerator() => source.GetEnumerator();
+
+        public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
+        {
+            readOnlySpan = default;
+            return false;
+        }
     }
 
     struct LinkedListEnumerable<T>
@@ -39,6 +55,12 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public IEnumerable<T> Source => source;
 
         public LinkedList<T>.Enumerator GetEnumerator() => source.GetEnumerator();
+
+        public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
+        {
+            readOnlySpan = default;
+            return false;
+        }
     }
 
     struct HashSetEnumerable<T>
@@ -50,6 +72,11 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public IEnumerable<T> Source => source;
 
         public HashSet<T>.Enumerator GetEnumerator() => source.GetEnumerator();
+        public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
+        {
+            readOnlySpan = default;
+            return false;
+        }
     }
 
     struct StackEnumerable<T>
@@ -61,6 +88,11 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public IEnumerable<T> Source => source;
 
         public Stack<T>.Enumerator GetEnumerator() => source.GetEnumerator();
+        public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
+        {
+            readOnlySpan = default;
+            return false;
+        }
     }
 
     struct QueueEnumerable<T>
@@ -72,6 +104,11 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public IEnumerable<T> Source => source;
 
         public Queue<T>.Enumerator GetEnumerator() => source.GetEnumerator();
+        public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
+        {
+            readOnlySpan = default;
+            return false;
+        }
     }
 
     struct SortedSetEnumerable<T>
@@ -83,5 +120,10 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public IEnumerable<T> Source => source;
 
         public SortedSet<T>.Enumerator GetEnumerator() => source.GetEnumerator();
+        public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
+        {
+            readOnlySpan = default;
+            return false;
+        }
     }
 }
