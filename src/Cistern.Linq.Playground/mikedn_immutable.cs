@@ -1,14 +1,8 @@
 ﻿/* from https://github.com/dotnet/coreclr/issues/2385#issuecomment-166740124
 
-SystemLinq version:
-sum=4001980000000 time=4663.0147
-sum=4001980000000 time=27520.5946
-
-CisternLinq version:
-sum=4001980000000 time=4759.6308
-sum=4001980000000 time=8742.4558
-
 */
+
+using TheCollection = System.Collections.Immutable.ImmutableHashSet<double>;
 
 namespace Playground.mikedn_immutable.SystemLinq
 {
@@ -20,10 +14,10 @@ namespace Playground.mikedn_immutable.SystemLinq
     class Program
     {
         const int size = 2000;
-        const int iterations = 2000000;
-        static ImmutableArray<double> numbers;
+        const int iterations = 20000;
+        static TheCollection numbers;
 
-        static double ForLoopSum(ImmutableArray<double> numbers)
+        static double ForLoopSum(TheCollection numbers)
         {
             double sum = 0;
             foreach (var n in numbers)
@@ -46,7 +40,7 @@ namespace Playground.mikedn_immutable.SystemLinq
             Console.WriteLine("sum={0} time={1}", sum, sw.Elapsed.TotalMilliseconds);
         }
 
-        static double LinqSum(ImmutableArray<double> numbers)
+        static double LinqSum(TheCollection numbers)
         {
             return numbers.Where(n => n >= 5.0).Sum();
         }
@@ -65,7 +59,7 @@ namespace Playground.mikedn_immutable.SystemLinq
 
         public static void mikedn_immutable()
         {
-            numbers = Enumerable.Range(1, size).Select(i => (double)i).ToImmutableArray();
+            numbers = ImmutableHashSet.CreateRange(Enumerable.Range(1, size).Select(i => (double)i));
 
             ForLoopSum(numbers);
             LinqSum(numbers);
@@ -86,10 +80,10 @@ namespace Playground.mikedn_immutable.CisternLinq
     class Program
     {
         const int size = 2000;
-        const int iterations = 2000000;
-        static ImmutableArray<double> numbers;
+        const int iterations = 20000;
+        static TheCollection numbers;
 
-        static double ForLoopSum(ImmutableArray<double> numbers)
+        static double ForLoopSum(TheCollection numbers)
         {
             double sum = 0;
             foreach (var n in numbers)
@@ -112,7 +106,7 @@ namespace Playground.mikedn_immutable.CisternLinq
             Console.WriteLine("sum={0} time={1}", sum, sw.Elapsed.TotalMilliseconds);
         }
 
-        static double LinqSum(ImmutableArray<double> numbers)
+        static double LinqSum(TheCollection numbers)
         {
             return numbers.Where(n => n >= 5.0).Sum();
         }
@@ -133,7 +127,7 @@ namespace Playground.mikedn_immutable.CisternLinq
         {
             Cistern.Linq.Immutable.Register.RegisterSystemCollectionsImmutable();
 
-            numbers = Enumerable.Range(1, size).Select(i => (double)i).ToImmutableArray();
+            numbers = ImmutableHashSet.CreateRange(Enumerable.Range(1, size).Select(i => (double)i));
 
             ForLoopSum(numbers);
             LinqSum(numbers);
