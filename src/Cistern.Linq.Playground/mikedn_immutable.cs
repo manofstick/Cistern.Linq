@@ -2,7 +2,7 @@
 
 */
 
-using TheCollection = System.Collections.Immutable.ImmutableHashSet<double>;
+using TheCollection = Microsoft.FSharp.Collections.FSharpList<double>;
 
 namespace Playground.mikedn_immutable.SystemLinq
 {
@@ -14,7 +14,7 @@ namespace Playground.mikedn_immutable.SystemLinq
     class Program
     {
         const int size = 2000;
-        const int iterations = 20000;
+        const int iterations = 200000;
         static TheCollection numbers;
 
         static double ForLoopSum(TheCollection numbers)
@@ -59,7 +59,7 @@ namespace Playground.mikedn_immutable.SystemLinq
 
         public static void mikedn_immutable()
         {
-            numbers = ImmutableHashSet.CreateRange(Enumerable.Range(1, size).Select(i => (double)i));
+            numbers = Microsoft.FSharp.Collections.ListModule.OfSeq(Enumerable.Range(1, size).Select(i => (double)i));
 
             ForLoopSum(numbers);
             LinqSum(numbers);
@@ -80,7 +80,7 @@ namespace Playground.mikedn_immutable.CisternLinq
     class Program
     {
         const int size = 2000;
-        const int iterations = 20000;
+        const int iterations = 200000;
         static TheCollection numbers;
 
         static double ForLoopSum(TheCollection numbers)
@@ -125,9 +125,10 @@ namespace Playground.mikedn_immutable.CisternLinq
 
         public static void mikedn_immutable()
         {
-            Cistern.Linq.Immutable.Register.RegisterSystemCollectionsImmutable();
+            //Cistern.Linq.Immutable.Register.RegisterSystemCollectionsImmutable();
+            Cistern.Linq.FSharp.Register.RegisterFSharpCollections();
 
-            numbers = ImmutableHashSet.CreateRange(Enumerable.Range(1, size).Select(i => (double)i));
+            numbers = Microsoft.FSharp.Collections.ListModule.OfSeq(Enumerable.Range(1, size).Select(i => (double)i));
 
             ForLoopSum(numbers);
             LinqSum(numbers);

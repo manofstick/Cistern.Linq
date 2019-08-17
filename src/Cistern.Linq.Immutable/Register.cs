@@ -21,7 +21,10 @@ namespace Cistern.Linq.Immutable
                 if (name.Length <= 9)
                     return null;
 
-                var ninthChar = name[9];
+                var ninthChar = name[9]; //  here     |
+                                         //          \|/
+                                         // 'ImmutableXXXX'
+                                         //  0123456789012
                 if (ninthChar == 'A' && e is ImmutableArray<T> a)      return construct.Create<ImmutableArrayEnumerable<T>,     ImmutableArrayEnumerator<T>>     (new ImmutableArrayEnumerable<T>(a));
                 if (ninthChar == 'H' && e is ImmutableHashSet<T> hs)   return construct.Create<ImmutableHashSetEnumerable<T>,   ImmutableHashSet<T>.Enumerator>  (new ImmutableHashSetEnumerable<T>(hs));
                 if (ninthChar == 'L' && e is ImmutableList<T> l)       return construct.Create<ImmutableListEnumerable<T>,      ImmutableList<T>.Enumerator>     (new ImmutableListEnumerable<T>(l));

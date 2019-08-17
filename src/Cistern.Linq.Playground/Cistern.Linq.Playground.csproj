@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cistern.Linq.FSharp\Cistern.Linq.FSharp.fsproj" />
     <ProjectReference Include="..\Cistern.Linq.Immutable\Cistern.Linq.Immutable.csproj" />
     <ProjectReference Include="..\Cistern.Linq\Cistern.Linq.csproj" />
   </ItemGroup>
@@ -15,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="4.6.2" />
     <PackageReference Include="System.Collections.Immutable" Version="1.6.0-preview8.19405.3" />
   </ItemGroup>
 
