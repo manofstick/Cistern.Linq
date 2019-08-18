@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="TypedEnumerables.fs" />
     <Compile Include="Register.fs" />
+    <Compile Include="Consumables.fs" />
     <Compile Include="Linq.fs" />
   </ItemGroup>
 

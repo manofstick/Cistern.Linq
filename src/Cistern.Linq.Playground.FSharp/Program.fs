@@ -20,7 +20,7 @@ let main argv =
         let mutable total = 0.
         for i = 1 to iterations do
             total <- 
-                test
+                Linq.unfold (fun s -> if s <= listSize then Some (float s, s+1) else None) 0
                 |> Linq.map (fun x -> x * x)
                 |> Linq.sum
 
@@ -32,7 +32,7 @@ let main argv =
         let mutable total = 0.
         for i = 1 to iterations do
             total <- 
-                test
+                List.unfold (fun s -> if s <= listSize then Some (float s, s+1) else None) 0
                 |> List.map (fun x -> x * x)
                 |> List.sum
 
@@ -44,7 +44,7 @@ let main argv =
         let mutable total = 0.
         for i = 1 to iterations do
             total <- 
-                test
+                Seq.unfold (fun s -> if s <= listSize then Some (float s, s+1) else None) 0
                 |> Seq.map (fun x -> x * x)
                 |> Seq.sum
 
