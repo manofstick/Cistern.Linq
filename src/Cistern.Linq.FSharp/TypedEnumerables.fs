@@ -15,7 +15,7 @@ type ImmutableListEnumerator<'T> =
         member __.Dispose() = ()
 
     interface System.Collections.IEnumerator with
-        member this.MoveNext () = match this.state with | [] -> false | _ :: tl -> this.state <- tl; true
+        member this.MoveNext () = match this.state with | [] | _ :: [] -> this.state <- []; false | _ :: tl -> this.state <- tl; true
         member __.Current  = raise (System.NotImplementedException())
         member __.Reset () = raise (System.NotImplementedException())
 

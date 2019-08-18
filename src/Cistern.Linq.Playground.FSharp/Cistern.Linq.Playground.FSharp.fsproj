@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="burning_monk_euler.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

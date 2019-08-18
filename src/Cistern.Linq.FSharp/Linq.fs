@@ -8,7 +8,7 @@ open System.Runtime.CompilerServices
 
 type Linq =
     [<MethodImpl(MethodImplOptions.NoInlining)>]
-    static member unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Unfold(f, seed, Links.Identity.Instance) :> seq<'T>
+    static member unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Unfold (f, seed, Links.Identity.Instance) :> seq<'T>
 
     static member inline map (f:'a->'b) (e:seq<'a>)           = Enumerable.Select (e, f)
     static member inline mapi (f:int->'a->'b) (e:seq<'a>)     = Enumerable.Select (e, fun a idx -> f idx a)
@@ -18,6 +18,19 @@ type Linq =
     static member inline reduce (f:'a->'a->'a) (e:seq<'a>)    = Enumerable.Aggregate (e, fun a c -> f a c)
 
     static member inline fold (f:'s->'a->'s) seed (e:seq<'a>) = Enumerable.Aggregate (e, seed, fun a c -> f a c)
+
+    static member inline take count (e:seq<'a>)               = Enumerable.Take (e, count)
+    static member inline takeWhile (f:'a->bool) (e:seq<'a>)   = Enumerable.TakeWhile (e, f)
+    static member inline takeWhilei (f:int->'a->bool) (e:seq<'a>) = Enumerable.TakeWhile (e, fun a idx -> f idx a)
+
+    static member inline forall (f:'a->bool) (e:seq<'a>)      = Enumerable.All (e, fun x -> f x)
+    static member inline exists (f:'a->bool) (e:seq<'a>)      = Enumerable.Any (e, fun x -> f x)
+    static member inline head e                               = Enumerable.First e
+    static member inline isEmpty e                            = not (Enumerable.Any e)
+
+    static member inline collect (f:'T->seq<'U>) (e:seq<'T>) : seq<'U> = Enumerable.SelectMany (e, f)
+
+    static member inline length e                             = Enumerable.Count e
 
     static member inline sum (e:seq<float>)                   = Enumerable.Sum e
     static member inline sum (e:seq<float32>)                 = Enumerable.Sum e
