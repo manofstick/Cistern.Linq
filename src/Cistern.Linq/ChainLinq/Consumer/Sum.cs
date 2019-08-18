@@ -30,19 +30,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        void Optimizations.IHeadStart<T>.Execute(IList<T> source, int start, int length)
-        {
-            Maths maths = default;
-
-            Accumulator sum = accumulator;
-            for(var i=start; i < start+length; ++i)
-            {
-                sum = maths.Add(sum, source[i]);
-            }
-
-            accumulator = sum;
-        }
-
         void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
         {
             Maths maths = default;
@@ -148,19 +135,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
             foreach (var x in source)
             {
                 sum = maths.Add(sum, x);
-            }
-
-            accumulator = sum;
-        }
-
-        void Optimizations.IHeadStart<T?>.Execute(IList<T?> source, int start, int length)
-        {
-            Maths maths = default;
-
-            Accumulator sum = accumulator;
-            for(var i=start; i < start+length; ++i)
-            {
-                sum = maths.Add(sum, source[i]);
             }
 
             accumulator = sum;

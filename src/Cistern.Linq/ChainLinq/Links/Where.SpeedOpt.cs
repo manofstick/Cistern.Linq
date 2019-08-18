@@ -36,20 +36,6 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            void Optimizations.IHeadStart<T>.Execute(IList<T> list, int start, int count)
-            {
-                for(var i=start; i < start+count; ++i)
-                {
-                    var item = list[i];
-                    if (_predicate(item))
-                    {
-                        var state = Next(item);
-                        if (state.IsStopped())
-                            break;
-                    }
-                }
-            }
-
             void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
             {
                 if (next is Optimizations.ITailEnd<T> optimized)

@@ -31,15 +31,6 @@ namespace Cistern.Linq.ChainLinq.Links
                     Next((item, collectionSelector(item)));
             }
 
-            void Optimizations.IHeadStart<T>.Execute(IList<T> source, int start, int count)
-            {
-                for (var i = start; i < start + count; ++i)
-                {
-                    var item = source[i];
-                    Next((item, collectionSelector(item)));
-                }
-            }
-
             void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
             {
                 foreach (var item in source)

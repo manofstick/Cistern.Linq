@@ -41,16 +41,6 @@ namespace Cistern.Linq.ChainLinq.Links
                         break;
                 }
             }
-
-            void Optimizations.IHeadStart<T>.Execute(IList<T> list, int start, int count)
-            {
-                for(var i=start; i < start+count; ++i)
-                {
-                    var state = Next(_selector(list[i]));
-                    if (state.IsStopped())
-                        break;
-                }
-            }
         }
     }
 
