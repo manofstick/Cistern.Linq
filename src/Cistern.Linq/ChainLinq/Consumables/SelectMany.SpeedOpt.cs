@@ -2,11 +2,12 @@
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed class SelectManyCount<T> : Consumer<IEnumerable<T>, int>
+    sealed class SelectManyCount<Enumerable, T> : Consumer<Enumerable, int>
+        where Enumerable : IEnumerable<T>
     {
         public SelectManyCount() : base(0) { }
 
-        public override ChainStatus ProcessNext(IEnumerable<T> input)
+        public override ChainStatus ProcessNext(Enumerable input)
         {
             checked
             {
@@ -16,7 +17,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         }
     }
 
-    sealed partial class SelectMany<T, V>
+    sealed partial class SelectMany<Enumerable, T, V>
         : Optimizations.ICountOnConsumable
     {
         public int GetCount(bool onlyIfCheap)
@@ -28,7 +29,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
             if (Link is Optimizations.ICountOnConsumableLink countLink)
             {
-                var selectManyCount = new SelectManyCount<T>();
+                var selectManyCount = new SelectManyCount<Enumerable, T>();
                 _selectMany.Consume(selectManyCount);
                 var underlyingCount = selectManyCount.Result;
 

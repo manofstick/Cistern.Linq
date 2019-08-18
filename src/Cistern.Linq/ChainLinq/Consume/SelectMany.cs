@@ -23,9 +23,10 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        sealed class SelectManyOuterConsumer<T>
-            : Consumer<IEnumerable<T>, ChainEnd>
+        sealed class SelectManyOuterConsumer<Enumerable, T>
+            : Consumer<Enumerable, ChainEnd>
             , Optimizations.ITailEnd<IEnumerable<T>>
+            where Enumerable : IEnumerable<T>
         {
             private readonly Chain<T> _chainT;
             private UnknownEnumerable.ChainConsumer<T> _inner;
@@ -33,7 +34,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             public SelectManyOuterConsumer(Chain<T> chainT) : base(default) =>
                 _chainT = chainT;
 
-            public override ChainStatus ProcessNext(IEnumerable<T> input) =>
+            public override ChainStatus ProcessNext(Enumerable input) =>
                 UnknownEnumerable.Consume(input, _chainT, ref _inner);
 
             void Optimizations.ITailEnd<IEnumerable<T>>.Select<S>(ReadOnlySpan<S> source, Func<S, IEnumerable<T>> selector)
@@ -118,12 +119,13 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        public static void Invoke<T, V>(Consumable<IEnumerable<T>> e, Link<T, V> composition, Chain<V> consumer)
+        public static void Invoke<Enumerable, T, V>(Consumable<Enumerable> e, Link<T, V> composition, Chain<V> consumer)
+            where Enumerable : IEnumerable<T>
         {
             var chain = composition.Compose(consumer);
             try
             {
-                e.Consume(new SelectManyOuterConsumer<T>(chain));
+                e.Consume(new SelectManyOuterConsumer<Enumerable, T>(chain));
                 chain.ChainComplete();
             }
             finally

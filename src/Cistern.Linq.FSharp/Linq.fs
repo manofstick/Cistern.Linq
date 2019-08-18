@@ -28,7 +28,15 @@ type Linq =
     static member inline head e                               = Enumerable.First e
     static member inline isEmpty e                            = not (Enumerable.Any e)
 
-    static member inline collect (f:'T->seq<'U>) (e:seq<'T>) : seq<'U> = Enumerable.SelectMany (e, f)
+    static member collect (f:'T->#seq<'U>) (e:seq<'T>) : seq<'U> =
+        if isNull e then
+            ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
+
+        if isNull e then
+            ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
+
+        let selectMany = ChainLinq.Utils.Select (e, fun x -> f x);
+        ChainLinq.Consumables.SelectMany<_,_,_> (selectMany, ChainLinq.Links.Identity<_>.Instance) :> seq<'U>
 
     static member inline length e                             = Enumerable.Count e
 

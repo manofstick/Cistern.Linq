@@ -22,7 +22,7 @@ namespace Cistern.Linq
             }
 
             var selectMany = ChainLinq.Utils.Select(source, selector);
-            return new ChainLinq.Consumables.SelectMany<TResult, TResult>(selectMany, ChainLinq.Links.Identity<TResult>.Instance);
+            return new ChainLinq.Consumables.SelectMany<IEnumerable<TResult>, TResult, TResult>(selectMany, ChainLinq.Links.Identity<TResult>.Instance);
         }
 
         public static IEnumerable<TResult> SelectMany<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, int, IEnumerable<TResult>> selector)
@@ -37,7 +37,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
             }
             var selectMany = ChainLinq.Utils.PushTUTransform(source, new ChainLinq.Links.SelectIndexed<TSource, IEnumerable<TResult>>(selector));
-            return new ChainLinq.Consumables.SelectMany<TResult, TResult>(selectMany, ChainLinq.Links.Identity<TResult>.Instance);
+            return new ChainLinq.Consumables.SelectMany<IEnumerable<TResult>, TResult, TResult>(selectMany, ChainLinq.Links.Identity<TResult>.Instance);
         }
 
         public static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(this IEnumerable<TSource> source, Func<TSource, int, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)

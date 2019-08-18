@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 {
-    sealed class SelectMany<T, V> : ConsumerEnumerator<V>
+    sealed class SelectMany<Enumerable, T, V> : ConsumerEnumerator<V>
+        where Enumerable : IEnumerable<T>
     {
         /* Implementation of:
 
@@ -39,14 +40,14 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 
         int _state;
 
-        Consumable<IEnumerable<T>> _consumable;
+        Consumable<Enumerable> _consumable;
         Link<T, V> _link;
         Chain<T> _chain;
-        IEnumerator<IEnumerable<T>> _outer;
+        IEnumerator<Enumerable> _outer;
         IEnumerator<T> _inner;
         ChainStatus _status;
 
-        public SelectMany(Consumable<IEnumerable<T>> selectMany, Link<T, V> link)
+        public SelectMany(Consumable<Enumerable> selectMany, Link<T, V> link)
         {
             _consumable = selectMany;
             _link = link;

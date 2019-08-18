@@ -5,9 +5,10 @@ namespace Cistern.Linq.ChainLinq.GetEnumerator
 {
     static class SelectMany
     {
-        public static IEnumerator<V> Get<T, V>(Consumable<IEnumerable<T>> selectMany, Link<T, V> link)
+        public static IEnumerator<V> Get<Enumerable, T, V>(Consumable<Enumerable> selectMany, Link<T, V> link)
+            where Enumerable : IEnumerable<T>
         {
-            return new ConsumerEnumerators.SelectMany<T, V>(selectMany, link);
+            return new ConsumerEnumerators.SelectMany<Enumerable, T, V>(selectMany, link);
         }
 
         public static IEnumerator<V> Get<TSource, TCollection, T, V>(Consumable<(TSource, IEnumerable<TCollection>)> selectMany, Func<TSource, TCollection, T> resultSelector, Link<T, V> link)

@@ -3,15 +3,16 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed partial class SelectMany<T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+    sealed partial class SelectMany<Enumerable, T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+        where Enumerable : IEnumerable<T>
     {
-        private readonly Consumable<IEnumerable<T>> _selectMany;
+        private readonly Consumable<Enumerable> _selectMany;
 
-        public SelectMany(Consumable<IEnumerable<T>> enumerable, Link<T, V> first) : base(first) =>
+        public SelectMany(Consumable<Enumerable> enumerable, Link<T, V> first) : base(first) =>
             _selectMany = enumerable;
 
-        public override Consumable<V> Create   (Link<T, V> first) => new SelectMany<T, V>(_selectMany, first);
-        public override Consumable<W> Create<W>(Link<T, W> first) => new SelectMany<T, W>(_selectMany, first);
+        public override Consumable<V> Create   (Link<T, V> first) => new SelectMany<Enumerable, T, V>(_selectMany, first);
+        public override Consumable<W> Create<W>(Link<T, W> first) => new SelectMany<Enumerable, T, W>(_selectMany, first);
 
         public override IEnumerator<V> GetEnumerator() =>
             ChainLinq.GetEnumerator.SelectMany.Get(_selectMany, Link);

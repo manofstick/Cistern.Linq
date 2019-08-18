@@ -51,7 +51,7 @@ let main argv =
                 let upperBound = int64(Math.Sqrt(double(n)))
                 [1L..upperBound] 
                 |> Linq.filter (fun x -> n % x = 0L) 
-                |> Linq.collect (fun x -> upcast [x; n/x])
+                |> Linq.collect (fun x -> [x; n/x])
  
             let naturalNumbers = Linq.unfold (fun x -> Some(x, x+1L)) 1L
  
