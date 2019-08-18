@@ -145,10 +145,7 @@ namespace Cistern.Linq.ChainLinq
             }
             else if (source is List<TSource> list)
             {
-                if (list.Count == 0)
-                    return Consumables.Empty<TSource>.Instance;
-                else
-                    return new Consumables.WhereEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource>(new Optimizations.ListEnumerable<TSource>(list), predicate);
+                return new Consumables.WhereEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource>(new Optimizations.ListEnumerable<TSource>(list), predicate);
             }
             else
             {
