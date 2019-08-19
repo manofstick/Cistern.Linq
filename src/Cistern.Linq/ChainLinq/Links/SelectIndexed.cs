@@ -3,7 +3,9 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Links
 {
-    sealed partial class SelectIndexed<T, U> : Link<T, U>
+    sealed partial class SelectIndexed<T, U>
+        : Link<T, U>
+        , Optimizations.IMergeWhere<U>
     {
         readonly int _startIndex;
         readonly Func<T, int, U> _selector;
@@ -12,6 +14,8 @@ namespace Cistern.Linq.ChainLinq.Links
             (_selector, _startIndex) = (selector, startIndex);
 
         public SelectIndexed(Func<T, int, U> selector) : this(selector, 0) { }
+        public Consumable<U> MergeWhere(ConsumableForMerging<U> consumable, Func<U, bool> second) =>
+            consumable.ReplaceTailLink(new SelectIndexedWhere<T, U>(_selector, second));
 
         public override Chain<T> Compose(Chain<U> activity) =>
             new Activity(_selector, _startIndex, activity);
