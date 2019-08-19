@@ -1,4 +1,6 @@
-﻿namespace Playground.matthewwatson.SystemLinq
+﻿// from https://stackoverflow.com/a/14894589
+
+namespace Playground.matthewwatson.SystemLinq
 {
     using System;
     using System.Diagnostics;
@@ -46,7 +48,7 @@
 
                 for (int outer = 0; outer < COUNT; ++outer)
                 {
-                    matchIndex = a.Select((r, i) => new { value = r, index = i })
+                    matchIndex = a.Select((r, i) => (value: r, index: i))
                                  .Where(t => t.value == matchString)
                                  .Select(s => s.index).First();
                 }
@@ -110,7 +112,7 @@ namespace Playground.matthewwatson.CisternLinq
 
                 for (int outer = 0; outer < COUNT; ++outer)
                 {
-                    matchIndex = a.Select((r, i) => new { value = r, index = i })
+                    matchIndex = a.Select((r, i) => (value: r, index: i))
                                  .Where(t => t.value == matchString)
                                  .Select(s => s.index).First();
                 }
