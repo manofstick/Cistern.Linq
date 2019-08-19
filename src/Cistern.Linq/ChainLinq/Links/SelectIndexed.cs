@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Links
 {
@@ -15,7 +16,9 @@ namespace Cistern.Linq.ChainLinq.Links
         public override Chain<T> Compose(Chain<U> activity) =>
             new Activity(_selector, _startIndex, activity);
 
-        sealed class Activity : Activity<T, U>
+        sealed class Activity
+            : Activity<T, U>
+            , Optimizations.IHeadStart<T>
         {
             private readonly Func<T, int, U> _selector;
 
@@ -30,14 +33,38 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
+            public void Execute(ReadOnlySpan<T> source)
+            {
+                checked
+                {
+                    foreach (var input in source)
+                    {
+                        var status = Next(_selector(input, ++_index));
+                        if (status.IsStopped())
+                            break;
+                    }
+                }
+            }
+
+            public void Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source) where Enumerator : IEnumerator<T>
+            {
+                checked
+                {
+                    foreach (var input in source)
+                    {
+                        var status = Next(_selector(input, ++_index));
+                        if (status.IsStopped())
+                            break;
+                    }
+                }
+            }
+
             public override ChainStatus ProcessNext(T input)
             {
                 checked
                 {
-                    _index++;
+                    return Next(_selector(input, ++_index));
                 }
-
-                return Next(_selector(input, _index));
             }
         }
     }

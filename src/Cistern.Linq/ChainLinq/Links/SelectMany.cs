@@ -28,13 +28,21 @@ namespace Cistern.Linq.ChainLinq.Links
             void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
                 foreach (var item in source)
-                    Next((item, collectionSelector(item)));
+                {
+                    var status = Next((item, collectionSelector(item)));
+                    if (status.IsStopped())
+                        break;
+                }
             }
 
             void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
             {
                 foreach (var item in source)
-                    Next((item, collectionSelector(item)));
+                {
+                    var status = Next((item, collectionSelector(item)));
+                    if (status.IsStopped())
+                        break;
+                }
             }
         }
     }
