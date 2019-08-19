@@ -26,7 +26,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxNullableInt());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxGenericNullable<int, int, Maths.OpsInt>());
         }
 
         public static long Max(this IEnumerable<long> source)
@@ -46,7 +46,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxNullableLong());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxGenericNullable<long, long, Maths.OpsLong>());
         }
 
         public static double Max(this IEnumerable<double> source)
@@ -66,7 +66,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxNullableDouble());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxGenericNullable<double, double, Maths.OpsDouble>());
         }
 
         public static float Max(this IEnumerable<float> source)
@@ -86,7 +86,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxNullableFloat());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxGenericNullable<float, double, Maths.OpsFloat>());
         }
 
         public static decimal Max(this IEnumerable<decimal> source)
@@ -106,7 +106,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxNullableDecimal());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MaxGenericNullable<decimal, decimal, Maths.OpsDecimal>());
         }
 
         public static TSource Max<TSource>(this IEnumerable<TSource> source)

@@ -157,15 +157,106 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    abstract class MaxGenericNullable<T, Accumulator, Maths>
+    sealed class MaxGenericNullable<T, Accumulator, Maths>
         : Consumer<T?, T?>
-        //, Optimizations.IHeadStart<T?>
+        , Optimizations.IHeadStart<T?>
         , Optimizations.ITailEnd<T?>
         where T : struct
         where Accumulator : struct
         where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
     {
         public MaxGenericNullable() : base(null) { }
+
+        public override ChainStatus ProcessNext(T? input)
+        {
+            Maths maths = default;
+
+            if (!Result.HasValue)
+            {
+                if (!input.HasValue)
+                {
+                    return ChainStatus.Flow;
+                }
+
+                Result = maths.MaxInit;
+            }
+
+            if (input.HasValue)
+            {
+                var i = input.GetValueOrDefault();
+                var r = Result.GetValueOrDefault();
+                if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                {
+                    Result = i;
+                }
+            }
+
+            return ChainStatus.Flow;
+        }
+
+        void Optimizations.IHeadStart<T?>.Execute(ReadOnlySpan<T?> source)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            foreach (var input in source)
+            {
+                if (!result.HasValue)
+                {
+                    if (!input.HasValue)
+                    {
+                        continue;
+                    }
+
+                    result = maths.MaxInit;
+                }
+
+                if (input.HasValue)
+                {
+                    var i = input.GetValueOrDefault();
+                    var r = result.GetValueOrDefault();
+                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                    {
+                        result = i;
+                    }
+                }
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.IHeadStart<T?>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T?, Enumerator> source)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            foreach (var input in source)
+            {
+                if (!result.HasValue)
+                {
+                    if (!input.HasValue)
+                    {
+                        continue;
+                    }
+
+                    result = maths.MaxInit;
+                }
+
+                if (input.HasValue)
+                {
+                    var i = input.GetValueOrDefault();
+                    var r = result.GetValueOrDefault();
+                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                    {
+                        result = i;
+                    }
+                }
+            }
+
+            Result = result;
+        }
 
         void Optimizations.ITailEnd<T?>.Select<S>(ReadOnlySpan<S> source, Func<S, T?> selector)
         {
@@ -245,23 +336,26 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
             foreach (var input in source)
             {
-                if (!result.HasValue)
+                if (predicate(input))
                 {
-                    if (!input.HasValue)
+                    if (!result.HasValue)
                     {
-                        continue;
+                        if (!input.HasValue)
+                        {
+                            continue;
+                        }
+
+                        result = maths.MaxInit;
                     }
 
-                    result = maths.MaxInit;
-                }
-
-                if (input.HasValue)
-                {
-                    var i = input.GetValueOrDefault();
-                    var r = result.GetValueOrDefault();
-                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                    if (input.HasValue)
                     {
-                        result = i;
+                        var i = input.GetValueOrDefault();
+                        var r = result.GetValueOrDefault();
+                        if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                        {
+                            result = i;
+                        }
                     }
                 }
             }
@@ -277,23 +371,26 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
             foreach (var input in source)
             {
-                if (!result.HasValue)
+                if (predicate(input))
                 {
-                    if (!input.HasValue)
+                    if (!result.HasValue)
                     {
-                        continue;
+                        if (!input.HasValue)
+                        {
+                            continue;
+                        }
+
+                        result = maths.MaxInit;
                     }
 
-                    result = maths.MaxInit;
-                }
-
-                if (input.HasValue)
-                {
-                    var i = input.GetValueOrDefault();
-                    var r = result.GetValueOrDefault();
-                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                    if (input.HasValue)
                     {
-                        result = i;
+                        var i = input.GetValueOrDefault();
+                        var r = result.GetValueOrDefault();
+                        if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                        {
+                            result = i;
+                        }
                     }
                 }
             }
@@ -400,109 +497,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
             {
                 Result = input;
             }
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxNullableInt : MaxGenericNullable<int, int, Maths.OpsInt>
-    {
-        public override ChainStatus ProcessNext(int? input)
-        {
-            var maybeValue = input.GetValueOrDefault();
-            if (!Result.HasValue || (input.HasValue && maybeValue > Result))
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxNullableLong : MaxGenericNullable<long, long, Maths.OpsLong>
-    {
-        public override ChainStatus ProcessNext(long? input)
-        {
-            var maybeValue = input.GetValueOrDefault();
-            if (!Result.HasValue || (input.HasValue && maybeValue > Result))
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxNullableFloat : MaxGenericNullable<float, double, Maths.OpsFloat>
-    {
-        public override ChainStatus ProcessNext(float? input)
-        {
-            if (!Result.HasValue)
-            {
-                if (!input.HasValue)
-                {
-                    return ChainStatus.Flow;
-                }
-
-                Result = float.NaN;
-            }
-
-            if (input.HasValue)
-            {
-                var value = input.GetValueOrDefault();
-                var result = Result.GetValueOrDefault();
-                if (value > result || float.IsNaN(result))
-                {
-                    Result = value;
-                }
-            }
-
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxNullableDouble : MaxGenericNullable<double, double, Maths.OpsDouble>
-    {
-        public override ChainStatus ProcessNext(double? input)
-        {
-            if (!Result.HasValue)
-            {
-                if (!input.HasValue)
-                {
-                    return ChainStatus.Flow;
-                }
-
-                Result = double.NaN;
-            }
-
-            if (input.HasValue)
-            {
-                var value = input.GetValueOrDefault();
-                var result = Result.GetValueOrDefault();
-                if (value > result || double.IsNaN(result))
-                {
-                    Result = value;
-                }
-            }
-
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MaxNullableDecimal : MaxGenericNullable<decimal, decimal, Maths.OpsDecimal>
-    {
-        public override ChainStatus ProcessNext(decimal? input)
-        {
-            if (!Result.HasValue)
-            {
-                Result = input;
-            }
-            else if (input.HasValue)
-            {
-                var value = input.GetValueOrDefault();
-                if (value > Result.GetValueOrDefault())
-                {
-                    Result = value;
-                }
-            }
-
             return ChainStatus.Flow;
         }
     }
