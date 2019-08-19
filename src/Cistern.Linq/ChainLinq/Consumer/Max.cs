@@ -44,15 +44,17 @@ namespace Cistern.Linq.ChainLinq.Consumer
         {
             Maths maths = default;
 
+            var noData = _noData;
             var result = Result;
 
             foreach (var t in source)
             {
-                _noData = false;
+                noData = false;
                 if (maths.GreaterThan(t, result) || maths.IsNaN(result))
                     result = t;
             }
 
+            _noData = noData;
             Result = result;
         }
 
@@ -136,21 +138,205 @@ namespace Cistern.Linq.ChainLinq.Consumer
         {
             Maths maths = default;
 
+            var noData = _noData;
             var result = Result;
 
-            _noData &= source.Length == 0;
             foreach (var s in source)
             {
                 if (predicate(s))
                 {
+                    noData = false;
                     var t = selector(s);
                     if (maths.GreaterThan(t, result) || maths.IsNaN(result))
                         result = t;
                 }
             }
 
+            _noData = noData;
             Result = result;
         }
+    }
+
+    abstract class MaxGenericNullable<T, Accumulator, Maths>
+        : Consumer<T?, T?>
+        //, Optimizations.IHeadStart<T?>
+        , Optimizations.ITailEnd<T?>
+        where T : struct
+        where Accumulator : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
+    {
+        public MaxGenericNullable() : base(null) { }
+
+        void Optimizations.ITailEnd<T?>.Select<S>(ReadOnlySpan<S> source, Func<S, T?> selector)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            foreach (var s in source)
+            {
+                var input = selector(s);
+
+                if (!result.HasValue)
+                {
+                    if (!input.HasValue)
+                    {
+                        continue;
+                    }
+
+                    result = maths.MaxInit;
+                }
+
+                if (input.HasValue)
+                {
+                    var i = input.GetValueOrDefault();
+                    var r = result.GetValueOrDefault();
+                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                    {
+                        result = i;
+                    }
+                }
+            }
+
+            Result = result;
+        }
+
+        ChainStatus Optimizations.ITailEnd<T?>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T?> resultSelector)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            foreach (var s in span)
+            {
+                var input = resultSelector(source, s);
+
+                if (!result.HasValue)
+                {
+                    if (!input.HasValue)
+                    {
+                        continue;
+                    }
+
+                    result = maths.MaxInit;
+                }
+
+                if (input.HasValue)
+                {
+                    var i = input.GetValueOrDefault();
+                    var r = result.GetValueOrDefault();
+                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                    {
+                        result = i;
+                    }
+                }
+            }
+
+            Result = result;
+
+            return ChainStatus.Flow;
+        }
+
+        void Optimizations.ITailEnd<T?>.Where(ReadOnlySpan<T?> source, Func<T?, bool> predicate)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            foreach (var input in source)
+            {
+                if (!result.HasValue)
+                {
+                    if (!input.HasValue)
+                    {
+                        continue;
+                    }
+
+                    result = maths.MaxInit;
+                }
+
+                if (input.HasValue)
+                {
+                    var i = input.GetValueOrDefault();
+                    var r = result.GetValueOrDefault();
+                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                    {
+                        result = i;
+                    }
+                }
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.ITailEnd<T?>.Where<Enumerator>(Optimizations.ITypedEnumerable<T?, Enumerator> source, Func<T?, bool> predicate)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            foreach (var input in source)
+            {
+                if (!result.HasValue)
+                {
+                    if (!input.HasValue)
+                    {
+                        continue;
+                    }
+
+                    result = maths.MaxInit;
+                }
+
+                if (input.HasValue)
+                {
+                    var i = input.GetValueOrDefault();
+                    var r = result.GetValueOrDefault();
+                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                    {
+                        result = i;
+                    }
+                }
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.ITailEnd<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            foreach (var s in source)
+            {
+                if (predicate(s))
+                {
+                    var input = selector(s);
+                    if (!result.HasValue)
+                    {
+                        if (!input.HasValue)
+                        {
+                            continue;
+                        }
+
+                        result = maths.MaxInit;
+                    }
+
+                    if (input.HasValue)
+                    {
+                        var i = input.GetValueOrDefault();
+                        var r = result.GetValueOrDefault();
+                        if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                        {
+                            result = i;
+                        }
+                    }
+                }
+            }
+
+            Result = result;
+        }
+
     }
 
     sealed class MaxInt : MaxGeneric<int, int, Maths.OpsInt>
@@ -218,13 +404,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-
-
-
-    sealed class MaxNullableInt : Consumer<int?, int?>
+    sealed class MaxNullableInt : MaxGenericNullable<int, int, Maths.OpsInt>
     {
-        public MaxNullableInt() : base(null) { }
-
         public override ChainStatus ProcessNext(int? input)
         {
             var maybeValue = input.GetValueOrDefault();
@@ -236,10 +417,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MaxNullableLong : Consumer<long?, long?>
+    sealed class MaxNullableLong : MaxGenericNullable<long, long, Maths.OpsLong>
     {
-        public MaxNullableLong() : base(null) { }
-
         public override ChainStatus ProcessNext(long? input)
         {
             var maybeValue = input.GetValueOrDefault();
@@ -251,11 +430,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-
-    sealed class MaxNullableFloat : Consumer<float?, float?>
+    sealed class MaxNullableFloat : MaxGenericNullable<float, double, Maths.OpsFloat>
     {
-        public MaxNullableFloat() : base(null) { }
-
         public override ChainStatus ProcessNext(float? input)
         {
             if (!Result.HasValue)
@@ -282,10 +458,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MaxNullableDouble : Consumer<double?, double?>
+    sealed class MaxNullableDouble : MaxGenericNullable<double, double, Maths.OpsDouble>
     {
-        public MaxNullableDouble() : base(null) { }
-
         public override ChainStatus ProcessNext(double? input)
         {
             if (!Result.HasValue)
@@ -312,11 +486,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-
-    sealed class MaxNullableDecimal : Consumer<decimal?, decimal?>
+    sealed class MaxNullableDecimal : MaxGenericNullable<decimal, decimal, Maths.OpsDecimal>
     {
-        public MaxNullableDecimal() : base(null) { }
-
         public override ChainStatus ProcessNext(decimal? input)
         {
             if (!Result.HasValue)
