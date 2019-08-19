@@ -71,7 +71,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowNoElementsException();
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.LastWithPredicate<TSource>(orDefault, predicate));
+            return GetLast(source.Where(predicate), orDefault);
         }
     }
 }

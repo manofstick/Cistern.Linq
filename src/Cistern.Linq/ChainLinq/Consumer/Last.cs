@@ -2,7 +2,9 @@
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
-    sealed class Last<T> : Consumer<T, T>
+    sealed class Last<T>
+        : Consumer<T, T>
+        , Optimizations.ITailEnd<T>
     {
         private bool _found;
         private bool _orDefault;
@@ -24,32 +26,63 @@ namespace Cistern.Linq.ChainLinq.Consumer
                 ThrowHelper.ThrowNoElementsException();
             }
         }
-    }
 
-    sealed class LastWithPredicate<T> : Consumer<T, T>
-    {
-        private Func<T, bool> _selector;
-        private bool _found;
-        private bool _orDefault;
-
-        public LastWithPredicate(bool orDefault, Func<T, bool> selector) : base(default(T)) =>
-            (_orDefault, _selector) = (orDefault, selector);
-
-        public override ChainStatus ProcessNext(T input)
+        void Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)
         {
-            if (_selector(input))
+            // TODO: Could optimize, if we assumed selector was immutable
+            foreach (var input in source)
             {
                 _found = true;
-                Result = input;
+                Result = selector(input);
+            }
+        }
+
+        void Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
+        {
+            // assuming predicate is pure; reverse search was a System.Linq optimization
+            for(var i=source.Length-1; i >= 0; --i)
+            {
+                var input = source[i];
+                if (predicate(input))
+                {
+                    _found = true;
+                    Result = input;
+                    return;
+                }
+            }
+        }
+
+        void Optimizations.ITailEnd<T>.Where<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source, Func<T, bool> predicate)
+        {
+            foreach (var input in source)
+            {
+                if (predicate(input))
+                {
+                    _found = true;
+                    Result = input;
+                }
+            }
+        }
+
+        ChainStatus Optimizations.ITailEnd<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
+        {
+            foreach (var input in span)
+            {
+                _found = true;
+                Result = resultSelector(source, input);
             }
             return ChainStatus.Flow;
         }
 
-        public override void ChainComplete()
+        void Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
         {
-            if (!_orDefault && !_found)
+            foreach (var input in source)
             {
-                ThrowHelper.ThrowNoElementsException();
+                if (predicate(input))
+                {
+                    _found = true;
+                    Result = selector(input);
+                }
             }
         }
     }
