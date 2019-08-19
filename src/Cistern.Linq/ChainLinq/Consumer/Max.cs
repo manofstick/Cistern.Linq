@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
@@ -167,273 +168,143 @@ namespace Cistern.Linq.ChainLinq.Consumer
     {
         public MaxGenericNullable() : base(null) { }
 
+        struct Logic
+        {
+            public T? Result;
+
+            public Logic(T? result)
+            {
+                this.Result = result;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Process(T? input)
+            {
+                if (!Result.HasValue)
+                {
+                    if (!input.HasValue)
+                    {
+                        return;
+                    }
+
+                    Result = default(Maths).MaxInit;
+                }
+
+                if (input.HasValue)
+                {
+                    var i = input.GetValueOrDefault();
+                    var r = Result.GetValueOrDefault();
+                    if (default(Maths).GreaterThan(i, r) || default(Maths).IsNaN(r))
+                    {
+                        Result = i;
+                    }
+                }
+            }
+        }
+
         public override ChainStatus ProcessNext(T? input)
         {
-            Maths maths = default;
-
-            if (!Result.HasValue)
-            {
-                if (!input.HasValue)
-                {
-                    return ChainStatus.Flow;
-                }
-
-                Result = maths.MaxInit;
-            }
-
-            if (input.HasValue)
-            {
-                var i = input.GetValueOrDefault();
-                var r = Result.GetValueOrDefault();
-                if (maths.GreaterThan(i, r) || maths.IsNaN(r))
-                {
-                    Result = i;
-                }
-            }
+            var logic = new Logic(Result);
+            logic.Process(input);
+            Result = logic.Result;
 
             return ChainStatus.Flow;
         }
 
         void Optimizations.IHeadStart<T?>.Execute(ReadOnlySpan<T?> source)
         {
-            Maths maths = default;
-
-            var result = Result;
+            var logic = new Logic(Result);
 
             foreach (var input in source)
             {
-                if (!result.HasValue)
-                {
-                    if (!input.HasValue)
-                    {
-                        continue;
-                    }
-
-                    result = maths.MaxInit;
-                }
-
-                if (input.HasValue)
-                {
-                    var i = input.GetValueOrDefault();
-                    var r = result.GetValueOrDefault();
-                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
-                    {
-                        result = i;
-                    }
-                }
+                logic.Process(input);
             }
 
-            Result = result;
+            Result = logic.Result;
         }
 
         void Optimizations.IHeadStart<T?>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T?, Enumerator> source)
         {
-            Maths maths = default;
-
-            var result = Result;
+            var logic = new Logic(Result);
 
             foreach (var input in source)
             {
-                if (!result.HasValue)
-                {
-                    if (!input.HasValue)
-                    {
-                        continue;
-                    }
-
-                    result = maths.MaxInit;
-                }
-
-                if (input.HasValue)
-                {
-                    var i = input.GetValueOrDefault();
-                    var r = result.GetValueOrDefault();
-                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
-                    {
-                        result = i;
-                    }
-                }
+                logic.Process(input);
             }
 
-            Result = result;
+            Result = logic.Result;
         }
 
         void Optimizations.ITailEnd<T?>.Select<S>(ReadOnlySpan<S> source, Func<S, T?> selector)
         {
-            Maths maths = default;
+            var logic = new Logic(Result);
 
-            var result = Result;
-
-            foreach (var s in source)
+            foreach (var input in source)
             {
-                var input = selector(s);
-
-                if (!result.HasValue)
-                {
-                    if (!input.HasValue)
-                    {
-                        continue;
-                    }
-
-                    result = maths.MaxInit;
-                }
-
-                if (input.HasValue)
-                {
-                    var i = input.GetValueOrDefault();
-                    var r = result.GetValueOrDefault();
-                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
-                    {
-                        result = i;
-                    }
-                }
+                logic.Process(selector(input));
             }
 
-            Result = result;
+            Result = logic.Result;
         }
 
         ChainStatus Optimizations.ITailEnd<T?>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T?> resultSelector)
         {
-            Maths maths = default;
+            var logic = new Logic(Result);
 
-            var result = Result;
-
-            foreach (var s in span)
+            foreach (var input in span)
             {
-                var input = resultSelector(source, s);
-
-                if (!result.HasValue)
-                {
-                    if (!input.HasValue)
-                    {
-                        continue;
-                    }
-
-                    result = maths.MaxInit;
-                }
-
-                if (input.HasValue)
-                {
-                    var i = input.GetValueOrDefault();
-                    var r = result.GetValueOrDefault();
-                    if (maths.GreaterThan(i, r) || maths.IsNaN(r))
-                    {
-                        result = i;
-                    }
-                }
+                logic.Process(resultSelector(source, input));
             }
 
-            Result = result;
+            Result = logic.Result;
 
             return ChainStatus.Flow;
         }
 
         void Optimizations.ITailEnd<T?>.Where(ReadOnlySpan<T?> source, Func<T?, bool> predicate)
         {
-            Maths maths = default;
-
-            var result = Result;
+            var logic = new Logic(Result);
 
             foreach (var input in source)
             {
                 if (predicate(input))
                 {
-                    if (!result.HasValue)
-                    {
-                        if (!input.HasValue)
-                        {
-                            continue;
-                        }
-
-                        result = maths.MaxInit;
-                    }
-
-                    if (input.HasValue)
-                    {
-                        var i = input.GetValueOrDefault();
-                        var r = result.GetValueOrDefault();
-                        if (maths.GreaterThan(i, r) || maths.IsNaN(r))
-                        {
-                            result = i;
-                        }
-                    }
+                    logic.Process(input);
                 }
             }
 
-            Result = result;
+            Result = logic.Result;
         }
 
         void Optimizations.ITailEnd<T?>.Where<Enumerator>(Optimizations.ITypedEnumerable<T?, Enumerator> source, Func<T?, bool> predicate)
         {
-            Maths maths = default;
-
-            var result = Result;
+            var logic = new Logic(Result);
 
             foreach (var input in source)
             {
                 if (predicate(input))
                 {
-                    if (!result.HasValue)
-                    {
-                        if (!input.HasValue)
-                        {
-                            continue;
-                        }
-
-                        result = maths.MaxInit;
-                    }
-
-                    if (input.HasValue)
-                    {
-                        var i = input.GetValueOrDefault();
-                        var r = result.GetValueOrDefault();
-                        if (maths.GreaterThan(i, r) || maths.IsNaN(r))
-                        {
-                            result = i;
-                        }
-                    }
+                    logic.Process(input);
                 }
             }
 
-            Result = result;
+            Result = logic.Result;
         }
 
         void Optimizations.ITailEnd<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
         {
-            Maths maths = default;
+            var logic = new Logic(Result);
 
-            var result = Result;
-
-            foreach (var s in source)
+            foreach (var input in source)
             {
-                if (predicate(s))
+                if (predicate(input))
                 {
-                    var input = selector(s);
-                    if (!result.HasValue)
-                    {
-                        if (!input.HasValue)
-                        {
-                            continue;
-                        }
-
-                        result = maths.MaxInit;
-                    }
-
-                    if (input.HasValue)
-                    {
-                        var i = input.GetValueOrDefault();
-                        var r = result.GetValueOrDefault();
-                        if (maths.GreaterThan(i, r) || maths.IsNaN(r))
-                        {
-                            result = i;
-                        }
-                    }
+                    logic.Process(selector(input));
                 }
             }
 
-            Result = result;
+            Result = logic.Result;
         }
-
     }
 
     sealed class MaxInt : MaxGeneric<int, int, Maths.OpsInt>
