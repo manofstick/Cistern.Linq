@@ -38,7 +38,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
                     return underlyingCount;
             }
 
-            var counter = new Consumer.Count<V>();
+            var counter = new Consumer.Count<V, int, int, Maths.OpsInt>();
             Consume(counter);
             return counter.Result;
         }

@@ -16,7 +16,7 @@
                 return -1;
             }
 
-            var counter = new Consumer.Count<V>();
+            var counter = new Consumer.Count<V, int, int, Maths.OpsInt>();
             c.Consume(counter);
             return counter.Result;
         }

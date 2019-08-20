@@ -1,72 +1,122 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
-    sealed class Count<T> : Consumer<T, int>
+    sealed class Count<T, TCount, Accumulator, Maths>
+        : Consumer<T, Accumulator>
+        , Optimizations.IHeadStart<T>
+        , Optimizations.ITailEnd<T>
+        where TCount : struct
+        where Accumulator : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<TCount, Accumulator>
     {
-        public Count() : base(0) {}
+        public Count() : base(default(Maths).Zero) {}
+
+        void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+        {
+            Maths maths = default;
+
+            Result = maths.AddInt(Result, source.Length);
+        }
+
+        void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
+        {
+            Maths maths = default;
+
+            var result = Result;
+            foreach (var input in source)
+            {
+                result = maths.Add(result, maths.One);
+            }
+            Result = result;
+        }
 
         public override ChainStatus ProcessNext(T input)
         {
             checked
             {
-                Result++;
+                Maths maths = default;
+
+                Result = maths.Add(Result, maths.One);
             }
             return ChainStatus.Flow;
         }
-    }
 
-    sealed class CountConditional<T> : Consumer<T, int>
-    {
-        private Func<T, bool> _selector;
-
-        public CountConditional(Func<T, bool> selector) : base(0) =>
-            _selector = selector;
-
-        public override ChainStatus ProcessNext(T input)
+        void Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)
         {
-            if (_selector(input))
+            // really this should have be "Result += source.Length", but someone decided that we want selector side effects...
+            Maths maths = default;
+
+            var result = Result;
+            foreach (var input in source)
             {
-                checked
+                var forTheSideEffect = selector(input);
+                result = maths.Add(result, maths.One);
+            }
+            Result = result;
+        }
+
+        void Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
+        {
+            Maths maths = default;
+
+            var result = Result;
+            foreach (var input in source)
+            {
+                if (predicate(input))
                 {
-                    ++Result;
+                    result = maths.Add(result, maths.One);
                 }
             }
-            return ChainStatus.Flow;
+            Result = result;
         }
-    }
 
-    sealed class LongCount<T> : Consumer<T, long>
-    {
-        public LongCount() : base(0L) { }
-
-        public override ChainStatus ProcessNext(T input)
+        void Optimizations.ITailEnd<T>.Where<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source, Func<T, bool> predicate)
         {
-            checked
+            Maths maths = default;
+
+            var result = Result;
+            foreach (var input in source)
             {
-                Result++;
-            }
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class LongCountConditional<T> : Consumer<T, long>
-    {
-        private Func<T, bool> _selector;
-
-        public LongCountConditional(Func<T, bool> selector) : base(0L) =>
-            _selector = selector;
-
-        public override ChainStatus ProcessNext(T input)
-        {
-            if (_selector(input))
-            {
-                checked
+                if (predicate(input))
                 {
-                    ++Result;
+                    result = maths.Add(result, maths.One);
                 }
             }
+            Result = result;
+        }
+
+        ChainStatus Optimizations.ITailEnd<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
+        {
+            // really this should have be "Result += source.Length", but someone decided that we want selector side effects...
+            Maths maths = default;
+
+            var result = Result;
+            foreach (var input in span)
+            {
+                var forTheSideEffect = resultSelector(source, input);
+                result = maths.Add(result, maths.One);
+            }
+            Result = result;
+
             return ChainStatus.Flow;
+        }
+
+        void Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
+        {
+            Maths maths = default;
+
+            var result = Result;
+            foreach (var input in source)
+            {
+                if (predicate(input))
+                {
+                    var forTheSideEffect = selector(input);
+                    result = maths.Add(result, maths.One);
+                }
+            }
+            Result = result;
         }
     }
 }
