@@ -7,7 +7,8 @@ open System
 open System.Runtime.CompilerServices
 
 type Linq =
-    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    // Uncomment this to make this code work
+    //[<MethodImpl(MethodImplOptions.NoInlining)>]
     static member unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Unfold (f, seed, Links.Identity.Instance) :> seq<'T>
 
     static member inline map (f:'a->'b) (e:seq<'a>)           = Enumerable.Select (e, f)
