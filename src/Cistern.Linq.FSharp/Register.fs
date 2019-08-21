@@ -16,7 +16,7 @@ type private TryFindImmutableTypes () =
                                          //  0123456789
                 if sixthChar = 'L' then
                     match e with
-                    | :? list<'T> as l -> construct.Create (TypedEnumerables.ImmutableListEnumerable<'T> l)
+                    | :? list<'T> as l -> construct.Create (TypedEnumerables.FSharpListEnumerable<'T> l)
                     | _ -> null
                 else 
                     null
