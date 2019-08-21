@@ -66,5 +66,16 @@ namespace Cistern.Linq.ChainLinq.Consumer
                 }
             }
         }
+
+        void Optimizations.ITailEnd<T>.WhereSelect<Enumerator, S>(Optimizations.ITypedEnumerable<S, Enumerator> source, Func<S, bool> predicate, Func<S, T> selector)
+        {
+            foreach (var input in source)
+            {
+                if (predicate(input))
+                {
+                    Result.Add(selector(input));
+                }
+            }
+        }
     }
 }

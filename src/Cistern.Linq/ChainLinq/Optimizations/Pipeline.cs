@@ -19,6 +19,7 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         ChainStatus SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector);
 
         void WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector);
+        void WhereSelect<Enumerator, S>(ITypedEnumerable<S, Enumerator> source, Func<S, bool> predicate, Func<S, T> selector) where Enumerator : IEnumerator<S>;
 
     }
 }

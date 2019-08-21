@@ -52,6 +52,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             void Optimizations.ITailEnd<IEnumerable<T>>.Where(ReadOnlySpan<IEnumerable<T>> source, Func<IEnumerable<T>, bool> predicate) => throw new NotSupportedException();
             public void Where<Enumerator>(Optimizations.ITypedEnumerable<IEnumerable<T>, Enumerator> source, Func<IEnumerable<T>, bool> predicate) where Enumerator : IEnumerator<IEnumerable<T>> => throw new NotSupportedException();
             void Optimizations.ITailEnd<IEnumerable<T>>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, IEnumerable<T>> selector) => throw new NotSupportedException();
+            void Optimizations.ITailEnd<IEnumerable<T>>.WhereSelect<Enumerator, S>(Optimizations.ITypedEnumerable<S, Enumerator> source, Func<S, bool> predicate, Func<S, IEnumerable<T>> selector) => throw new NotSupportedException();
         }
 
         sealed class SelectManyOuterConsumer<TSource, TCollection, T> : Consumer<(TSource, IEnumerable<TCollection>), ChainEnd>

@@ -134,7 +134,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = result;
         }
 
-
         void Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
         {
             Maths maths = default;
@@ -156,6 +155,29 @@ namespace Cistern.Linq.ChainLinq.Consumer
             _noData = noData;
             Result = result;
         }
+
+        void Optimizations.ITailEnd<T>.WhereSelect<Enumerator, S>(Optimizations.ITypedEnumerable<S, Enumerator> source, Func<S, bool> predicate, Func<S, T> selector)
+        {
+            Maths maths = default;
+
+            var noData = _noData;
+            var result = Result;
+
+            foreach (var s in source)
+            {
+                if (predicate(s))
+                {
+                    noData = false;
+                    var t = selector(s);
+                    if (maths.GreaterThan(t, result) || maths.IsNaN(result))
+                        result = t;
+                }
+            }
+
+            _noData = noData;
+            Result = result;
+        }
+
     }
 
     sealed class MaxGenericNullable<T, Accumulator, Maths>
@@ -292,6 +314,21 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
 
         void Optimizations.ITailEnd<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
+        {
+            var logic = new Logic(Result);
+
+            foreach (var input in source)
+            {
+                if (predicate(input))
+                {
+                    logic.Process(selector(input));
+                }
+            }
+
+            Result = logic.Result;
+        }
+
+        void Optimizations.ITailEnd<T?>.WhereSelect<Enumerator, S>(Optimizations.ITypedEnumerable<S, Enumerator> source, Func<S, bool> predicate, Func<S, T?> selector)
         {
             var logic = new Logic(Result);
 

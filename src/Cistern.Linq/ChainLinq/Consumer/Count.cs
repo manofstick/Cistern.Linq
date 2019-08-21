@@ -118,5 +118,21 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
             Result = result;
         }
+
+        void Optimizations.ITailEnd<T>.WhereSelect<Enumerator, S>(Optimizations.ITypedEnumerable<S, Enumerator> source, Func<S, bool> predicate, Func<S, T> selector)
+        {
+            Maths maths = default;
+
+            var result = Result;
+            foreach (var input in source)
+            {
+                if (predicate(input))
+                {
+                    var forTheSideEffect = selector(input);
+                    result = maths.Add(result, maths.One);
+                }
+            }
+            Result = result;
+        }
     }
 }
