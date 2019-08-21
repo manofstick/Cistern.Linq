@@ -45,6 +45,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             private readonly int count;
 
             public IEnumerable<T> Source => null;
+            public int? TryLength => count;
 
             public IListEnumerable(IList<T> list, int start, int count)
             {

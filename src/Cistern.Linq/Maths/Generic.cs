@@ -17,6 +17,9 @@ namespace Cistern.Linq.Maths
         Accumulator AddInt(Accumulator lhs, int rhs);
 
         T Cast(Accumulator a);
+        T Cast(int a);
+
+        Accumulator Cast(T a);
 
         bool IsNaN(T x);
         bool GreaterThan(T lhs, T rhs);
@@ -35,6 +38,7 @@ namespace Cistern.Linq.Maths
         public double Add(double lhs, double? rhs) => lhs + rhs.GetValueOrDefault();
         public double AddInt(double lhs, int rhs) => lhs + rhs;
         public double Cast(double a) => a;
+        public double Cast(int a) => a;
         public bool IsNaN(double x) => double.IsNaN(x);
         public bool GreaterThan(double lhs, double rhs) => lhs > rhs;
         public bool LessThan(double lhs, double rhs) => lhs < rhs;
@@ -52,6 +56,8 @@ namespace Cistern.Linq.Maths
         public double Add(double lhs, float? rhs) => lhs + rhs.GetValueOrDefault();
         public double AddInt(double lhs, int rhs) => lhs + rhs;
         public float Cast(double a) => (float)a;
+        public float Cast(int a) => a;
+        public double Cast(float a) => a;
         public bool IsNaN(float x) => float.IsNaN(x);
         public bool GreaterThan(float lhs, float rhs) => lhs > rhs;
         public bool LessThan(float lhs, float rhs) => lhs < rhs;
@@ -84,6 +90,7 @@ namespace Cistern.Linq.Maths
         public long Add(long lhs, long? rhs) { checked { return lhs + rhs.GetValueOrDefault(); } }
         public long AddInt(long lhs, int rhs) { checked { return lhs + rhs; } }
         public long Cast(long a) => a;
+        public long Cast(int a) => a;
         public bool IsNaN(long x) => false;
         public bool GreaterThan(long lhs, long rhs) => lhs > rhs;
         public bool LessThan(long lhs, long rhs) => lhs < rhs;
@@ -101,6 +108,7 @@ namespace Cistern.Linq.Maths
         public decimal Add(decimal lhs, decimal? rhs) => lhs + rhs.GetValueOrDefault();
         public decimal AddInt(decimal lhs, int rhs) { checked { return lhs + rhs; } }
         public decimal Cast(decimal a) => a;
+        public decimal Cast(int a) => a;
         public bool IsNaN(decimal x) => false;
         public bool GreaterThan(decimal lhs, decimal rhs) => lhs > rhs;
         public bool LessThan(decimal lhs, decimal rhs) => lhs < rhs;

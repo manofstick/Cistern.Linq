@@ -7,6 +7,7 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         where Enumerator : IEnumerator<T>
     {
         IEnumerable<T> Source { get; }
+        int? TryLength { get; }
         bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan);
         Enumerator GetEnumerator();
     }
@@ -17,6 +18,8 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public IEnumerableEnumerable(IEnumerable<T> source) => Source = source;
 
         public IEnumerable<T> Source { get; }
+
+        public int? TryLength => null;
 
         public IEnumerator<T> GetEnumerator() => Source.GetEnumerator();
 
@@ -37,6 +40,8 @@ namespace Cistern.Linq.ChainLinq.Optimizations
 
         public IEnumerable<T> Source => source;
 
+        public int? TryLength => source.Count;
+
         public List<T>.Enumerator GetEnumerator() => source.GetEnumerator();
 
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
@@ -54,6 +59,8 @@ namespace Cistern.Linq.ChainLinq.Optimizations
 
         public IEnumerable<T> Source => source;
 
+        public int? TryLength => source.Count;
+
         public LinkedList<T>.Enumerator GetEnumerator() => source.GetEnumerator();
 
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
@@ -70,6 +77,7 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public HashSetEnumerable(HashSet<T> source) => this.source = source;
 
         public IEnumerable<T> Source => source;
+        public int? TryLength => source.Count;
 
         public HashSet<T>.Enumerator GetEnumerator() => source.GetEnumerator();
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
@@ -86,6 +94,7 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public StackEnumerable(Stack<T> source) => this.source = source;
 
         public IEnumerable<T> Source => source;
+        public int? TryLength => source.Count;
 
         public Stack<T>.Enumerator GetEnumerator() => source.GetEnumerator();
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
@@ -102,6 +111,7 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public QueueEnumerable(Queue<T> source) => this.source = source;
 
         public IEnumerable<T> Source => source;
+        public int? TryLength => source.Count;
 
         public Queue<T>.Enumerator GetEnumerator() => source.GetEnumerator();
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
@@ -118,6 +128,7 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public SortedSetEnumerable(SortedSet<T> source) => this.source = source;
 
         public IEnumerable<T> Source => source;
+        public int? TryLength => source.Count;
 
         public SortedSet<T>.Enumerator GetEnumerator() => source.GetEnumerator();
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)

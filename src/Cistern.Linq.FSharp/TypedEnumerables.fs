@@ -35,4 +35,5 @@ type FSharpListEnumerable<'T>(lst:list<'T>) =
     interface ITypedEnumerable<'T, FSharpListEnumerator<'T>> with
         member __.Source = upcast lst
         member __.TryGetSourceAsSpan _ = false
+        member __.TryLength = System.Nullable lst.Length // is this O(1)??
         member __.GetEnumerator () = new FSharpListEnumerator<'T>(lst)

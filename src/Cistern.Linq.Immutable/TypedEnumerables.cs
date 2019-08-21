@@ -29,6 +29,8 @@ namespace Cistern.Linq.Immutable
 
         public System.Collections.Generic.IEnumerable<T> Source => source;
 
+        public int? TryLength => source.Length;
+
         public ImmutableArrayEnumerator<T> GetEnumerator() => new ImmutableArrayEnumerator<T>(source);
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
@@ -45,6 +47,8 @@ namespace Cistern.Linq.Immutable
 
         public System.Collections.Generic.IEnumerable<T> Source => source;
 
+        public int? TryLength => source.Count; // is this O(1)??
+
         public ImmutableHashSet<T>.Enumerator GetEnumerator() => source.GetEnumerator();
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
@@ -60,6 +64,7 @@ namespace Cistern.Linq.Immutable
         public ImmutableListEnumerable(ImmutableList<T> source) => this.source = source;
 
         public System.Collections.Generic.IEnumerable<T> Source => source;
+        public int? TryLength => source.Count; // is this O(1)??
 
         public ImmutableList<T>.Enumerator GetEnumerator() => source.GetEnumerator();
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
@@ -92,6 +97,7 @@ namespace Cistern.Linq.Immutable
         public ImmutableQueueEnumerable(ImmutableQueue<T> source) => this.source = source;
 
         public System.Collections.Generic.IEnumerable<T> Source => source;
+        public int? TryLength => null;
 
         public ImmutableQueueEnumerator<T> GetEnumerator() => new ImmutableQueueEnumerator<T>(source);
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
@@ -108,6 +114,7 @@ namespace Cistern.Linq.Immutable
         public ImmutableSortedSetEnumerable(ImmutableSortedSet<T> source) => this.source = source;
 
         public System.Collections.Generic.IEnumerable<T> Source => source;
+        public int? TryLength => source.Count; // is this O(1)??
 
         public ImmutableSortedSet<T>.Enumerator GetEnumerator() => source.GetEnumerator();
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
@@ -140,6 +147,7 @@ namespace Cistern.Linq.Immutable
         public ImmutableStackEnumerable(ImmutableStack<T> source) => this.source = source;
 
         public System.Collections.Generic.IEnumerable<T> Source => source;
+        public int? TryLength => null;
 
         public ImmutableStackEnumerator<T> GetEnumerator() => new ImmutableStackEnumerator<T>(source);
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)

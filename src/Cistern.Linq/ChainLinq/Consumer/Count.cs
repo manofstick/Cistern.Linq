@@ -24,12 +24,20 @@ namespace Cistern.Linq.ChainLinq.Consumer
         {
             Maths maths = default;
 
-            var result = Result;
-            foreach (var input in source)
+            var tryLength = source.TryLength;
+            if (tryLength.HasValue)
             {
-                result = maths.Add(result, maths.One);
+                Result = maths.Add(Result, maths.Cast(tryLength.Value));
             }
-            Result = result;
+            else
+            {
+                var result = Result;
+                foreach (var input in source)
+                {
+                    result = maths.Add(result, maths.One);
+                }
+                Result = result;
+            }
         }
 
         public override ChainStatus ProcessNext(T input)
