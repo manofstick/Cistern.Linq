@@ -22,7 +22,7 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 			
 			if (!min.HasValue)
 			{
-				throw new InvalidOperationException("Sequence has no elements!");
+				throw new InvalidOperationException("Sequence contains no elements");
 			}
 			
 			return min.Value;
