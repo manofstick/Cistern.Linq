@@ -25,13 +25,23 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 		[Benchmark(Baseline = true)]
 		public double SystemLinq()
 		{
-			return System.Linq.Enumerable.First(System.Linq.Enumerable.Where(Numbers, n => n == NumberOfItems));
+			foreach (var item in System.Linq.Enumerable.Where(Numbers, n => n == NumberOfItems))
+			{
+				return item;
+			}
+
+			throw new Exception("Not found!");
 		}
 		
 		[Benchmark]
 		public double CisternLinq()
 		{
-			return Enumerable.First(Enumerable.Where(Numbers, n => n == NumberOfItems));
+			foreach (var item in Enumerable.Where(Numbers, n => n == NumberOfItems))
+			{
+				return item;
+			}
+
+			throw new Exception("Not found!");
 		}
 	}
 }
