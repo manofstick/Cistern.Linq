@@ -8,7 +8,7 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 	public abstract class NumericBenchmarkBase
 	{
 
-		[Params(1000, 1000000)]
+		[Params(10, 1000, 1000000)]
 		public int NumberOfItems;
 
 		public double[] Numbers;
