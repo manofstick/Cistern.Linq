@@ -47,13 +47,13 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 		}
 
 		[Benchmark(Baseline = true)]
-		public double SystemLinqSum()
+		public double SystemLinq()
 		{
 			return System.Linq.Enumerable.Sum(Numbers);
 		}
 		
 		[Benchmark]
-		public double CisternLinqSum()
+		public double CisternLinq()
 		{
 			return Enumerable.Sum(Numbers);
 		}

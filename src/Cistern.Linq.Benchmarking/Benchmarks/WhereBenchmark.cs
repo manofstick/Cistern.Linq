@@ -38,13 +38,13 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 		}
 
 		[Benchmark(Baseline = true)]
-		public double SystemLinqSum()
+		public double SystemLinq()
 		{
 			return System.Linq.Enumerable.First(System.Linq.Enumerable.Where(Numbers, n => n == NumberOfItems));
 		}
 		
 		[Benchmark()]
-		public double CisternLinqSum()
+		public double CisternLinq()
 		{
 			return Enumerable.First(Enumerable.Where(Numbers, n => n == NumberOfItems));
 		}
