@@ -6,23 +6,8 @@ using System.Text;
 namespace Cistern.Linq.Benchmarking.Benchmarks
 {
 	[CoreJob, MemoryDiagnoser]
-	public class WhereBenchmark
+	public class WhereBenchmark : NumericBenchmarkBase
 	{
-		[Params(10000, 1000000)]
-		public int NumberOfItems;
-
-		public double[] Numbers;
-
-		[GlobalSetup]
-		public void Setup()
-		{
-			Numbers = new double[NumberOfItems];
-			for (int i = 0; i < NumberOfItems; i++)
-			{
-				Numbers[i] = i + 1;
-			}
-		}
-
 		[Benchmark]
 		public double ForLoop()
 		{
@@ -43,7 +28,7 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 			return System.Linq.Enumerable.First(System.Linq.Enumerable.Where(Numbers, n => n == NumberOfItems));
 		}
 		
-		[Benchmark()]
+		[Benchmark]
 		public double CisternLinq()
 		{
 			return Enumerable.First(Enumerable.Where(Numbers, n => n == NumberOfItems));
