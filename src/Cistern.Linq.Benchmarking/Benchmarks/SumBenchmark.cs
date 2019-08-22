@@ -12,17 +12,6 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 		public double ForLoop()
 		{
 			double sum = 0;
-			for (int i = 0; i < NumberOfItems; i++)
-			{
-				sum += Numbers[i];
-			}
-			return sum;
-		}
-
-		[Benchmark]
-		public double ForEachLoop()
-		{
-			double sum = 0;
 			foreach (var n in Numbers)
 			{
 				sum += n;
