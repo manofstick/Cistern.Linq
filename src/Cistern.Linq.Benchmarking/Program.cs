@@ -8,7 +8,7 @@ namespace Cistern.Linq.Benchmarking
 	{
 		static void Main(string[] args)
 		{
-			BenchmarkRunner.Run<SumBenchmark>();
+			BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 		}
 	}
 }
