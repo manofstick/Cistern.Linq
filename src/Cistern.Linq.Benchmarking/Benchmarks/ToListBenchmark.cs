@@ -11,7 +11,7 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 		[Benchmark]
 		public List<double> ForLoop()
 		{
-			var list = new List<double>();
+			var list = new List<double>(NumberOfItems);
 			
 			foreach (var n in Numbers)
 			{
@@ -19,12 +19,6 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 			}
 
 			return list;
-		}
-		
-		[Benchmark]
-		public List<double> Constructor()
-		{
-			return new List<double>(Numbers);
 		}
 
 		[Benchmark(Baseline = true)]
