@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Cistern.Linq.Benchmarking.Benchmarks
+namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 {
 	[CoreJob, MemoryDiagnoser]
 	public class ToListBenchmark : NumericBenchmarkBase

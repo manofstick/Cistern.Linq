@@ -3,40 +3,41 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Cistern.Linq.Benchmarking.Benchmarks
+namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 {
 	[CoreJob, MemoryDiagnoser]
-	public class AverageBenchmark : NumericBenchmarkBase
+	public class MinBenchmark : NumericBenchmarkBase
 	{
 		[Benchmark]
 		public double ForLoop()
 		{
-			var count = 0;
-			double sum = 0;
+			double? min = 0;
 			foreach (var n in Numbers)
 			{
-				sum += n;
-				count++;
+				if (n < min || min == null)
+				{
+					min = n;
+				}
 			}
 			
-			if (count == 0)
+			if (!min.HasValue)
 			{
 				throw new InvalidOperationException("Sequence contains no elements");
 			}
-
-			return sum / count;
+			
+			return min.Value;
 		}
 
 		[Benchmark(Baseline = true)]
 		public double SystemLinq()
 		{
-			return System.Linq.Enumerable.Average(Numbers);
+			return System.Linq.Enumerable.Min(Numbers);
 		}
 		
 		[Benchmark]
 		public double CisternLinq()
 		{
-			return Enumerable.Average(Numbers);
+			return Enumerable.Min(Numbers);
 		}
 	}
 }

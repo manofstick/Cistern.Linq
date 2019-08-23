@@ -3,41 +3,41 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Cistern.Linq.Benchmarking.Benchmarks
+namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 {
 	[CoreJob, MemoryDiagnoser]
-	public class MinBenchmark : NumericBenchmarkBase
+	public class MaxBenchmark : NumericBenchmarkBase
 	{
 		[Benchmark]
 		public double ForLoop()
 		{
-			double? min = 0;
+			double? max = 0;
 			foreach (var n in Numbers)
 			{
-				if (n < min || min == null)
+				if (n > max || max == null)
 				{
-					min = n;
+					max = n;
 				}
 			}
 			
-			if (!min.HasValue)
+			if (!max.HasValue)
 			{
 				throw new InvalidOperationException("Sequence contains no elements");
 			}
 			
-			return min.Value;
+			return max.Value;
 		}
 
 		[Benchmark(Baseline = true)]
 		public double SystemLinq()
 		{
-			return System.Linq.Enumerable.Min(Numbers);
+			return System.Linq.Enumerable.Max(Numbers);
 		}
 		
 		[Benchmark]
 		public double CisternLinq()
 		{
-			return Enumerable.Min(Numbers);
+			return Enumerable.Max(Numbers);
 		}
 	}
 }
