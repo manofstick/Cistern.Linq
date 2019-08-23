@@ -3,44 +3,192 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
-    sealed class ToDictionary<TSource, TKey> : Consumer<TSource, Dictionary<TKey, TSource>>
+    interface ISelectors<TSource, TKey, TElement>
     {
-        private readonly Func<TSource, TKey> _keySelector;
+        TKey Key(TSource source);
+        TElement Element(TSource source);
+    }
 
-        public ToDictionary(Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer)
-            : base(new Dictionary<TKey, TSource>(comparer)) =>
-        _keySelector = keySelector;
+    struct KeySourceSelector<TSource, TKey>
+        : ISelectors<TSource, TKey, TSource>
+    {
+        Func<TSource, TKey> keySelector;
 
-        public ToDictionary(Func<TSource, TKey> keySelector, int capacity, IEqualityComparer<TKey> comparer)
-            : base(new Dictionary<TKey, TSource>(capacity, comparer)) =>
-        _keySelector = keySelector;
+        public KeySourceSelector(Func<TSource, TKey> keySelector) => this.keySelector = keySelector;
+
+        public TSource Element(TSource source) => source;
+        public TKey Key(TSource source) => keySelector(source);
+    }
+
+    struct KeyElementSelector<TSource, TKey, TElement>
+        : ISelectors<TSource, TKey, TElement>
+    {
+        Func<TSource, TKey> keySelector;
+        Func<TSource, TElement> elementSelector;
+
+        public KeyElementSelector(Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
+        {
+            this.keySelector = keySelector;
+            this.elementSelector = elementSelector;
+        }
+
+        public TElement Element(TSource source) => elementSelector(source);
+        public TKey Key(TSource source) => keySelector(source);
+    }
+
+    sealed class ToDictionary<Selector, TSource, TKey, TElement>
+        : Consumer<TSource, Dictionary<TKey, TElement>>
+        , Optimizations.IHeadStart<TSource>
+        , Optimizations.ITailEnd<TSource>
+        where Selector : ISelectors<TSource, TKey, TElement>
+    {
+        Selector _selector;
+
+        public ToDictionary(Selector selector, IEqualityComparer<TKey> comparer)
+            : base(new Dictionary<TKey, TElement>(comparer)) => _selector = selector;
+
+        public ToDictionary(Selector selector, int capacity, IEqualityComparer<TKey> comparer)
+            : base(new Dictionary<TKey, TElement>(capacity, comparer)) => _selector = selector;
 
         public override ChainStatus ProcessNext(TSource input)
         {
-            Result.Add(_keySelector(input), input);
+            Result.Add(_selector.Key(input), _selector.Element(input));
 
             return ChainStatus.Flow;
         }
-    }
-
-    sealed class ToDictionary<TSource, TKey, TElement> : Consumer<TSource, Dictionary<TKey, TElement>>
-    {
-        private readonly Func<TSource, TKey> _keySelector;
-        private readonly Func<TSource, TElement> _elementSelector;
-
-        public ToDictionary(Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer)
-            : base(new Dictionary<TKey, TElement>(comparer)) =>
-        (_keySelector, _elementSelector) = (keySelector, elementSelector);
-
-        public ToDictionary(Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, int capacity, IEqualityComparer<TKey> comparer)
-            : base(new Dictionary<TKey, TElement>(capacity, comparer)) =>
-        (_keySelector, _elementSelector) = (keySelector, elementSelector);
-
-        public override ChainStatus ProcessNext(TSource input)
+        private void EnsureCapacity(int length)
         {
-            Result.Add(_keySelector(input), _elementSelector(input));
+            Result.EnsureCapacity(Result.Count + length);
+        }
+
+        private void EnsureCapacity(int? maybeLength)
+        {
+            if (maybeLength.HasValue)
+            {
+                Result.EnsureCapacity(Result.Count + maybeLength.Value);
+            }
+        }
+
+        void Optimizations.IHeadStart<TSource>.Execute(ReadOnlySpan<TSource> source)
+        {
+            var s = _selector;
+            var result = Result;
+
+            EnsureCapacity(source.Length);
+            foreach (var item in source)
+            {
+                result.Add(s.Key(item), s.Element(item));
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.IHeadStart<TSource>.Execute<Enumerator>(Optimizations.ITypedEnumerable<TSource, Enumerator> source)
+        {
+            var s = _selector;
+            var result = Result;
+
+            EnsureCapacity(source.TryLength);
+            foreach (var item in source)
+            {
+                result.Add(s.Key(item), s.Element(item));
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.ITailEnd<TSource>.Select<S>(ReadOnlySpan<S> source, Func<S, TSource> selector)
+        {
+            var s = _selector;
+            var result = Result;
+
+            EnsureCapacity(source.Length);
+            foreach (var input in source)
+            {
+                var item = selector(input);
+                result.Add(s.Key(item), s.Element(item));
+            }
+
+            Result = result;
+        }
+
+        ChainStatus Optimizations.ITailEnd<TSource>.SelectMany<TSource1, TCollection>(TSource1 source, ReadOnlySpan<TCollection> span, Func<TSource1, TCollection, TSource> resultSelector)
+        {
+            var s = _selector;
+            var result = Result;
+
+            EnsureCapacity(span.Length);
+            foreach (var input in span)
+            {
+                var item = resultSelector(source, input);
+                result.Add(s.Key(item), s.Element(item));
+            }
+
+            Result = result;
 
             return ChainStatus.Flow;
+        }
+
+        void Optimizations.ITailEnd<TSource>.Where(ReadOnlySpan<TSource> source, Func<TSource, bool> predicate)
+        {
+            var s = _selector;
+            var result = Result;
+
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                    result.Add(s.Key(item), s.Element(item));
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.ITailEnd<TSource>.Where<Enumerator>(Optimizations.ITypedEnumerable<TSource, Enumerator> source, Func<TSource, bool> predicate)
+        {
+            var s = _selector;
+            var result = Result;
+
+            foreach (var item in source)
+            {
+                if (predicate(item))
+                    result.Add(s.Key(item), s.Element(item));
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.ITailEnd<TSource>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, TSource> selector)
+        {
+            var s = _selector;
+            var result = Result;
+
+            foreach (var input in source)
+            {
+                if (predicate(input))
+                {
+                    var item = selector(input);
+                    result.Add(s.Key(item), s.Element(item));
+                }
+            }
+
+            Result = result;
+        }
+
+        void Optimizations.ITailEnd<TSource>.WhereSelect<Enumerator, S>(Optimizations.ITypedEnumerable<S, Enumerator> source, Func<S, bool> predicate, Func<S, TSource> selector)
+        {
+            var s = _selector;
+            var result = Result;
+
+            foreach (var input in source)
+            {
+                if (predicate(input))
+                {
+                    var item = selector(input);
+                    result.Add(s.Key(item), s.Element(item));
+                }
+            }
+
+            Result = result;
         }
     }
 }

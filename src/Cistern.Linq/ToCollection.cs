@@ -83,13 +83,13 @@ namespace Cistern.Linq
                 var count = counter.GetCount(true);
                 if (count >= 0)
                 {
-                    var builder = new ChainLinq.Consumer.ToDictionary<TSource, TKey>(keySelector, count, comparer);
+                    var builder = new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeySourceSelector<TSource, TKey>, TSource, TKey, TSource>(new ChainLinq.Consumer.KeySourceSelector<TSource, TKey>(keySelector), count, comparer);
                     consumable.Consume(builder);
                     return builder.Result;
                 }
             }
 
-            var builder2 = new ChainLinq.Consumer.ToDictionary<TSource, TKey>(keySelector, comparer);
+            var builder2 = new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeySourceSelector<TSource, TKey>, TSource, TKey, TSource>(new ChainLinq.Consumer.KeySourceSelector<TSource, TKey>(keySelector), comparer);
             consumable.Consume(builder2);
             return builder2.Result;
         }
@@ -121,13 +121,13 @@ namespace Cistern.Linq
                 var count = counter.GetCount(true);
                 if (count >= 0)
                 {
-                    var builder = new ChainLinq.Consumer.ToDictionary<TSource, TKey, TElement>(keySelector, elementSelector, count, comparer);
+                    var builder = new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>, TSource, TKey, TElement>(new ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>(keySelector, elementSelector), count, comparer);
                     consumable.Consume(builder);
                     return builder.Result;
                 }
             }
 
-            var builder2 = new ChainLinq.Consumer.ToDictionary<TSource, TKey, TElement>(keySelector, elementSelector, comparer);
+            var builder2 = new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>, TSource, TKey, TElement>(new ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>(keySelector, elementSelector), comparer);
             consumable.Consume(builder2);
             return builder2.Result;
         }
