@@ -32,8 +32,14 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 
 			throw new Exception("Not found!");
 		}
-		
-		[Benchmark]
+
+        [Benchmark]
+        public double SystemLinqViaFirst()
+        {
+            return System.Linq.Enumerable.First(System.Linq.Enumerable.Where(Numbers, n => n == NumberOfItems));
+        }
+
+        [Benchmark]
 		public double CisternLinq()
 		{
 			foreach (var item in Enumerable.Where(Numbers, n => n == NumberOfItems))
@@ -43,5 +49,12 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
 
 			throw new Exception("Not found!");
 		}
-	}
+
+        [Benchmark]
+        public double CisternLinqViaFirst()
+        {
+            return Cistern.Linq.Enumerable.First(Cistern.Linq.Enumerable.Where(Numbers, n => n == NumberOfItems));
+        }
+
+    }
 }
