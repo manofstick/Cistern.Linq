@@ -16,7 +16,10 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.String
             foreach (var n in Words)
             {
                 if (!answer.TryGetValue(n[0], out var words))
+                {
                     words = new List<string>();
+                    answer[n[0]] = words;
+                }
                 words.Add(n);
             }
 

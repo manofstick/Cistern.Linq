@@ -17,8 +17,12 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.String
             {
                 if (n.Length >= 3)
                 {
-                    if (!answer.TryGetValue((n[0], n[1], n[2]), out var words))
+                    var key = (n[0], n[1], n[2]);
+                    if (!answer.TryGetValue(key, out var words))
+                    {
                         words = new List<string>();
+                        answer[key] = words;
+                    }
                     words.Add(n);
                 }
             }
