@@ -19,7 +19,7 @@ namespace Cistern.Linq.Benchmarking.Data
 
         //generated with https://www.generatedata.com
         public static IEnumerable<Customer> GetCustomers()
-        { 
+        {
             yield return new Customer { Name = "Lance Cross", Email = "consectetuer@diamDuismi.net", Address = "Ap #619-4466 Cursus. Street", City = "Penrith", State = "NSW", PostCode = 9443, DOB = DateTime.ParseExact("26/12/1989", "dd/MM/yyyy", CultureInfo.InvariantCulture) };
             yield return new Customer { Name = "Timothy X. Mendez", Email = "libero.et.tristique@Nam.com", Address = "P.O. Box 304, 2728 Porta St.", City = "Liverpool", State = "NSW", PostCode = 8012, DOB = DateTime.ParseExact("07/02/1991", "dd/MM/yyyy", CultureInfo.InvariantCulture) };
             yield return new Customer { Name = "Molly J. Pickett", Email = "Nullam.scelerisque@risus.com", Address = "Ap #232-5347 Magna. St.", City = "Melville", State = "Western Australia", PostCode = 6640, DOB = DateTime.ParseExact("17/05/1973", "dd/MM/yyyy", CultureInfo.InvariantCulture) };
@@ -220,6 +220,78 @@ namespace Cistern.Linq.Benchmarking.Data
             yield return new Customer { Name = "Mira Q. Franco", Email = "ipsum@Sednunc.com", Address = "P.O. Box 170, 1219 Dictum Rd.", City = "Grafton", State = "NSW", PostCode = 9934, DOB = DateTime.ParseExact("07/09/1949", "dd/MM/yyyy", CultureInfo.InvariantCulture) };
             yield return new Customer { Name = "Ahmed G. Hardin", Email = "augue.scelerisque@magnaUttincidunt.net", Address = "930-7380 Elit. Street", City = "Liverpool", State = "NSW", PostCode = 4515, DOB = DateTime.ParseExact("26/03/1929", "dd/MM/yyyy", CultureInfo.InvariantCulture) };
             yield return new Customer { Name = "Brent C. Meyer", Email = "urna.et.arcu@inceptoshymenaeos.org", Address = "3770 Aliquam St.", City = "Mount Isa", State = "QLD", PostCode = 6999, DOB = DateTime.ParseExact("24/07/1933", "dd/MM/yyyy", CultureInfo.InvariantCulture) };
+        }
+        public static IEnumerable<Customer> GetCustomers(int n)
+        {
+            var customers = GetCustomers().ToList();
+
+            var names = customers.Select(c => c.Name.Split(' ')).ToArray();
+            var email = customers.Select(c => c.Email.Split('@')).ToArray();
+            var addresses = customers.Select(c => c.Address.Split(' ')).ToArray();
+            var cities = customers.Select(c => c.City).ToArray();
+            var states = customers.Select(c => c.State).Distinct().ToArray();
+            var postcode = customers.Select(c => c.PostCode).Distinct().ToArray();
+            var dobs = customers.Select(c => c.DOB).Distinct().ToArray();
+
+            var r = new Random(42);
+
+            Func<string> getName = () =>
+            {
+                var partA = names[r.Next(names.Length)];
+                var partB = names[r.Next(names.Length)];
+                if (partB.Length <= 2)
+                    return String.Concat(partA[0], " ", partB[partB.Length - 1]);
+                var partC = names[r.Next(names.Length)];
+                return String.Concat(partA[0], " ", partB[1], " ", partC.Last());
+            };
+
+            Func<string> getEmail = () =>
+            {
+                var partA = email[r.Next(email.Length)];
+                var partB = email[r.Next(email.Length)];
+                return String.Concat(partA[0], r.Next().ToString(), "@", partB.Last());
+            };
+
+            Func<string> getAddress = () =>
+            {
+                var partA = addresses[r.Next(addresses.Length)];
+                var partB = addresses[r.Next(addresses.Length)];
+                if (partB.Length <= 2)
+                    return String.Concat(partA[0], " ", partB.Last());
+                var partC = addresses[r.Next(addresses.Length)];
+                if (partC.Length <= 3)
+                    return String.Concat(partA[0], " ", partB[1], " ", partC.Last());
+                var partD = addresses[r.Next(addresses.Length)];
+                if (partD.Length <= 4)
+                    return String.Concat(partA[0], " ", partB[1], " ", partC[2], " ", partD.Last());
+                var partE = addresses[r.Next(addresses.Length)];
+                if (partE.Length <= 5)
+                    return String.Concat(partA[0], " ", partB[1], " ", partC[2], " ", partD[3], " ", partE.Last());
+                var partF = addresses[r.Next(addresses.Length)];
+                return String.Concat(partA[0], " ", partB[1], " ", partC[2], " ", partD[3], " ", partE[4], " ", partF.Last());
+            };
+
+            Func<string> getCity = () => cities[r.Next(cities.Length)];
+
+            Func<string> getState = () => states[r.Next(states.Length)];
+
+            Func<int> getPostCode = () => r.Next(1000, 10000);
+
+            Func<DateTime> getDOB = () => dobs[r.Next(dobs.Length)].AddDays(r.Next(-365, 365));
+
+            for (var i=0; i < n; ++i)
+            {
+                yield return new Customer
+                {
+                    Name = getName(),
+                    Email = getEmail(),
+                    Address = getAddress(),
+                    City = getCity(),
+                    State = getState(),
+                    PostCode = getPostCode(),
+                    DOB = getDOB(),
+                };
+            }
         }
     }
 }
