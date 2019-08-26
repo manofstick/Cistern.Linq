@@ -36,7 +36,7 @@ namespace Cistern.Linq
                 return opt.Skip(count);
             }
 
-            if (consumable is ChainLinq.ConsumableForMerging<TSource> merger)
+            if (consumable is ChainLinq.ConsumableCons<TSource> merger)
             {
                 if (merger.TailLink is ChainLinq.Optimizations.IMergeSkip<TSource> skipMerge)
                 {

@@ -7,7 +7,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
     /// </summary>
     /// <typeparam name="U"></typeparam>
     /// <typeparam name="T"></typeparam>
-    internal abstract class Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<U, T> : ConsumableForMerging<U>, IConsumableInternal
+    internal abstract class Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<U, T> : ConsumableCons<U>, IConsumableInternal
     {
         public Link<T, U> Link { get; }
 

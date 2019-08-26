@@ -16,7 +16,7 @@ namespace Cistern.Linq.ChainLinq.Links
         public override Chain<T> Compose(Chain<U> activity) =>
             new Activity(Selector, Predicate, activity);
 
-        public Consumable<U> MergeWhere(ConsumableForMerging<U> consumable, Func<U, bool> second) =>
+        public Consumable<U> MergeWhere(ConsumableCons<U> consumable, Func<U, bool> second) =>
             consumable.ReplaceTailLink(new SelectWhere<T, U>(Selector, t => Predicate(t) && second(t)));
 
         sealed class Activity

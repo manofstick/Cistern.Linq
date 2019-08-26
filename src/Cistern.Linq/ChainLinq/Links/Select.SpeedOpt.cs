@@ -7,7 +7,7 @@ namespace Cistern.Linq.ChainLinq.Links
         : Optimizations.ISkipTakeOnConsumableLinkUpdate<T, U>
         , Optimizations.IMergeSelect<U>
     {
-        public virtual Consumable<V> MergeSelect<V>(ConsumableForMerging<U> consumable, Func<U, V> selector) =>
+        public virtual Consumable<V> MergeSelect<V>(ConsumableCons<U> consumable, Func<U, V> selector) =>
             consumable.ReplaceTailLink(new Select<T, U, V>(Selector, selector));
 
         public Link<T, U> Skip(int toSkip) => this;
@@ -52,7 +52,7 @@ namespace Cistern.Linq.ChainLinq.Links
         public Select(Func<T, U> t2u, Func<U, V> u2v) : base(t => u2v(t2u(t))) =>
             (_t2u, _u2v) = (t2u, u2v);
 
-        public override Consumable<W> MergeSelect<W>(ConsumableForMerging<V> consumer, Func<V, W> v2w) =>
+        public override Consumable<W> MergeSelect<W>(ConsumableCons<V> consumer, Func<V, W> v2w) =>
             consumer.ReplaceTailLink(new Select<T, U, V, W>(_t2u, _u2v, v2w));
     }
 
@@ -65,7 +65,7 @@ namespace Cistern.Linq.ChainLinq.Links
         public Select(Func<T, U> t2u, Func<U, V> u2v, Func<V, W> v2w) : base(t => v2w(u2v(t2u(t)))) =>
             (_t2u, _u2v, _v2w) = (t2u, u2v, v2w);
 
-        public override Consumable<X> MergeSelect<X>(ConsumableForMerging<W> consumer, Func<W, X> w2x) =>
+        public override Consumable<X> MergeSelect<X>(ConsumableCons<W> consumer, Func<W, X> w2x) =>
             consumer.ReplaceTailLink(new Select<T, U, V, W, X>(_t2u, _u2v, _v2w, w2x));
     }
 

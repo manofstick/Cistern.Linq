@@ -14,6 +14,6 @@
 
     interface IMergeSkip<T>
     {
-        Consumable<T> MergeSkip(ConsumableForMerging<T> consumable, int count);
+        Consumable<T> MergeSkip(ConsumableCons<T> consumable, int count);
     }
 }

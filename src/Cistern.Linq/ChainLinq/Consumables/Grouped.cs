@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.ChainLinq.Consumables
 {
     internal sealed partial class GroupedEnumerable<TSource, TKey>
-        : ConsumableForAddition<IGrouping<TKey, TSource>>
+        : ConsumableCons<IGrouping<TKey, TSource>>
         , IConsumableInternal
     {
         private readonly IEnumerable<TSource> _source;
@@ -27,6 +27,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
             _keySelector = keySelector;
             _comparer = comparer;
         }
+
+        public override object TailLink => null;
+
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
         public override Consumable<IGrouping<TKey, TSource>> AddTail(Link<IGrouping<TKey, TSource>, IGrouping<TKey, TSource>> transform) =>
             new GroupedEnumerableWithLinks<TSource, TKey, IGrouping<TKey, TSource>>(_source, _keySelector, _comparer, transform);
@@ -72,7 +76,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
     }
 
     internal sealed partial class GroupedEnumerable<TSource, TKey, TElement>
-        : ConsumableForAddition<IGrouping<TKey, TElement>>
+        : ConsumableCons<IGrouping<TKey, TElement>>
         , IConsumableInternal
     {
         private readonly IEnumerable<TSource> _source;
@@ -103,6 +107,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
             _comparer = comparer;
         }
 
+        public override object TailLink => null;
+
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
+
         public override Consumable<IGrouping<TKey, TElement>> AddTail(Link<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>> transform) =>
             new GroupedEnumerableWithLinks<TSource, TKey, TElement, IGrouping<TKey, TElement>>(_source, _keySelector, _elementSelector, _comparer, transform);
 
@@ -119,7 +127,8 @@ namespace Cistern.Linq.ChainLinq.Consumables
             ToLookup().GetEnumerator();
     }
 
-    internal sealed partial class GroupedEnumerableWithLinks<TSource, TKey, TElement, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, IGrouping<TKey, TElement>>
+    internal sealed partial class GroupedEnumerableWithLinks<TSource, TKey, TElement, V>
+        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, IGrouping<TKey, TElement>>
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -148,7 +157,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
     }
 
     internal sealed partial class GroupedResultEnumerable<TSource, TKey, TResult>
-        : ConsumableForAddition<TResult>
+        : ConsumableCons<TResult>
         , IConsumableInternal
     {
         private readonly IEnumerable<TSource> _source;
@@ -178,6 +187,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
             _resultSelector = resultSelector;
             _comparer = comparer;
         }
+
+        public override object TailLink => null;
+
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
         public override Consumable<TResult> AddTail(Link<TResult, TResult> transform) =>
             new GroupedResultEnumerableWithLinks<TSource, TKey, TResult, TResult>(_source, _keySelector, _resultSelector, _comparer, transform);
@@ -213,7 +226,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         private Consumable<V> ToConsumable()
         {
             Lookup<TKey, TSource> lookup = Consumer.Lookup.Consume(_source, _keySelector, _comparer);
-            ConsumableForAddition<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
+            ConsumableCons<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
             return appliedSelector.AddTail(Link);
         }
 
@@ -225,7 +238,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
     }
 
     internal sealed partial class GroupedResultEnumerable<TSource, TKey, TElement, TResult>
-        : ConsumableForAddition<TResult>
+        : ConsumableCons<TResult>
         , IConsumableInternal
     {
         private readonly IEnumerable<TSource> _source;
@@ -263,6 +276,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
             _resultSelector = resultSelector;
         }
 
+        public override object TailLink => null;
+
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
+
         public override Consumable<TResult> AddTail(Link<TResult, TResult> transform) =>
             new GroupedResultEnumerableWithLinks<TSource, TKey, TElement, TResult, TResult>(_source, _keySelector, _elementSelector, _resultSelector, _comparer, transform);
 
@@ -298,7 +315,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         private Consumable<V> ToConsumable()
         {
             Lookup<TKey, TElement> lookup = Consumer.Lookup.Consume(_source, _keySelector, _elementSelector, _comparer);
-            ConsumableForAddition<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
+            ConsumableCons<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
             return appliedSelector.AddTail(Link);
         }
 

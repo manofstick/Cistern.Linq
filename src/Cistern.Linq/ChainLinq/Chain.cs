@@ -87,15 +87,11 @@ namespace Cistern.Linq.ChainLinq
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    internal abstract class ConsumableForAddition<T> : Consumable<T>
-    {
-        public abstract Consumable<T> AddTail(Link<T, T> transform);
-        public abstract Consumable<U> AddTail<U>(Link<T, U> transform);
-    }
-
-    abstract class ConsumableForMerging<T> : ConsumableForAddition<T>
+    internal abstract class ConsumableCons<T> : Consumable<T>
     {
         public abstract object TailLink { get; }
+        public abstract Consumable<T> AddTail(Link<T, T> transform);
+        public abstract Consumable<U> AddTail<U>(Link<T, U> transform);
         public abstract Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink);
     }
 }

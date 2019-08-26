@@ -10,7 +10,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(SystemLinq_ConsumablesLookupDebugView<,>))]
     internal abstract partial class Lookup<TKey, TElement> 
-        : ConsumableForAddition<IGrouping<TKey, TElement>>
+        : ConsumableCons<IGrouping<TKey, TElement>>
         , ILookup<TKey, TElement>
         , IConsumableInternal
     {
@@ -43,10 +43,14 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public bool Contains(TKey key) => GetGrouping(key, create: false) != null;
 
-        internal ConsumableForAddition<TResult> ApplyResultSelector<TResult>(Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
+        internal ConsumableCons<TResult> ApplyResultSelector<TResult>(Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
             new LookupResultsSelector<TKey, TElement, TResult>(_lastGrouping, resultSelector);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public override object TailLink => null;
+
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
         public override Consumable<IGrouping<TKey, TElement>> AddTail(Link<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>> transform) =>
             new Lookup<TKey, TElement, IGrouping<TKey, TElement>>(_lastGrouping, transform);
@@ -185,7 +189,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
     }
 
     class LookupResultsSelector<TKey, TElement, TResult>
-        : ConsumableForAddition<TResult>
+        : ConsumableCons<TResult>
         , IConsumableInternal
     {
         private readonly Grouping<TKey, TElement> _lastGrouping;
@@ -193,6 +197,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public LookupResultsSelector(Grouping<TKey, TElement> lastGrouping, Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
             (_lastGrouping, _resultSelector) = (lastGrouping, resultSelector);
+
+        public override object TailLink => null;
+
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
         public override Consumable<TResult> AddTail(Link<TResult, TResult> first) =>
             new LookupResultsSelector<TKey, TElement, TResult, TResult>(_lastGrouping, _resultSelector, first);

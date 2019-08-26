@@ -127,7 +127,7 @@ namespace Cistern.Linq.ChainLinq
 
         internal static Consumable<TSource> Where<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
-            if (source is ConsumableForMerging<TSource> consumable)
+            if (source is ConsumableCons<TSource> consumable)
             {
                 if (consumable.TailLink is Optimizations.IMergeWhere<TSource> optimization)
                 {
@@ -167,7 +167,7 @@ namespace Cistern.Linq.ChainLinq
 
         internal static Consumable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            if (source is ConsumableForMerging<TSource> consumable)
+            if (source is ConsumableCons<TSource> consumable)
             {
                 if (consumable.TailLink is Optimizations.IMergeSelect<TSource> optimization)
                 {
@@ -209,7 +209,7 @@ namespace Cistern.Linq.ChainLinq
         // expensive JIT generic interface call
         internal static Consumable<T> PushTTTransform<T>(IEnumerable<T> e, Link<T, T> transform)
         {
-            if (e is ConsumableForAddition<T> consumable)
+            if (e is ConsumableCons<T> consumable)
             {
                 return consumable.AddTail(transform);
             }
@@ -222,7 +222,7 @@ namespace Cistern.Linq.ChainLinq
         // TUTrasform is more flexible but slower than TTTransform
         internal static Consumable<U> PushTUTransform<T, U>(IEnumerable<T> e, Link<T, U> transform)
         {
-            if (e is ConsumableForAddition<T> consumable)
+            if (e is ConsumableCons<T> consumable)
             {
                 return consumable.AddTail(transform);
             }

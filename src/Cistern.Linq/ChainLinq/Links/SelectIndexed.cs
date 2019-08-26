@@ -14,7 +14,7 @@ namespace Cistern.Linq.ChainLinq.Links
             (_selector, _startIndex) = (selector, startIndex);
 
         public SelectIndexed(Func<T, int, U> selector) : this(selector, 0) { }
-        public Consumable<U> MergeWhere(ConsumableForMerging<U> consumable, Func<U, bool> second) =>
+        public Consumable<U> MergeWhere(ConsumableCons<U> consumable, Func<U, bool> second) =>
             consumable.ReplaceTailLink(new SelectIndexedWhere<T, U>(_selector, second));
 
         public override Chain<T> Compose(Chain<U> activity) =>

@@ -14,7 +14,7 @@ namespace Cistern.Linq.ChainLinq.Links
             }
         }
 
-        public Consumable<T> MergeSkip(ConsumableForMerging<T> consumable, int count)
+        public Consumable<T> MergeSkip(ConsumableCons<T> consumable, int count)
         {
             if ((long)_toSkip + count > int.MaxValue)
                 return consumable.AddTail(new Skip<T>(count));
