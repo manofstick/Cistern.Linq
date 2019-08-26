@@ -142,9 +142,11 @@ namespace Cistern.Linq.ChainLinq.Consumables
     [DebuggerTypeProxy(typeof(SystemLinq_ConsumablesLookupDebugView<,>))]
     internal sealed partial class LookupDefaultComparer<TKey, TElement> : Lookup<TKey, TElement>
     {
+        private readonly EqualityComparer<TKey> _comparer = EqualityComparer<TKey>.Default;
+
         internal sealed override GroupingInternal<TKey, TElement> GetGrouping(TKey key, bool create)
         {
-            int hashCode = (key == null) ? 0 : EqualityComparer<TKey>.Default.GetHashCode(key) & 0x7FFFFFFF;
+            int hashCode = (key == null) ? 0 : _comparer.GetHashCode(key) & 0x7FFFFFFF;
             GroupingInternal<TKey, TElement> g = _groupings[hashCode % _groupings.Length];
             while (true)
             {
@@ -153,7 +155,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
                     return create ? Create(key, hashCode) : null;
                 }
 
-                if (g._hashCode == hashCode && EqualityComparer<TKey>.Default.Equals(g._key, key))
+                if (g._hashCode == hashCode && _comparer.Equals(g._key, key))
                 {
                     return g;
                 }
