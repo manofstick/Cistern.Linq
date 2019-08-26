@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 using DesiredShape = System.Collections.Generic.List<(string State, int Count)>;
 
-namespace Cistern.Linq.Benchmarking.Benchmarks.Containers
+namespace Cistern.Linq.Benchmarking.Benchmarks.Containers.Customers
 {
     [CoreJob, MemoryDiagnoser]
-    public class GroupByCountBenchmark : ContainersBase
+    public class Containers_GroupByCountBenchmark : CustomersBase
     {
         [Benchmark]
         public DesiredShape ForLoop()
