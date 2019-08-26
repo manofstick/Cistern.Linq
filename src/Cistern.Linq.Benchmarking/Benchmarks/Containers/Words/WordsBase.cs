@@ -34,7 +34,11 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.Containers.Words
 
             if (Sorted)
             {
-                Words = words.OrderBy(x => x).Take(WordsCount).ToContainer(ContainerType);
+                Words =
+                    words
+                    .OrderBy(x => x)
+                    .Take(WordsCount)
+                    .ToContainer(ContainerType);
             }
             else
             {
@@ -47,7 +51,11 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.Containers.Words
                     words[i] = words[j];
                     words[j] = tmp;
                 }
-                Words = words.Take(WordsCount).ToContainer(ContainerType);
+
+                Words =
+                    words
+                    .Take(WordsCount)
+                    .ToContainer(ContainerType);
             }
 		}
 	}

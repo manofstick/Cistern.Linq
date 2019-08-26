@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Text;
 
 namespace Cistern.Linq.Benchmarking.Benchmarks.Containers
 {
     static class ContainersHelper
     {
-        private static IEnumerable<T> AsRealEnumerable<T>(IEnumerable<T> data)
+        private static IEnumerable<T> AsRealEnumerable<T>(T[] data)
         {
             foreach (var x in data)
                 yield return x;
@@ -17,12 +16,12 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.Containers
         {
             switch (type)
             {
-                case ContainerType.Array: return data.ToArray();
-                case ContainerType.List: return data.ToList();
-                case ContainerType.Enumerable: return AsRealEnumerable(data);
-                case ContainerType.ImmutableArray: return data.ToImmutableArray();
-                case ContainerType.ImmutableList: return data.ToImmutableList();
-                case ContainerType.FSharpList: return Microsoft.FSharp.Collections.ListModule.OfSeq(data);
+                case ContainerType.Array:           return data.ToArray();
+                case ContainerType.List:            return data.ToList();
+                case ContainerType.Enumerable:      return AsRealEnumerable(data.ToArray());
+                case ContainerType.ImmutableArray:  return data.ToImmutableArray();
+                case ContainerType.ImmutableList:   return data.ToImmutableList();
+                case ContainerType.FSharpList:      return Microsoft.FSharp.Collections.ListModule.OfSeq(data);
             }
             throw new ArgumentException($"unknwon type {type}", "type");
         }
