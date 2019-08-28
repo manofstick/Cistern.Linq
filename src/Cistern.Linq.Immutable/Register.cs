@@ -7,16 +7,16 @@ namespace Cistern.Linq.Immutable
     public static class Register
     {
         class TryFindImmutableTypes
-            : Utils.ITryFindSpecificType
+            : ChainLinq.Utils.ITryFindSpecificType
         {
             private TryFindImmutableTypes() { }
 
-            public static Utils.ITryFindSpecificType Instance { get; } = new TryFindImmutableTypes();
+            public static ChainLinq.Utils.ITryFindSpecificType Instance { get; } = new TryFindImmutableTypes();
 
             public string Namespace => "System.Collections.Immutable";
 
             public Consumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
-                where Construct : Utils.IConstruct<T, U>
+                where Construct : ChainLinq.Utils.IConstruct<T, U>
             {
                 if (name.Length <= 9)
                     return null;
@@ -38,7 +38,7 @@ namespace Cistern.Linq.Immutable
 
         public static void RegisterSystemCollectionsImmutable()
         {
-            Utils.Register(TryFindImmutableTypes.Instance);
+            ChainLinq.Utils.Register(TryFindImmutableTypes.Instance);
         }
     }
 }

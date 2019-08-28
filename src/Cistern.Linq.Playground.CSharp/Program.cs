@@ -1,47 +1,39 @@
 ﻿using System;
+using System.Diagnostics;
+#if manofstick_test_chainlinq
+using System.ChainLinq;
+#else
 using Cistern.Linq;
+#endif
 
-namespace Playground
+class Program
 {
-    enum Playthings
+    public static void Main()
     {
-        system_mikedn,
-        cistern_mikedn,
-        system_mikedn_immutable,
-        cistern_mikedn_immutable,
-        system_cartlinq,
-        cistern_cartlinq,
-        system_jamesqo,
-        cistern_jamesqo,
-        system_matthewwatson,
-        cistern_matthewwatson,
-    }
+        var sw = new Stopwatch();
+        var rnd = new Random(08041988);
 
-    class Program
-    {
-        static Playthings plaything = Playthings.cistern_matthewwatson;
-
-        static void Main(string[] args)
+        foreach (var Count in new[] { 0, 10, 100, 10000, 1000000 })
         {
-            Console.WriteLine(plaything);
+            var values = Enumerable.Range(1, Count).Select(x => rnd.NextDouble()).ToArray();
 
-            switch(plaything)
+            var dim1 = values.Take(values.Length / 10).ToArray();
+            var dim2 = values.Take(20).ToArray();
+
+            sw.Restart();
+
+            var sum = 0.0;
+
+            for (var i = 0; i < 100000000 / (Count + 1); ++i)
             {
-                case Playthings.cistern_mikedn: mikedn.CisternLinq.Program.mikedn(); break;
-                case Playthings.system_mikedn: mikedn.SystemLinq.Program.mikedn(); break;
-
-                case Playthings.cistern_matthewwatson: matthewwatson.CisternLinq.Demo.Program.matthewwatson(); break;
-                case Playthings.system_matthewwatson: matthewwatson.SystemLinq.Demo.Program.matthewwatson(); break;
-
-                case Playthings.cistern_mikedn_immutable: mikedn_immutable.CisternLinq.Program.mikedn_immutable(); break;
-                case Playthings.system_mikedn_immutable: mikedn_immutable.SystemLinq.Program.mikedn_immutable(); break;
-
-                case Playthings.cistern_cartlinq: cartlinq.CisternLinq.Program.cartlinq(); break;
-                case Playthings.system_cartlinq: cartlinq.SystemLinq.Program.cartlinq(); break;
-
-                case Playthings.cistern_jamesqo: jamesko.CisternLinq.Program.jamesqo(); break;
-                case Playthings.system_jamesqo: jamesko.SystemLinq.Program.jamesqo(); break;
+                sum += (from x in dim1
+                        from y in dim2
+                        select x * y).Sum();
             }
+
+            var time = sw.ElapsedMilliseconds;
+
+            Console.WriteLine("{0}\t{1}\t({2})", Count, time, sum);
         }
     }
 }

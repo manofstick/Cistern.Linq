@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Cistern.Linq.Utils;
+using System;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
@@ -22,10 +22,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
         , Optimizations.IHeadStart<T>
 
     {
-        List<T> builder;
+        ArrayBuilder<T> builder;
 
         public ToArrayViaBuilder() : base(null) =>
-            builder = new List<T>();
+            builder = new ArrayBuilder<T>();
 
         public override ChainStatus ProcessNext(T input)
         {
