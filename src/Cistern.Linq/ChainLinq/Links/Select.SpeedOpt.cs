@@ -6,9 +6,13 @@ namespace Cistern.Linq.ChainLinq.Links
     internal partial class Select<T, U> 
         : Optimizations.ISkipTakeOnConsumableLinkUpdate<T, U>
         , Optimizations.IMergeSelect<U>
+        , Optimizations.IMergeWhere<U>
     {
         public virtual Consumable<V> MergeSelect<V>(ConsumableCons<U> consumable, Func<U, V> selector) =>
             consumable.ReplaceTailLink(new Select<T, U, V>(Selector, selector));
+
+        public Consumable<U> MergeWhere(ConsumableCons<U> consumable, Func<U, bool> predicate) =>
+            consumable.ReplaceTailLink(new SelectWhere<T, U>(Selector, predicate));
 
         public Link<T, U> Skip(int toSkip) => this;
 
