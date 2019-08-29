@@ -12,7 +12,7 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 			double max = 0;
 			foreach (var n in Numbers)
 			{
-				if (n > max)
+				if (n > max || double.IsNaN(max))
 				{
 					max = n;
 				}

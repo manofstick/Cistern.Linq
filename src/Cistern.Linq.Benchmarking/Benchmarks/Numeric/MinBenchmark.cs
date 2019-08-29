@@ -16,6 +16,11 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 				{
 					min = n;
 				}
+                else if (double.IsNaN(n))
+                {
+                    min = double.NaN;
+                    break;
+                }
 			}
 			
 			if (Numbers.Length == 0)
