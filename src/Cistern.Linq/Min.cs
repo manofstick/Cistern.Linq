@@ -26,7 +26,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MinNullableInt());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<int, ChainLinq.Consumer.MinNullableLogic<int, int, Maths.OpsInt>>());
         }
 
         public static long Min(this IEnumerable<long> source)
@@ -46,7 +46,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MinNullableLong());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<long, ChainLinq.Consumer.MinNullableLogic<long, long, Maths.OpsLong>>());
         }
 
         public static float Min(this IEnumerable<float> source)
@@ -66,7 +66,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MinNullableFloat());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<float, ChainLinq.Consumer.MinNullableLogic<float, double, Maths.OpsFloat>>());
         }
 
         public static double Min(this IEnumerable<double> source)
@@ -86,7 +86,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MinNullableDouble());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<double, ChainLinq.Consumer.MinNullableLogic<double, double, Maths.OpsDouble>>());
         }
 
         public static decimal Min(this IEnumerable<decimal> source)
@@ -106,7 +106,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.MinNullableDecimal());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<decimal, ChainLinq.Consumer.MinNullableLogic<decimal, decimal, Maths.OpsDecimal>>());
         }
 
         public static TSource Min<TSource>(this IEnumerable<TSource> source)

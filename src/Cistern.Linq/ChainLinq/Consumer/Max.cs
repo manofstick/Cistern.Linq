@@ -182,66 +182,81 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
     }
 
-    sealed class MaxGenericNullable<T, Accumulator, Maths>
-        : Consumer<T?, T?>
-        , Optimizations.IHeadStart<T?>
-        , Optimizations.ITailEnd<T?>
+    interface ILogic<T>
+        where T : struct
+    {
+        void Init(T? result);
+        bool Process(T? input);
+        T? Result { get; }
+    }
+
+    struct MaxNullableLogic<T, Accumulator, Maths> : ILogic<T>
         where T : struct
         where Accumulator : struct
         where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
     {
-        public MaxGenericNullable() : base(null) { }
+        public T? Result { get; private set; }
 
-        struct Logic
+        public void Init(T? result)
         {
-            public T? Result;
-
-            public Logic(T? result)
-            {
-                this.Result = result;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Process(T? input)
-            {
-                if (!Result.HasValue)
-                {
-                    if (!input.HasValue)
-                    {
-                        return;
-                    }
-
-                    Result = default(Maths).MaxInit;
-                }
-
-                if (input.HasValue)
-                {
-                    var i = input.GetValueOrDefault();
-                    var r = Result.GetValueOrDefault();
-                    if (default(Maths).GreaterThan(i, r) || default(Maths).IsNaN(r))
-                    {
-                        Result = i;
-                    }
-                }
-            }
+            this.Result = result;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Process(T? input)
+        {
+            var maths = default(Maths);
+
+            if (!Result.HasValue)
+            {
+                if (!input.HasValue)
+                {
+                    return true;
+                }
+
+                Result = maths.MaxInit;
+            }
+
+            if (input.HasValue)
+            {
+                var i = input.GetValueOrDefault();
+                var r = Result.GetValueOrDefault();
+                if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                {
+                    Result = i;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    sealed class GenericNullable<T, Logic>
+        : Consumer<T?, T?>
+        , Optimizations.IHeadStart<T?>
+        , Optimizations.ITailEnd<T?>
+        where T : struct
+        where Logic : ILogic<T>
+    {
+        public GenericNullable() : base(null) { }
 
         public override ChainStatus ProcessNext(T? input)
         {
-            var logic = new Logic(Result);
-            logic.Process(input);
+            Logic logic = default; logic.Init(Result);
+            var status = logic.Process(input) ? ChainStatus.Flow : ChainStatus.Stop;
             Result = logic.Result;
 
-            return ChainStatus.Flow;
+            return status;
         }
 
         void Optimizations.IHeadStart<T?>.Execute(ReadOnlySpan<T?> source)
         {
-            var logic = new Logic(Result);
+            Logic logic = default; logic.Init(Result);
 
             foreach (var input in source)
             {
-                logic.Process(input);
+                if (!logic.Process(input))
+                    break;
             }
 
             Result = logic.Result;
@@ -249,11 +264,12 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         void Optimizations.IHeadStart<T?>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T?, Enumerator> source)
         {
-            var logic = new Logic(Result);
+            Logic logic = default; logic.Init(Result);
 
             foreach (var input in source)
             {
-                logic.Process(input);
+                if (!logic.Process(input))
+                    break;
             }
 
             Result = logic.Result;
@@ -261,11 +277,12 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         void Optimizations.ITailEnd<T?>.Select<S>(ReadOnlySpan<S> source, Func<S, T?> selector)
         {
-            var logic = new Logic(Result);
+            Logic logic = default; logic.Init(Result);
 
             foreach (var input in source)
             {
-                logic.Process(selector(input));
+                if (!logic.Process(selector(input)))
+                    break;
             }
 
             Result = logic.Result;
@@ -273,27 +290,33 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         ChainStatus Optimizations.ITailEnd<T?>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T?> resultSelector)
         {
-            var logic = new Logic(Result);
+            Logic logic = default; logic.Init(Result);
+            ChainStatus status = ChainStatus.Flow;
 
             foreach (var input in span)
             {
-                logic.Process(resultSelector(source, input));
+                if (!logic.Process(resultSelector(source, input)))
+                {
+                    status = ChainStatus.Stop;
+                    break;
+                }
             }
 
             Result = logic.Result;
 
-            return ChainStatus.Flow;
+            return status;
         }
 
         void Optimizations.ITailEnd<T?>.Where(ReadOnlySpan<T?> source, Func<T?, bool> predicate)
         {
-            var logic = new Logic(Result);
+            Logic logic = default; logic.Init(Result);
 
             foreach (var input in source)
             {
                 if (predicate(input))
                 {
-                    logic.Process(input);
+                    if (!logic.Process(input))
+                        break;
                 }
             }
 
@@ -302,13 +325,14 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         void Optimizations.ITailEnd<T?>.Where<Enumerator>(Optimizations.ITypedEnumerable<T?, Enumerator> source, Func<T?, bool> predicate)
         {
-            var logic = new Logic(Result);
+            Logic logic = default; logic.Init(Result);
 
             foreach (var input in source)
             {
                 if (predicate(input))
                 {
-                    logic.Process(input);
+                    if (!logic.Process(input))
+                        break;
                 }
             }
 
@@ -317,13 +341,14 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         void Optimizations.ITailEnd<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
         {
-            var logic = new Logic(Result);
+            Logic logic = default; logic.Init(Result);
 
             foreach (var input in source)
             {
                 if (predicate(input))
                 {
-                    logic.Process(selector(input));
+                    if (!logic.Process(selector(input)))
+                        break;
                 }
             }
 
@@ -332,13 +357,14 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         void Optimizations.ITailEnd<T?>.WhereSelect<Enumerator, S>(Optimizations.ITypedEnumerable<S, Enumerator> source, Func<S, bool> predicate, Func<S, T?> selector)
         {
-            var logic = new Logic(Result);
+            Logic logic = default; logic.Init(Result);
 
             foreach (var input in source)
             {
                 if (predicate(input))
                 {
-                    logic.Process(selector(input));
+                    if (!logic.Process(selector(input)))
+                        break;
                 }
             }
 

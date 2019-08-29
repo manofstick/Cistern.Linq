@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
@@ -294,132 +295,48 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-
-
-
-
-
-
-
-
-    sealed class MinNullableInt : Consumer<int?, int?>
+    struct MinNullableLogic<T, Accumulator, Maths> : ILogic<T>
+        where T : struct
+        where Accumulator : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
     {
-        public MinNullableInt() : base(null) { }
+        public T? Result { get; private set; }
 
-        public override ChainStatus ProcessNext(int? input)
+        public void Init(T? result)
         {
-            var maybeValue = input.GetValueOrDefault();
-            if (!Result.HasValue || (input.HasValue && maybeValue < Result))
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
+            this.Result = result;
         }
-    }
 
-    sealed class MinNullableLong : Consumer<long?, long?>
-    {
-        public MinNullableLong() : base(null) { }
-
-        public override ChainStatus ProcessNext(long? input)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Process(T? input)
         {
-            var maybeValue = input.GetValueOrDefault();
-            if (!Result.HasValue || (input.HasValue && maybeValue < Result))
-            {
-                Result = input;
-            }
-            return ChainStatus.Flow;
-        }
-    }
+            var maths = default(Maths);
 
-    sealed class MinNullableFloat : Consumer<float?, float?>
-    {
-        public MinNullableFloat() : base(null) { }
-
-        public override ChainStatus ProcessNext(float? input)
-        {
             if (!Result.HasValue)
             {
                 if (!input.HasValue)
                 {
-                    return ChainStatus.Flow;
+                    return true;
                 }
 
-                Result = float.PositiveInfinity;
+                Result = maths.MinInit;
             }
 
             if (input.HasValue)
             {
-                var value = input.GetValueOrDefault();
-                if (value < Result.GetValueOrDefault())
+                var i = input.GetValueOrDefault();
+                if (maths.LessThan(i, Result.GetValueOrDefault()))
                 {
-                    Result = value;
+                    Result = i;
                 }
-                else if (float.IsNaN(value))
+                else if (maths.IsNaN(i))
                 {
-                    Result = float.NaN;
-                    return ChainStatus.Stop;
-                }
-            }
-
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MinNullableDouble : Consumer<double?, double?>
-    {
-        public MinNullableDouble() : base(null) { }
-
-        public override ChainStatus ProcessNext(double? input)
-        {
-            if (!Result.HasValue)
-            {
-                if (!input.HasValue)
-                {
-                    return ChainStatus.Flow;
-                }
-
-                Result = double.PositiveInfinity;
-            }
-
-            if (input.HasValue)
-            {
-                var value = input.GetValueOrDefault();
-                if (value < Result.GetValueOrDefault())
-                {
-                    Result = value;
-                }
-                else if (double.IsNaN(value))
-                {
-                    Result = double.NaN;
-                    return ChainStatus.Stop;
+                    Result = i;
+                    return false;
                 }
             }
 
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed class MinNullableDecimal : Consumer<decimal?, decimal?>
-    {
-        public MinNullableDecimal() : base(null) { }
-
-        public override ChainStatus ProcessNext(decimal? input)
-        {
-            if (!Result.HasValue)
-            {
-                Result = input;
-            }
-            else if (input.HasValue)
-            {
-                var value = input.GetValueOrDefault();
-                if (value < Result.GetValueOrDefault())
-                {
-                    Result = value;
-                }
-            }
-
-            return ChainStatus.Flow;
+            return true;
         }
     }
 
