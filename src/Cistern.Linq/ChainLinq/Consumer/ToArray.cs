@@ -22,6 +22,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
         {
             source.CopyTo(new Span<T>(Result, _index, Result.Length-_index));
+            _index += source.Length;
         }
 
         void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)

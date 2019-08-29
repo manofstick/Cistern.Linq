@@ -36,7 +36,11 @@ namespace Cistern.Linq
                     if (count == 0)
                         return Array.Empty<TSource>();
                     else
-                        return ChainLinq.Utils.Consume(collection, new ChainLinq.Consumer.ToArrayKnownSize<TSource>(count));
+                    {
+                        var result = new TSource[count];
+                        collection.CopyTo(result, 0);
+                        return result;
+                    }
 
                 default:
                     return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.ToArrayViaBuilder<TSource>());
