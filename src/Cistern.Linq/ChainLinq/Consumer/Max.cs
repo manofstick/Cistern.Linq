@@ -32,9 +32,15 @@ namespace Cistern.Linq.ChainLinq.Consumer
             var result = Result;
 
             _noData &= source.Length == 0;
-            foreach (var input in source)
+            var idx = 0;
+            for (; maths.IsNaN(result) && idx < source.Length; ++idx)
             {
-                if (maths.GreaterThan(input, result) || maths.IsNaN(result))
+                result = source[idx];
+            }
+            for(; idx < source.Length; ++idx)
+            {
+                var input = source[idx];
+                if (maths.GreaterThan(input, result))
                     result = input;
             }
 
