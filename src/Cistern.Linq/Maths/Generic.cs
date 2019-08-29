@@ -26,6 +26,7 @@ namespace Cistern.Linq.Maths
         bool LessThan(T lhs, T rhs);
 
         T MaxInit { get; }
+        T MinInit { get; }
     }
 
     struct OpsDouble : IMathsOperations<double, double>
@@ -44,6 +45,7 @@ namespace Cistern.Linq.Maths
         public bool LessThan(double lhs, double rhs) => lhs < rhs;
 
         public double MaxInit => double.NaN;
+        public double MinInit => double.PositiveInfinity;
     }
 
     struct OpsFloat : IMathsOperations<float, double>
@@ -62,6 +64,7 @@ namespace Cistern.Linq.Maths
         public bool GreaterThan(float lhs, float rhs) => lhs > rhs;
         public bool LessThan(float lhs, float rhs) => lhs < rhs;
         public float MaxInit => float.NaN;
+        public float MinInit => float.PositiveInfinity;
     }
 
     struct OpsInt : IMathsOperations<int, int>
@@ -78,6 +81,7 @@ namespace Cistern.Linq.Maths
         public bool GreaterThan(int lhs, int rhs) => lhs > rhs;
         public bool LessThan(int lhs, int rhs) => lhs < rhs;
         public int MaxInit => int.MinValue;
+        public int MinInit => int.MaxValue;
     }
 
     struct OpsLong : IMathsOperations<long, long>
@@ -95,6 +99,7 @@ namespace Cistern.Linq.Maths
         public bool GreaterThan(long lhs, long rhs) => lhs > rhs;
         public bool LessThan(long lhs, long rhs) => lhs < rhs;
         public long MaxInit => long.MinValue;
+        public long MinInit => long.MaxValue;
     }
 
 
@@ -113,5 +118,6 @@ namespace Cistern.Linq.Maths
         public bool GreaterThan(decimal lhs, decimal rhs) => lhs > rhs;
         public bool LessThan(decimal lhs, decimal rhs) => lhs < rhs;
         public Decimal MaxInit => Decimal.MinValue;
+        public Decimal MinInit => Decimal.MaxValue;
     }
 }

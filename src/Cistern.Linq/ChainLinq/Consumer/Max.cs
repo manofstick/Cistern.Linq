@@ -104,10 +104,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
             foreach (var input in source)
             {
-                if (predicate(input) && (maths.GreaterThan(input, result) || maths.IsNaN(result)))
+                if (predicate(input))
                 {
                     noData = false;
-                    result = input;
+                    if (maths.GreaterThan(input, result) || maths.IsNaN(result))
+                        result = input;
                 }
             }
 
@@ -123,10 +124,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
             foreach (var input in source)
             {
-                if (predicate(input) && (maths.GreaterThan(input, result) || maths.IsNaN(result)))
+                if (predicate(input))
                 {
                     noData = false;
-                    result = input;
+                    if (maths.GreaterThan(input, result) || maths.IsNaN(result))
+                        result = input;
                 }
             }
 
