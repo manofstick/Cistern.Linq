@@ -21,10 +21,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
         {
-            foreach (var item in source)
-            {
-                Result[_index++] = item;
-            }
+            source.CopyTo(new Span<T>(Result, _index, Result.Length-_index));
         }
 
         void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)

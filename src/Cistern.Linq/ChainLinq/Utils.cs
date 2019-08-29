@@ -232,7 +232,11 @@ namespace Cistern.Linq.ChainLinq
             }
         }
 
-
+        internal static Result Consume<T, Result>(Consumable<T> consumable, Consumer<T, Result> consumer)
+        {
+            consumable.Consume(consumer);
+            return consumer.Result;
+        }
 
         internal static Result Consume<T, Result>(IEnumerable<T> e, Consumer<T, Result> consumer)
         {

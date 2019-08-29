@@ -16,23 +16,31 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            if (source is ChainLinq.Consumable<TSource> consumable)
+            int count;
+            switch (source)
             {
-                if (source is ChainLinq.Optimizations.ICountOnConsumable counter)
-                {
-                    var count = counter.GetCount(true);
-                    if (count >= 0)
+                case ChainLinq.Consumable<TSource> consumable:
+                    if (consumable is ChainLinq.Optimizations.ICountOnConsumable counter)
                     {
-                        return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.ToArrayKnownSize<TSource>(count));
+                        count = counter.GetCount(true);
+                        if (count >= 0)
+                        {
+                            return ChainLinq.Utils.Consume(consumable, new ChainLinq.Consumer.ToArrayKnownSize<TSource>(count));
+                        }
                     }
-                }
 
-                var builder = new ChainLinq.Consumer.ToArrayViaBuilder<TSource>();
-                consumable.Consume(builder);
-                return builder.Result;
+                    return ChainLinq.Utils.Consume(consumable, new ChainLinq.Consumer.ToArrayViaBuilder<TSource>());
+
+                case ICollection<TSource> collection:
+                    count = collection.Count;
+                    if (count == 0)
+                        return Array.Empty<TSource>();
+                    else
+                        return ChainLinq.Utils.Consume(collection, new ChainLinq.Consumer.ToArrayKnownSize<TSource>(count));
+
+                default:
+                    return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.ToArrayViaBuilder<TSource>());
             }
-
-            return new List<TSource>(source).ToArray();
         }
 
         public static List<TSource> ToList<TSource>(this IEnumerable<TSource> source)

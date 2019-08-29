@@ -1,10 +1,13 @@
 ﻿using System;
 using Cistern.Linq;
+using Cistern.Linq.Benchmarking.Benchmarks.Numeric;
 
 namespace Playground
 {
     enum Playthings
     {
+        benchmark,
+
         system_mikedn,
         cistern_mikedn,
         system_mikedn_immutable,
@@ -19,7 +22,15 @@ namespace Playground
 
     class Program
     {
-        static Playthings plaything = Playthings.cistern_matthewwatson;
+        static Playthings plaything = Playthings.benchmark;
+
+        static void Benchmark()
+        {
+            var toArray = new ToArrayBenchmark();
+            toArray.NumberOfItems = 10;
+            toArray.Setup();
+            toArray.CisternLinq();
+        }
 
         static void Main(string[] args)
         {
@@ -27,6 +38,8 @@ namespace Playground
 
             switch(plaything)
             {
+                case Playthings.benchmark: Benchmark(); break;
+
                 case Playthings.cistern_mikedn: mikedn.CisternLinq.Program.mikedn(); break;
                 case Playthings.system_mikedn: mikedn.SystemLinq.Program.mikedn(); break;
 
