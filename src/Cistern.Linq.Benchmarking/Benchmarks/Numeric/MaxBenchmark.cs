@@ -1,31 +1,29 @@
 ﻿using BenchmarkDotNet.Attributes;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 {
-	[CoreJob, MemoryDiagnoser]
+    [CoreJob, MemoryDiagnoser]
 	public class MaxBenchmark : NumericBenchmarkBase
 	{
 		[Benchmark]
 		public double ForLoop()
 		{
-			double? max = 0;
+			double max = 0;
 			foreach (var n in Numbers)
 			{
-				if (n > max || max == null)
+				if (n > max)
 				{
 					max = n;
 				}
 			}
 			
-			if (!max.HasValue)
+			if (Numbers.Length == 0)
 			{
 				throw new InvalidOperationException("Sequence contains no elements");
 			}
 			
-			return max.Value;
+			return max;
 		}
 
 		[Benchmark(Baseline = true)]

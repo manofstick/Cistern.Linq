@@ -1,31 +1,29 @@
 ﻿using BenchmarkDotNet.Attributes;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 {
-	[CoreJob, MemoryDiagnoser]
+    [CoreJob, MemoryDiagnoser]
 	public class MinBenchmark : NumericBenchmarkBase
 	{
 		[Benchmark]
 		public double ForLoop()
 		{
-			double? min = 0;
+			double min = 0;
 			foreach (var n in Numbers)
 			{
-				if (n < min || min == null)
+				if (n < min)
 				{
 					min = n;
 				}
 			}
 			
-			if (!min.HasValue)
+			if (Numbers.Length == 0)
 			{
 				throw new InvalidOperationException("Sequence contains no elements");
 			}
 			
-			return min.Value;
+			return min;
 		}
 
 		[Benchmark(Baseline = true)]

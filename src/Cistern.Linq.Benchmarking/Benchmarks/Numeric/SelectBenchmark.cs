@@ -1,11 +1,8 @@
 ﻿using BenchmarkDotNet.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 {
-	[CoreJob, MemoryDiagnoser]
+    [CoreJob, MemoryDiagnoser]
 	public class SelectBenchmark : NumericBenchmarkBase
 	{
 		[Benchmark]
