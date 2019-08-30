@@ -295,7 +295,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    struct MinNullableLogic<T, Accumulator, Maths> : ILogic<T>
+    struct MinNullableLogic<T, Accumulator, Maths> : INullableGenericLogic<T>
         where T : struct
         where Accumulator : struct
         where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
