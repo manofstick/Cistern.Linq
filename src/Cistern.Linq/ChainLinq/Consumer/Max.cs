@@ -188,14 +188,6 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
     }
 
-    interface INullableGenericLogic<T>
-        where T : struct
-    {
-        void Init(T? result);
-        bool Process(T? input);
-        T? Result { get; }
-    }
-
     struct MaxNullableLogic<T, Accumulator, Maths> : INullableGenericLogic<T>
         where T : struct
         where Accumulator : struct
