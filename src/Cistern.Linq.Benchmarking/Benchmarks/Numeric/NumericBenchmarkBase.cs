@@ -1,14 +1,11 @@
 ﻿using BenchmarkDotNet.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 {
-	public abstract class NumericBenchmarkBase
+    public abstract class NumericBenchmarkBase
 	{
 
-		[Params(10, 1000, 1000000)]
+		[Params(0, 1, 10, 1000)]
 		public int NumberOfItems;
 
 		public double[] Numbers;
