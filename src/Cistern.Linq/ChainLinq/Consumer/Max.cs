@@ -193,11 +193,15 @@ namespace Cistern.Linq.ChainLinq.Consumer
         where Accumulator : struct
         where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
     {
-        public T? Result { get; private set; }
+        bool found;
+        T result;
+
+        T? INullableGenericLogic<T>.Result { get => found ? (T?)result : null; }
 
         public void Init(T? result)
         {
-            this.Result = result;
+            this.found = result.HasValue;
+            this.result = result.GetValueOrDefault();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -205,23 +209,22 @@ namespace Cistern.Linq.ChainLinq.Consumer
         {
             var maths = default(Maths);
 
-            if (!Result.HasValue)
+            if (!found)
             {
-                if (!input.HasValue)
+                if (input.HasValue)
                 {
-                    return true;
+                    result = input.Value;
+                    found = true;
                 }
-
-                Result = maths.MaxInit;
+                return true;
             }
 
             if (input.HasValue)
             {
                 var i = input.GetValueOrDefault();
-                var r = Result.GetValueOrDefault();
-                if (maths.GreaterThan(i, r) || maths.IsNaN(r))
+                if (maths.GreaterThan(i, result) || maths.IsNaN(result))
                 {
-                    Result = i;
+                    result = i;
                 }
             }
 
