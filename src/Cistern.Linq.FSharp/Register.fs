@@ -21,6 +21,20 @@ type private TryFindImmutableTypes () =
                 else 
                     null
 
+        member __.TryInvoke<'T, 'Invoker when 'Invoker :> Utils.IInvoker<'T>> (invoker:'Invoker, e:IEnumerable<'T>, name:string) =
+            if name.Length <= 6 then false
+            else
+                let sixthChar = name.[6] //  here  |
+                                         //       \|/
+                                         // 'FSharpXXXX'
+                                         //  0123456789
+                if sixthChar = 'L' then
+                    match e with
+                    | :? list<'T> as l -> invoker.Invoke (TypedEnumerables.FSharpListEnumerable<'T> l); true
+                    | _ -> false
+                else 
+                    false
+
 module private TryFindImmutableTypesInstance =
     let Instance = TryFindImmutableTypes () :> Utils.ITryFindSpecificType
 

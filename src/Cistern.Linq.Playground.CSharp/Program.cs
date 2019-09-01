@@ -1,6 +1,7 @@
 ﻿using System;
 using Cistern.Linq;
 using Cistern.Linq.Benchmarking.Benchmarks.Numeric;
+using Cistern.Linq.Benchmarking.Vanilla.Enumerable;
 
 namespace Playground
 {
@@ -26,7 +27,7 @@ namespace Playground
 
         static void Benchmark()
         {
-            var toArray = new ToArrayBenchmark();
+            var toArray = new VanillaEnumerable_Aggreate();
             toArray.NumberOfItems = 10;
             toArray.Setup();
             toArray.CisternLinq();

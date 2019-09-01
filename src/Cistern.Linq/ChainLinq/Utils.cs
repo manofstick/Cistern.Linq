@@ -11,6 +11,9 @@ namespace Cistern.Linq.ChainLinq
 
             Consumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
                 where Construct : IConstruct<T, U>;
+
+            bool TryInvoke<T, Invoker>(Invoker invoker, IEnumerable<T> e, string name)
+                where Invoker : IInvoker<T>;
         }
 
         private static object sync = new object();
@@ -40,6 +43,13 @@ namespace Cistern.Linq.ChainLinq
                 where TEnumerator : IEnumerator<T>;
         }
 
+        internal interface IInvoker<T>
+        {
+            void Invoke<TEnumerable, TEnumerator>(TEnumerable e)
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerator : IEnumerator<T>;
+        }
+
         internal static Consumable<U> CreateConsumableSearch<T, U, Construct>(Construct construct, IEnumerable<T> e)
             where Construct : IConstruct<T, U>
         {
@@ -62,6 +72,30 @@ namespace Cistern.Linq.ChainLinq
             }
 
             return construct.Create<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>>(new Optimizations.IEnumerableEnumerable<T>(e));
+        }
+
+        internal static void InvokeSearch<T, Invoker>(Invoker invoker, IEnumerable<T> e)
+            where Invoker : IInvoker<T>
+        {
+            if (finders.Length > 0)
+            {
+                var ty = e.GetType();
+
+                var enumerableNamespace = ty.Namespace;
+                var enumerableName = ty.Name;
+
+                foreach (var search in finders)
+                {
+                    if (enumerableNamespace.Equals(search.Namespace))
+                    {
+                        var invoked = search.TryFind.TryInvoke(invoker, e, enumerableName);
+                        if (invoked)
+                            return;
+                    }
+                }
+            }
+
+            invoker.Invoke<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>>(new Optimizations.IEnumerableEnumerable<T>(e));
         }
 
         struct Construct<T, U>
@@ -233,6 +267,24 @@ namespace Cistern.Linq.ChainLinq
             return consumer.Result;
         }
 
+        struct Invoker<T>
+            : IInvoker<T>
+        {
+            private readonly Consumer<T> consumer;
+
+            public Invoker(Consumer<T> consumer) => this.consumer = consumer;
+
+            public void Invoke<TEnumerable, TEnumerator>(TEnumerable e)
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerator : IEnumerator<T>
+            {
+                if (e.TryGetSourceAsSpan(out var span))
+                    ChainLinq.Consume.ReadOnlySpan.Invoke(span, Links.Identity<T>.Instance, consumer);
+                else
+                    ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, T>(e, Links.Identity<T>.Instance, consumer);
+            }
+        }
+
         internal static Result Consume<T, Result>(IEnumerable<T> e, Consumer<T, Result> consumer)
         {
             if (e is Consumable<T> consumable)
@@ -254,13 +306,7 @@ namespace Cistern.Linq.ChainLinq
             }
             else
             {
-                //ChainLinq.Consume.Enumerable.Invoke<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>, T, T>(new Optimizations.IEnumerableEnumerable<T>(e), Links.Identity<T>.Instance, consumer);
-
-                // TODO: Maybe add a search which doesn't construct anything if no specialization is found to avoid
-                // the construction of the outer Consumable object which isn't really required
-
-                var c = CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(Links.Identity<T>.Instance), e);
-                c.Consume(consumer);
+                InvokeSearch(new Invoker<T>(consumer), e);
             }
 
             return consumer.Result;

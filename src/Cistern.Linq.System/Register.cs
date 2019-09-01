@@ -27,6 +27,19 @@ namespace Cistern.Linq.Immutable
 
                 return null;
             }
+
+            public bool TryInvoke<T, Invoker>(Invoker invoker, IEnumerable<T> e, string name) where Invoker : ChainLinq.Utils.IInvoker<T>
+            {
+                var firstChar = name[0];
+
+                if (firstChar == 'H' && e is HashSet<T> hs)    { invoker.Invoke<HashSetEnumerable<T>,    HashSet<T>.Enumerator>   (new HashSetEnumerable<T>(hs));    return true; }
+                if (firstChar == 'S' && e is Stack<T> s)       { invoker.Invoke<StackEnumerable<T>,      Stack<T>.Enumerator>     (new StackEnumerable<T>(s));       return true; }
+                if (firstChar == 'S' && e is SortedSet<T> ss)  { invoker.Invoke<SortedSetEnumerable<T>,  SortedSet<T>.Enumerator> (new SortedSetEnumerable<T>(ss));  return true; }
+                if (firstChar == 'L' && e is LinkedList<T> ll) { invoker.Invoke<LinkedListEnumerable<T>, LinkedList<T>.Enumerator>(new LinkedListEnumerable<T>(ll)); return true; }
+                if (firstChar == 'Q' && e is Queue<T> q)       { invoker.Invoke<QueueEnumerable<T>,      Queue<T>.Enumerator>     (new QueueEnumerable<T>(q));       return true; }
+
+                return false;
+            }
         }
 
         public static void RegisterSystemCollections()
