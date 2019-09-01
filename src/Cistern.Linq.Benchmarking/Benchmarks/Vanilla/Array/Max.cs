@@ -1,7 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using System;
 
-namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
+namespace Cistern.Linq.Benchmarking.Vanilla.Array
 {
     /*
     |      Method | NumberOfItems |         Mean |      Error |     StdDev | Ratio | RatioSD |  Gen 0 | Gen 1 | Gen 2 | Allocated |
@@ -24,8 +24,8 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
     */
 
     [CoreJob, MemoryDiagnoser]
-	public class MaxBenchmark : NumericBenchmarkBase
-	{
+	public class VanillaArray_Max : VanillaArrayBase
+    {
 		[Benchmark]
 		public double ForLoop()
 		{
