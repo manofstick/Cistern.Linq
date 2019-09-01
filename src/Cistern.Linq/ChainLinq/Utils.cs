@@ -43,26 +43,21 @@ namespace Cistern.Linq.ChainLinq
         internal static Consumable<U> CreateConsumableSearch<T, U, Construct>(Construct construct, IEnumerable<T> e)
             where Construct : IConstruct<T, U>
         {
-            var ty = e.GetType();
-            var enumerableNamespace = ty.Namespace;
-            var enumerableName = ty.Name;
-            if (enumerableNamespace == "System.Collections.Generic")
+            if (finders.Length > 0)
             {
-                var firstChar = enumerableName[0];
-                if (firstChar == 'H' && e is HashSet<T> hs)    return construct.Create<Optimizations.HashSetEnumerable<T>,    HashSet<T>.Enumerator>   (new Optimizations.HashSetEnumerable<T>(hs));
-                if (firstChar == 'S' && e is Stack<T> s)       return construct.Create<Optimizations.StackEnumerable<T>,      Stack<T>.Enumerator>     (new Optimizations.StackEnumerable<T>(s));
-                if (firstChar == 'S' && e is SortedSet<T> ss)  return construct.Create<Optimizations.SortedSetEnumerable<T>,  SortedSet<T>.Enumerator> (new Optimizations.SortedSetEnumerable<T>(ss));
-                if (firstChar == 'L' && e is LinkedList<T> ll) return construct.Create<Optimizations.LinkedListEnumerable<T>, LinkedList<T>.Enumerator>(new Optimizations.LinkedListEnumerable<T>(ll));
-                if (firstChar == 'Q' && e is Queue<T> q)       return construct.Create<Optimizations.QueueEnumerable<T>,      Queue<T>.Enumerator>     (new Optimizations.QueueEnumerable<T>(q));
-            }
+                var ty = e.GetType();
 
-            foreach (var search in finders)
-            {
-                if (enumerableNamespace.Equals(search.Namespace))
+                var enumerableNamespace = ty.Namespace;
+                var enumerableName = ty.Name;
+
+                foreach (var search in finders)
                 {
-                    var found = search.TryFind.TryCreateSpecific<T, U, Construct>(construct, e, enumerableName);
-                    if (found != null)
-                        return found;
+                    if (enumerableNamespace.Equals(search.Namespace))
+                    {
+                        var found = search.TryFind.TryCreateSpecific<T, U, Construct>(construct, e, enumerableName);
+                        if (found != null)
+                            return found;
+                    }
                 }
             }
 
