@@ -6,7 +6,21 @@ namespace Cistern.Linq.ChainLinq.Consumer
 {
     static class MaxGenericImpl
     {
-
+        // Appears to help the JIT, faster FSharpList.Max in benchmarks
+        public static T HeadStartExecuteEnumerable_InnerLoop<T, Accumulator, Maths, Enumerator>(Maths maths, T result, Enumerator e)
+            where T : struct
+            where Accumulator : struct
+            where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
+            where Enumerator : IEnumerator<T>
+        {
+            while (e.MoveNext())
+            {
+                var t = e.Current;
+                if (maths.GreaterThan(t, result))
+                    result = t;
+            }
+            return result;
+        }
     }
 
     abstract class MaxGeneric<T, Accumulator, Maths>
@@ -70,12 +84,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
                 }
                 if (moveNext)
                 {
-                    while (e.MoveNext())
-                    {
-                        var t = e.Current;
-                        if (maths.GreaterThan(t, result))
-                            result = t;
-                    }
+                    result = MaxGenericImpl.HeadStartExecuteEnumerable_InnerLoop<T, Accumulator, Maths, Enumerator>(maths, result, e);
                 }
             }
 
