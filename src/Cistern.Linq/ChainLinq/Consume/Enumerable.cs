@@ -4,11 +4,10 @@ namespace Cistern.Linq.ChainLinq.Consume
 {
     static class Enumerable
     {
-        public static void Invoke<TEnumerable, TEnumerator, T, V>(TEnumerable source, Link<T, V> composition, Chain<V> consumer)
+        public static void Invoke<TEnumerable, TEnumerator, T>(TEnumerable source, Chain<T> chain)
             where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
             where TEnumerator : IEnumerator<T>
         {
-            var chain = composition.Compose(consumer);
             try
             {
                 if (chain is Optimizations.IHeadStart<T> optimized)
@@ -26,6 +25,11 @@ namespace Cistern.Linq.ChainLinq.Consume
                 chain.ChainDispose();
             }
         }
+
+        public static void Invoke<TEnumerable, TEnumerator, T, V>(TEnumerable source, Link<T, V> composition, Chain<V> consumer)
+            where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+            where TEnumerator : IEnumerator<T>
+            => Invoke<TEnumerable, TEnumerator, T>(source, composition.Compose(consumer));
 
         private static void Pipeline<TEnumerable, TEnumerator, T>(TEnumerable source, Chain<T> chain)
             where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>

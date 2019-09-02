@@ -4,9 +4,8 @@ namespace Cistern.Linq.ChainLinq.Consume
 {
     static class ReadOnlySpan
     {
-        public static void Invoke<T, V>(ReadOnlySpan<T> array, Link<T, V> composition, Chain<V> consumer)
+        public static void Invoke<T>(ReadOnlySpan<T> array, Chain<T> chain)
         {
-            var chain = composition.Compose(consumer);
             try
             {
                 if (chain is Optimizations.IHeadStart<T> optimized)
@@ -24,6 +23,9 @@ namespace Cistern.Linq.ChainLinq.Consume
                 chain.ChainDispose();
             }
         }
+
+        public static void Invoke<T, V>(ReadOnlySpan<T> array, Link<T, V> composition, Chain<V> consumer) =>
+            Invoke(array, composition.Compose(consumer));
 
         internal static void Pipeline<T>(ReadOnlySpan<T> memory, Chain<T> chain)
         {

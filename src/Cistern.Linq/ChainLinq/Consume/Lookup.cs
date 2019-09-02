@@ -5,9 +5,8 @@ namespace Cistern.Linq.ChainLinq.Consume
 {
     static class Lookup
     {
-        public static void Invoke<TKey, TElement, V>(Grouping<TKey, TElement> lastGrouping, Link<IGrouping<TKey, TElement>, V> composition, Chain<V> consumer)
+        public static void Invoke<TKey, TElement>(Grouping<TKey, TElement> lastGrouping, Chain<IGrouping<TKey, TElement>> chain)
         {
-            var chain = composition.Compose(consumer);
             try
             {
                 Pipeline(lastGrouping, chain);
@@ -19,9 +18,8 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        public static void Invoke<TKey, TElement, TResult, V>(Grouping<TKey, TElement> lastGrouping, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, Link<TResult, V> composition, Chain<V> consumer)
+        public static void Invoke<TKey, TElement, TResult>(Grouping<TKey, TElement> lastGrouping, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, Chain<TResult> chain)
         {
-            var chain = composition.Compose(consumer);
             try
             {
                 Pipeline(lastGrouping, resultSelector, chain);
@@ -32,6 +30,12 @@ namespace Cistern.Linq.ChainLinq.Consume
                 chain.ChainDispose();
             }
         }
+
+        public static void Invoke<TKey, TElement, V>(Grouping<TKey, TElement> lastGrouping, Link<IGrouping<TKey, TElement>, V> composition, Chain<V> consumer) =>
+            Invoke(lastGrouping, composition.Compose(consumer));
+
+        public static void Invoke<TKey, TElement, TResult, V>(Grouping<TKey, TElement> lastGrouping, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, Link<TResult, V> composition, Chain<V> consumer) =>
+            Invoke(lastGrouping, resultSelector, composition.Compose(consumer));
 
         private static void Pipeline<TKey, TElement>(Grouping<TKey, TElement> lastGrouping, Chain<IGrouping<TKey, TElement>> chain)
         {

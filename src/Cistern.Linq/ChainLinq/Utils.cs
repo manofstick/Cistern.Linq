@@ -279,9 +279,9 @@ namespace Cistern.Linq.ChainLinq
                 where TEnumerator : IEnumerator<T>
             {
                 if (e.TryGetSourceAsSpan(out var span))
-                    ChainLinq.Consume.ReadOnlySpan.Invoke(span, Links.Identity<T>.Instance, consumer);
+                    ChainLinq.Consume.ReadOnlySpan.Invoke(span, consumer);
                 else
-                    ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, T>(e, Links.Identity<T>.Instance, consumer);
+                    ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T>(e, consumer);
             }
         }
 
@@ -293,11 +293,11 @@ namespace Cistern.Linq.ChainLinq
             }
             else if (e is T[] array)
             {
-                ChainLinq.Consume.ReadOnlySpan.Invoke(array, Links.Identity<T>.Instance, consumer);
+                ChainLinq.Consume.ReadOnlySpan.Invoke(array, consumer);
             }
             else if (e is List<T> list)
             {
-                ChainLinq.Consume.List.Invoke(list, Links.Identity<T>.Instance, consumer);
+                ChainLinq.Consume.List.Invoke(list, consumer);
             }
             else if (e is Consumables.IConsumableProvider<T> provider)
             {
