@@ -104,7 +104,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = logic.Result;
         }
 
-        void Optimizations.ITailEnd<T?>.Where<Enumerator>(Optimizations.ITypedEnumerable<T?, Enumerator> source, Func<T?, bool> predicate)
+        void Optimizations.ITailEnd<T?>.Where<Enumerable, Enumerator>(Enumerable source, Func<T?, bool> predicate)
         {
             Logic logic = default; logic.Init(Result);
 
@@ -136,7 +136,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = logic.Result;
         }
 
-        void Optimizations.ITailEnd<T?>.WhereSelect<Enumerator, S>(Optimizations.ITypedEnumerable<S, Enumerator> source, Func<S, bool> predicate, Func<S, T?> selector)
+        void Optimizations.ITailEnd<T?>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T?> selector)
         {
             Logic logic = default; logic.Init(Result);
 

@@ -40,7 +40,7 @@ namespace Cistern.Linq.ChainLinq.Links
             {
                 if (next is Optimizations.ITailEnd<T> optimized)
                 {
-                    optimized.Where(source, _predicate);
+                    optimized.Where<Enumerable, Enumerator>(source, _predicate);
                 }
                 else
                 {

@@ -56,7 +56,7 @@ namespace Cistern.Linq.ChainLinq.Links
             {
                 if (next is Optimizations.ITailEnd<U> optimized)
                 {
-                    optimized.WhereSelect(source, _predicate, _selector);
+                    optimized.WhereSelect<Enumerable, Enumerator, T>(source, _predicate, _selector);
                 }
                 else
                 {

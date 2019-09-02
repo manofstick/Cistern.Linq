@@ -143,7 +143,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = result;
         }
 
-        void Optimizations.ITailEnd<TSource>.Where<Enumerator>(Optimizations.ITypedEnumerable<TSource, Enumerator> source, Func<TSource, bool> predicate)
+        void Optimizations.ITailEnd<TSource>.Where<Enumerable, Enumerator>(Enumerable source, Func<TSource, bool> predicate)
         {
             var s = _selector;
             var result = Result;
@@ -174,7 +174,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = result;
         }
 
-        void Optimizations.ITailEnd<TSource>.WhereSelect<Enumerator, S>(Optimizations.ITypedEnumerable<S, Enumerator> source, Func<S, bool> predicate, Func<S, TSource> selector)
+        void Optimizations.ITailEnd<TSource>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, TSource> selector)
         {
             var s = _selector;
             var result = Result;
