@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Cistern.Linq.Tests.TestUtilities;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -64,7 +65,29 @@ namespace Cistern.Linq.Tests
         public void Max_Int(IEnumerable<int> source, int expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         public static IEnumerable<object[]> Max_Long_TestData()
@@ -87,7 +110,29 @@ namespace Cistern.Linq.Tests
         public void Max_Long(IEnumerable<long> source, long expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Fact]
@@ -139,7 +184,29 @@ namespace Cistern.Linq.Tests
         public void Max_Float(IEnumerable<float> source, float expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Fact]
@@ -210,7 +277,29 @@ namespace Cistern.Linq.Tests
         public void Max_Double(IEnumerable<double> source, double expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Fact]
@@ -267,7 +356,29 @@ namespace Cistern.Linq.Tests
         public void Max_Decimal(IEnumerable<decimal> source, decimal expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Fact]
@@ -306,7 +417,29 @@ namespace Cistern.Linq.Tests
         public void Max_NullableInt(IEnumerable<int?> source, int? expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Theory, MemberData(nameof(Max_NullableInt_TestData))]
@@ -345,7 +478,29 @@ namespace Cistern.Linq.Tests
         public void Max_NullableLong(IEnumerable<long?> source, long? expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Fact]
@@ -386,7 +541,29 @@ namespace Cistern.Linq.Tests
         public void Max_NullableFloat(IEnumerable<float?> source, float? expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Fact]
@@ -427,7 +604,29 @@ namespace Cistern.Linq.Tests
         public void Max_NullableDouble(IEnumerable<double?> source, double? expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Fact]
@@ -459,7 +658,29 @@ namespace Cistern.Linq.Tests
         public void Max_NullableDecimal(IEnumerable<decimal?> source, decimal? expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Fact]
@@ -490,7 +711,29 @@ namespace Cistern.Linq.Tests
         public void Max_DateTime(IEnumerable<DateTime> source, DateTime expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Fact]
@@ -527,7 +770,29 @@ namespace Cistern.Linq.Tests
         public void Max_String(IEnumerable<string> source, string expected)
         {
             Assert.Equal(expected, source.Max());
+            Assert.Equal(expected, source.ToList().Max());
             Assert.Equal(expected, source.Max(x => x));
+            Assert.Equal(expected, source.ToList().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectWhere().Max());
+            Assert.Equal(expected, source.InjectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectSelect().Max());
+            Assert.Equal(expected, source.InjectSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectWhere().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max());
+            Assert.Equal(expected, source.InjectSelectWhere().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectWhere().Max(x => x));
+
+            Assert.Equal(expected, source.InjectWhereSelect().Max());
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
+            Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
         }
 
         [Theory, MemberData(nameof(Max_String_TestData))]

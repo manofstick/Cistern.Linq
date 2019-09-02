@@ -4,6 +4,11 @@ using System.Runtime.CompilerServices;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
+    static class MaxGenericImpl
+    {
+
+    }
+
     abstract class MaxGeneric<T, Accumulator, Maths>
         : Consumer<T, T>
         , Optimizations.IHeadStart<T>
@@ -51,17 +56,29 @@ namespace Cistern.Linq.ChainLinq.Consumer
         {
             Maths maths = default;
 
-            var noData = _noData;
             var result = Result;
 
-            foreach (var t in source)
+            using (var e = source.GetEnumerator())
             {
-                noData = false;
-                if (maths.GreaterThan(t, result) || maths.IsNaN(result))
-                    result = t;
+                bool moveNext;
+                while (moveNext = e.MoveNext())
+                {
+                    _noData = false;
+                    result = e.Current;
+                    if (!maths.IsNaN(result))
+                        break;
+                }
+                if (moveNext)
+                {
+                    while (e.MoveNext())
+                    {
+                        var t = e.Current;
+                        if (maths.GreaterThan(t, result))
+                            result = t;
+                    }
+                }
             }
 
-            _noData = noData;
             Result = result;
         }
 

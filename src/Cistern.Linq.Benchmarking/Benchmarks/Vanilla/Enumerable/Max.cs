@@ -10,17 +10,18 @@ namespace Cistern.Linq.Benchmarking.Vanilla.Enumerable
     |  SystemLinq |             0 |          NA |         NA |         NA |     ? |       ? |      - |     - |     - |         - |
     | CisternLinq |             0 |          NA |         NA |         NA |     ? |       ? |      - |     - |     - |         - |
     |             |               |             |            |            |       |         |        |       |       |           |
-    |     ForLoop |             1 |    21.39 ns |  0.1390 ns |  0.1161 ns |  0.84 |    0.00 | 0.0152 |     - |     - |      48 B |
-    |  SystemLinq |             1 |    25.38 ns |  0.0768 ns |  0.0718 ns |  1.00 |    0.00 | 0.0152 |     - |     - |      48 B |
-    | CisternLinq |             1 |   121.35 ns |  0.3713 ns |  0.3474 ns |  4.78 |    0.02 | 0.0432 |     - |     - |     136 B |
+    |     ForLoop |             1 |    21.26 ns |  0.0800 ns |  0.0748 ns |  0.82 |    0.00 | 0.0152 |     - |     - |      48 B |
+    |  SystemLinq |             1 |    26.08 ns |  0.0682 ns |  0.0604 ns |  1.00 |    0.00 | 0.0152 |     - |     - |      48 B |
+    | CisternLinq |             1 |    61.94 ns |  0.1807 ns |  0.1690 ns |  2.37 |    0.01 | 0.0254 |     - |     - |      80 B |
     |             |               |             |            |            |       |         |        |       |       |           |
-    |     ForLoop |            10 |    76.31 ns |  0.2561 ns |  0.2396 ns |  0.92 |    0.00 | 0.0151 |     - |     - |      48 B |
-    |  SystemLinq |            10 |    82.74 ns |  0.2397 ns |  0.2125 ns |  1.00 |    0.00 | 0.0151 |     - |     - |      48 B |
-    | CisternLinq |            10 |   179.58 ns |  0.5532 ns |  0.4904 ns |  2.17 |    0.01 | 0.0432 |     - |     - |     136 B |
+    |     ForLoop |            10 |    76.04 ns |  0.2297 ns |  0.1918 ns |  0.92 |    0.00 | 0.0151 |     - |     - |      48 B |
+    |  SystemLinq |            10 |    82.98 ns |  0.2029 ns |  0.1898 ns |  1.00 |    0.00 | 0.0151 |     - |     - |      48 B |
+    | CisternLinq |            10 |   114.25 ns |  0.3419 ns |  0.2669 ns |  1.38 |    0.01 | 0.0254 |     - |     - |      80 B |
     |             |               |             |            |            |       |         |        |       |       |           |
-    |     ForLoop |          1000 | 6,081.20 ns | 18.2512 ns | 16.1792 ns |  0.95 |    0.00 | 0.0076 |     - |     - |      48 B |
-    |  SystemLinq |          1000 | 6,395.04 ns | 14.8509 ns | 13.8915 ns |  1.00 |    0.00 | 0.0076 |     - |     - |      48 B |
-    | CisternLinq |          1000 | 6,172.89 ns | 12.4414 ns | 11.6377 ns |  0.97 |    0.00 | 0.0381 |     - |     - |     136 B |*/
+    |     ForLoop |          1000 | 6,071.37 ns | 16.1726 ns | 15.1279 ns |  0.95 |    0.00 | 0.0076 |     - |     - |      48 B |
+    |  SystemLinq |          1000 | 6,390.19 ns | 19.0044 ns | 16.8469 ns |  1.00 |    0.00 | 0.0076 |     - |     - |      48 B |
+    | CisternLinq |          1000 | 5,829.13 ns | 19.6987 ns | 18.4262 ns |  0.91 |    0.00 | 0.0229 |     - |     - |      80 B |
+    */
     [CoreJob, MemoryDiagnoser]
 	public class VanillaEnumerable_Max : VanillaEnumerableBase
     {
