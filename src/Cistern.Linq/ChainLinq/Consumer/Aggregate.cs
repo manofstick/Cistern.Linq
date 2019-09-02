@@ -39,7 +39,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             _accumulate = accumulate;
         }
 
-        void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
+        void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             var accumulate = _accumulate;
 

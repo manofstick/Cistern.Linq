@@ -83,7 +83,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = result;
         }
 
-        void Optimizations.IHeadStart<TSource>.Execute<Enumerator>(Optimizations.ITypedEnumerable<TSource, Enumerator> source)
+        void Optimizations.IHeadStart<TSource>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             var s = _selector;
             var result = Result;

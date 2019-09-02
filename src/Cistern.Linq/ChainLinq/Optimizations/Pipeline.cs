@@ -6,7 +6,9 @@ namespace Cistern.Linq.ChainLinq.Optimizations
     interface IHeadStart<T>
     {
         void Execute(ReadOnlySpan<T> source);
-        void Execute<Enumerator>(ITypedEnumerable<T, Enumerator> source) where Enumerator : IEnumerator<T>;
+        void Execute<Enumerable, Enumerator>(Enumerable source)
+            where Enumerable : ITypedEnumerable<T, Enumerator>
+            where Enumerator : IEnumerator<T>;
     }
 
     interface ITailEnd<T>

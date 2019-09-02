@@ -47,7 +47,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = result;
         }
 
-        void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
+        void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             Maths maths = default;
 

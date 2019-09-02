@@ -69,7 +69,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             {
                 if (chain is Optimizations.IHeadStart<T> optimized)
                 {
-                    optimized.Execute(new IListEnumerable<T>(array, start, count));
+                    optimized.Execute<IListEnumerable<T>, IListEnumerator<T>>(new IListEnumerable<T>(array, start, count));
                 }
                 else
                 {

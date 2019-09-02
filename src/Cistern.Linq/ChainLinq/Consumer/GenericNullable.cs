@@ -43,7 +43,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = logic.Result;
         }
 
-        void Optimizations.IHeadStart<T?>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T?, Enumerator> source)
+        void Optimizations.IHeadStart<T?>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             Logic logic = default; logic.Init(Result);
 

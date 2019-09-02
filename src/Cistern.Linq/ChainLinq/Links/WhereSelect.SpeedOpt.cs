@@ -52,7 +52,7 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
+            void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
             {
                 if (next is Optimizations.ITailEnd<U> optimized)
                 {

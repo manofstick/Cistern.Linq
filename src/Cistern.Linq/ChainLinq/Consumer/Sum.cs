@@ -30,7 +30,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
+        void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             Maths maths = default;
 
@@ -154,7 +154,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             accumulator = sum;
         }
 
-        void Optimizations.IHeadStart<T?>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T?, Enumerator> source)
+        void Optimizations.IHeadStart<T?>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             Maths maths = default;
 

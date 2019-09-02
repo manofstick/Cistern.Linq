@@ -20,7 +20,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             Result = maths.AddInt(Result, source.Length);
         }
 
-        void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
+        void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             Maths maths = default;
 

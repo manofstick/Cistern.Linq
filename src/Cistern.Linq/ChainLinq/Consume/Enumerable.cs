@@ -12,7 +12,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             {
                 if (chain is Optimizations.IHeadStart<T> optimized)
                 {
-                    optimized.Execute(source);
+                    optimized.Execute<TEnumerable, TEnumerator>(source);
                 }
                 else
                 {

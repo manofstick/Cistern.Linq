@@ -37,7 +37,7 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            public void Execute(ReadOnlySpan<T> source)
+            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
                 checked
                 {
@@ -50,7 +50,7 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            public void Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source) where Enumerator : IEnumerator<T>
+            void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
             {
                 checked
                 {

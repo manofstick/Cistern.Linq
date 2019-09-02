@@ -38,7 +38,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
         }
 
-        void Optimizations.IHeadStart<T>.Execute<Enumerator>(Optimizations.ITypedEnumerable<T, Enumerator> source)
+        void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             foreach (var item in source)
             {
