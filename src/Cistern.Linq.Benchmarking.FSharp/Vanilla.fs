@@ -1,4 +1,4 @@
-﻿module Base
+﻿namespace Cistern.Linq.Benchmarking.FSharp.Vanilla
 
 open BenchmarkDotNet.Attributes
 open Cistern.Linq.FSharp

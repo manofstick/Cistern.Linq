@@ -29,7 +29,6 @@ namespace Cistern.Linq.ChainLinq.Consume
 
                 Current++;
                 return true;
-
             }
 
             public void Reset() => throw new System.NotImplementedException();
