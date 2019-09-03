@@ -1,12 +1,81 @@
-﻿namespace Cistern.Linq.ChainLinq.Consume
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace Cistern.Linq.ChainLinq.Consume
 {
     static class Repeat
     {
+        struct RepeatEnumerator<T> : IEnumerator<T>
+        {
+            private readonly int Count;
+
+            private int Index;
+
+            public RepeatEnumerator(T element, int count)
+            {
+                Current = element;
+                Count = count;
+                Index = 0;
+            }
+
+            public T Current { get; }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose() { }
+
+            public bool MoveNext()
+            {
+                if (Index >= Count)
+                    return false;
+
+                Index++;
+                return true;
+
+            }
+
+            public void Reset() => throw new System.NotImplementedException();
+        }
+
+        struct RepeatEnumerable<T>
+            : Optimizations.ITypedEnumerable<T, RepeatEnumerator<T>>
+        {
+            private readonly int Count;
+            private readonly T Element;
+
+            public RepeatEnumerable(T element, int count)
+            {
+                Count = count;
+                Element = element;
+            }
+
+            public IEnumerable<T> Source => null;
+
+            public int? TryLength => Count;
+
+            public RepeatEnumerator<T> GetEnumerator() => new RepeatEnumerator<T>(Element, Count);
+
+            public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
+            {
+                readOnlySpan = default;
+                return false;
+            }
+        }
+
+
         public static void Invoke<T>(T element, int count, Chain<T> chain)
         {
             try
             {
-                Pipeline(element, count, chain);
+                if (chain is Optimizations.IHeadStart<T> optimized)
+                {
+                    optimized.Execute<RepeatEnumerable<T>, RepeatEnumerator<T>>(new RepeatEnumerable<T>(element, count));
+                }
+                else
+                {
+                    Pipeline(element, count, chain);
+                }
                 chain.ChainComplete();
             }
             finally
