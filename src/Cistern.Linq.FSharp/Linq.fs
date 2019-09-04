@@ -9,6 +9,8 @@ open System.Runtime.CompilerServices
 type Linq =
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     static member unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Unfold (f, seed, Links.Identity.Instance) :> seq<'T>
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    static member unfoldV (f:'State->voption<'T*'State>) (seed:'State) : seq<'T> = Consumables.UnfoldV (f, seed, Links.Identity.Instance) :> seq<'T>
 
     static member inline map (f:'a->'b) (e:seq<'a>)           = Enumerable.Select (e, f)
     static member inline mapi (f:int->'a->'b) (e:seq<'a>)     = Enumerable.Select (e, fun a idx -> f idx a)
