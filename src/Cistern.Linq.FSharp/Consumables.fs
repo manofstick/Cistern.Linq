@@ -4,13 +4,6 @@ open Cistern.Linq.ChainLinq
 open Cistern.Linq.ChainLinq.Consumables
 open System.Collections.Generic
 
-type ResultConsumer<'T>(init) =
-    inherit Consumer<'T, 'T>(init)
-
-    override this.ProcessNext item =
-        this.Result <- item
-        ChainStatus.Flow
-
 [<Struct; NoComparison; NoEquality>]
 type UnfoldEnumerator<'State, 'T> =
     val f : 'State->option<'T*'State>
@@ -37,8 +30,8 @@ type UnfoldEnumerator<'State, 'T> =
                     this.state <- s
             this.running
 
-        member this.Reset () = () 
-        member this.Dispose(): unit = ()
+        member __.Reset () = () 
+        member __.Dispose(): unit = ()
 
 [<Struct; NoComparison; NoEquality>]
 type UnfoldEnumerable<'State, 'T>(f:'State->option<'T*'State>, seed:'State) =
@@ -61,15 +54,19 @@ type Unfold<'State, 'T, 'V>(f:'State->option<'T*'State>, seed:'State, link:Link<
     override __.Consume(consumer:Consumer<'V> ) =
         let chain = link.Compose consumer
         try
-            let rec iterate state =
-                match f state with
-                | None -> ()
-                | Some (item, next) ->
-                    let state = chain.ProcessNext item
-                    if not (ProcessNextResultHelper.IsStopped state) then
-                        iterate next
+            match box chain with
+            | :? Optimizations.IHeadStart<'T> as optimized -> 
+                optimized.Execute<UnfoldEnumerable<'State, 'T>, UnfoldEnumerator<'State, 'T>>(new UnfoldEnumerable<'State, 'T>(f, seed))
+            | _ ->
+                let rec iterate state =
+                    match f state with
+                    | None -> ()
+                    | Some (item, next) ->
+                        let state = chain.ProcessNext item
+                        if not (ProcessNextResultHelper.IsStopped state) then
+                            iterate next
 
-            iterate seed
+                iterate seed
 
             chain.ChainComplete();
         finally
