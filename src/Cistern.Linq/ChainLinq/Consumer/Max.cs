@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
@@ -56,7 +58,28 @@ namespace Cistern.Linq.ChainLinq.Consumer
             {
                 result = source[idx];
             }
-            for(; idx < source.Length; ++idx)
+
+            const int NumberOfVectorsToMakeThisWorthwhile = 5; // from some random testing
+            if (maths.SupportsVectorization && ((source.Length - idx)/Vector<T>.Count > NumberOfVectorsToMakeThisWorthwhile))
+            {
+                var remainder = source.Slice(idx);
+                var asVector = MemoryMarshal.Cast<T, Vector<T>>(remainder);
+                var maxes = new Vector<T>(result);
+                foreach (var v in asVector)
+                {
+                    maxes = Vector.Max(maxes, v);
+                }
+                for (var i = 0; i < Vector<T>.Count; ++i)
+                {
+                    var input = maxes[i];
+                    if (maths.GreaterThan(input, result))
+                        result = input;
+                }
+
+                idx += asVector.Length * Vector<T>.Count;
+            }
+
+            for (; idx < source.Length; ++idx)
             {
                 var input = source[idx];
                 if (maths.GreaterThan(input, result))

@@ -6,6 +6,8 @@ namespace Cistern.Linq.Maths
         where T : struct
         where Accumulator : struct
     {
+        bool SupportsVectorization { get; }
+
         Accumulator Zero { get; }
         T One { get; }
 
@@ -31,6 +33,7 @@ namespace Cistern.Linq.Maths
 
     struct OpsDouble : IMathsOperations<double, double>
     {
+        public bool SupportsVectorization => true;
         public double Zero => 0.0;
         public double One => 1.0;
         public double MinValue => double.MinValue;
@@ -50,6 +53,7 @@ namespace Cistern.Linq.Maths
 
     struct OpsFloat : IMathsOperations<float, double>
     {
+        public bool SupportsVectorization => true;
         public double Zero => 0.0;
         public float One => 1.0f;
         public float MinValue => float.MinValue;
@@ -69,6 +73,7 @@ namespace Cistern.Linq.Maths
 
     struct OpsInt : IMathsOperations<int, int>
     {
+        public bool SupportsVectorization => true;
         public int Zero => 0;
         public int One => 1;
         public int MinValue => int.MinValue;
@@ -86,6 +91,7 @@ namespace Cistern.Linq.Maths
 
     struct OpsLong : IMathsOperations<long, long>
     {
+        public bool SupportsVectorization => true;
         public long Zero => 0;
         public long One => 1;
         public long MinValue => long.MinValue;
@@ -105,6 +111,7 @@ namespace Cistern.Linq.Maths
 
     struct OpsDecimal : IMathsOperations<decimal, decimal>
     {
+        public bool SupportsVectorization => false;
         public decimal Zero => 0M;
         public decimal One => 1M;
         public decimal MinValue => decimal.MinValue;
