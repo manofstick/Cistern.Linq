@@ -2,6 +2,7 @@
 
 open Cistern.Linq.ChainLinq
 open Cistern.Linq.ChainLinq.Consumables
+open System.Collections.Generic
 
 type ResultConsumer<'T>(init) =
     inherit Consumer<'T, 'T>(init)
@@ -9,6 +10,43 @@ type ResultConsumer<'T>(init) =
     override this.ProcessNext item =
         this.Result <- item
         ChainStatus.Flow
+
+[<Struct; NoComparison; NoEquality>]
+type UnfoldEnumerator<'State, 'T> =
+    val f : 'State->option<'T*'State>
+    val mutable state : 'State
+    val mutable current : 'T
+    val mutable running : bool
+
+    new (f:'State->option<'T*'State>, seed:'State) = {
+         f = f
+         state = seed
+         current = Unchecked.defaultof<_>
+         running = true
+    }
+
+    interface IEnumerator<'T> with
+        member this.Current: 'T = this.current
+        member this.Current: obj = box this.current
+        member this.MoveNext(): bool = 
+            if this.running then
+                match this.f this.state with
+                | None -> this.running <- false
+                | Some (c, s) ->
+                    this.current <- c
+                    this.state <- s
+            this.running
+
+        member this.Reset () = () 
+        member this.Dispose(): unit = ()
+
+[<Struct; NoComparison; NoEquality>]
+type UnfoldEnumerable<'State, 'T>(f:'State->option<'T*'State>, seed:'State) =
+    interface Optimizations.ITypedEnumerable<'T, UnfoldEnumerator<'State, 'T>> with
+        member __.GetEnumerator () = new UnfoldEnumerator<'State, 'T>(f, seed)
+        member __.Source = Unchecked.defaultof<_>
+        member __.TryLength = System.Nullable ()
+        member __.TryGetSourceAsSpan _ = false
 
 [<Sealed>]
 type Unfold<'State, 'T, 'V>(f:'State->option<'T*'State>, seed:'State, link:Link<'T, 'V>) =
@@ -18,23 +56,7 @@ type Unfold<'State, 'T, 'V>(f:'State->option<'T*'State>, seed:'State, link:Link<
     override __.Create<'W>(first:Link<'T, 'W>) = Unfold<'State, 'T, 'W>(f, seed, first) :> Consumable<'W>
 
     override __.GetEnumerator () =
-        let enumerable = 
-            let tail = ResultConsumer Unchecked.defaultof<'V>
-            let path = link.Compose tail
-            seq {
-                let mutable state = seed
-                let mutable running = true
-                while running do
-                    match f state with
-                    | None -> running <- false
-                    | Some (item, next) ->
-                        state <- next
-                        match path.ProcessNext item with
-                        | ChainStatus.Flow -> yield tail.Result
-                        | ChainStatus.Filter -> ()
-                        | _ -> running <- false
-            }
-        enumerable.GetEnumerator ()
+        upcast new ConsumerEnumerators.Enumerable<UnfoldEnumerable<'State, 'T>, UnfoldEnumerator<'State, 'T>, 'T, 'V>(new UnfoldEnumerable<'State, 'T>(f, seed), link);
     
     override __.Consume(consumer:Consumer<'V> ) =
         let chain = link.Compose consumer

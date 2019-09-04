@@ -39,19 +39,19 @@ type UnfoldFSharpList_Max() =
     member this.Cistern () =  Linq.unfold this.folder 0 |> Linq.max
 
 (*
-|  Method | NumberOfItems |         Mean |       Error |      StdDev | Ratio | RatioSD |
-|-------- |-------------- |-------------:|------------:|------------:|------:|--------:|
-|     Seq |             0 |     56.36 ns |   0.5472 ns |   0.4851 ns |  1.00 |    0.00 |
-| Cistern |             0 |     89.20 ns |   0.4938 ns |   0.4377 ns |  1.58 |    0.01 |
-|         |               |              |             |             |       |         |
-|     Seq |             1 |     77.39 ns |   0.5153 ns |   0.4820 ns |  1.00 |    0.00 |
-| Cistern |             1 |    115.28 ns |   1.0779 ns |   1.0083 ns |  1.49 |    0.02 |
-|         |               |              |             |             |       |         |
-|     Seq |            10 |    296.87 ns |   2.0273 ns |   1.8963 ns |  1.00 |    0.00 |
-| Cistern |            10 |    364.74 ns |   1.6430 ns |   1.5369 ns |  1.23 |    0.01 |
-|         |               |              |             |             |       |         |
-|     Seq |          1000 | 23,108.10 ns |  79.7722 ns |  74.6190 ns |  1.00 |    0.00 |
-| Cistern |          1000 | 26,190.79 ns | 117.5903 ns | 109.9941 ns |  1.13 |    0.01 |
+|  Method | NumberOfItems |         Mean |       Error |      StdDev | Ratio |
+|-------- |-------------- |-------------:|------------:|------------:|------:|
+|     Seq |             0 |     54.09 ns |   0.2397 ns |   0.2125 ns |  1.00 |
+| Cistern |             0 |     69.26 ns |   0.3024 ns |   0.2828 ns |  1.28 |
+|         |               |              |             |             |       |
+|     Seq |             1 |     78.83 ns |   0.4031 ns |   0.3771 ns |  1.00 |
+| Cistern |             1 |     92.91 ns |   0.3931 ns |   0.3677 ns |  1.18 |
+|         |               |              |             |             |       |
+|     Seq |            10 |    308.99 ns |   1.3515 ns |   1.1980 ns |  1.00 |
+| Cistern |            10 |    320.31 ns |   1.4706 ns |   1.3756 ns |  1.04 |
+|         |               |              |             |             |       |
+|     Seq |          1000 | 24,213.28 ns | 111.1952 ns | 104.0120 ns |  1.00 |
+| Cistern |          1000 | 23,423.51 ns | 123.4586 ns | 115.4833 ns |  0.97 |
 *)
 type UnfoldFSharpList_MaxByGetEnumerable() =
     inherit UnfoldFSharpListBase ()
