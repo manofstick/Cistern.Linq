@@ -51,23 +51,23 @@ type UnfoldFSharpList_Max() =
     member this.CisternV () = Linq.unfoldV this.folderV 0 |> Linq.max
 
 (*
-|   Method | NumberOfItems |         Mean |       Error |      StdDev | Ratio |
-|--------- |-------------- |-------------:|------------:|------------:|------:|
-|      Seq |             0 |     53.28 ns |   0.2576 ns |   0.2410 ns |  1.00 |
-|  Cistern |             0 |     70.58 ns |   0.4990 ns |   0.4424 ns |  1.33 |
-| CisternV |             0 |     66.06 ns |   0.3932 ns |   0.3678 ns |  1.24 |
-|          |               |              |             |             |       |
-|      Seq |             1 |     77.79 ns |   0.4980 ns |   0.4658 ns |  1.00 |
-|  Cistern |             1 |     91.80 ns |   0.4062 ns |   0.3799 ns |  1.18 |
-| CisternV |             1 |     87.75 ns |   0.3039 ns |   0.2694 ns |  1.13 |
-|          |               |              |             |             |       |
-|      Seq |            10 |    311.51 ns |   1.3073 ns |   1.2229 ns |  1.00 |
-|  Cistern |            10 |    311.80 ns |   1.2284 ns |   1.1490 ns |  1.00 |
-| CisternV |            10 |    283.81 ns |   1.4155 ns |   1.3241 ns |  0.91 |
-|          |               |              |             |             |       |
-|      Seq |          1000 | 24,493.90 ns | 107.6336 ns | 100.6805 ns |  1.00 |
-|  Cistern |          1000 | 23,136.30 ns | 105.8261 ns |  98.9898 ns |  0.94 |
-| CisternV |          1000 | 19,713.27 ns | 107.2004 ns | 100.2753 ns |  0.80 |
+|   Method | NumberOfItems |         Mean |      Error |     StdDev | Ratio |
+|--------- |-------------- |-------------:|-----------:|-----------:|------:|
+|      Seq |             0 |     52.86 ns |  0.1897 ns |  0.1584 ns |  1.00 |
+|  Cistern |             0 |     72.74 ns |  0.4639 ns |  0.4113 ns |  1.38 |
+| CisternV |             0 |     71.11 ns |  0.6329 ns |  0.5920 ns |  1.35 |
+|          |               |              |            |            |       |
+|      Seq |             1 |     78.19 ns |  0.3147 ns |  0.2789 ns |  1.00 |
+|  Cistern |             1 |     93.74 ns |  0.3793 ns |  0.3548 ns |  1.20 |
+| CisternV |             1 |     89.72 ns |  0.4435 ns |  0.4148 ns |  1.15 |
+|          |               |              |            |            |       |
+|      Seq |            10 |    311.75 ns |  1.8503 ns |  1.7308 ns |  1.00 |
+|  Cistern |            10 |    297.48 ns |  1.0020 ns |  0.9373 ns |  0.95 |
+| CisternV |            10 |    260.58 ns |  1.5903 ns |  1.4876 ns |  0.84 |
+|          |               |              |            |            |       |
+|      Seq |          1000 | 24,400.05 ns | 76.4057 ns | 63.8022 ns |  1.00 |
+|  Cistern |          1000 | 21,514.93 ns | 75.8685 ns | 70.9675 ns |  0.88 |
+| CisternV |          1000 | 17,973.90 ns | 67.1035 ns | 62.7687 ns |  0.74 |
 *)
 type UnfoldFSharpList_MaxByGetEnumerable() =
     inherit UnfoldFSharpListBase ()
