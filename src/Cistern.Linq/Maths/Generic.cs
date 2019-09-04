@@ -14,6 +14,9 @@ namespace Cistern.Linq.Maths
         T MinValue { get; }
         T MaxValue { get; }
 
+        bool HasNaNs { get; }
+        T NaN { get; }
+
         Accumulator Add(Accumulator lhs, T rhs);
         Accumulator Add(Accumulator lhs, T? rhs);
         Accumulator AddInt(Accumulator lhs, int rhs);
@@ -34,6 +37,8 @@ namespace Cistern.Linq.Maths
     struct OpsDouble : IMathsOperations<double, double>
     {
         public bool SupportsVectorization => true;
+        public bool HasNaNs => true;
+        public double NaN => double.NaN;
         public double Zero => 0.0;
         public double One => 1.0;
         public double MinValue => double.MinValue;
@@ -54,6 +59,8 @@ namespace Cistern.Linq.Maths
     struct OpsFloat : IMathsOperations<float, double>
     {
         public bool SupportsVectorization => true;
+        public bool HasNaNs => true;
+        public float NaN => float.NaN;
         public double Zero => 0.0;
         public float One => 1.0f;
         public float MinValue => float.MinValue;
@@ -74,6 +81,8 @@ namespace Cistern.Linq.Maths
     struct OpsInt : IMathsOperations<int, int>
     {
         public bool SupportsVectorization => true;
+        public bool HasNaNs => false;
+        public int NaN => default;
         public int Zero => 0;
         public int One => 1;
         public int MinValue => int.MinValue;
@@ -92,6 +101,8 @@ namespace Cistern.Linq.Maths
     struct OpsLong : IMathsOperations<long, long>
     {
         public bool SupportsVectorization => true;
+        public bool HasNaNs => false;
+        public long NaN => default;
         public long Zero => 0;
         public long One => 1;
         public long MinValue => long.MinValue;
@@ -112,6 +123,8 @@ namespace Cistern.Linq.Maths
     struct OpsDecimal : IMathsOperations<decimal, decimal>
     {
         public bool SupportsVectorization => false;
+        public bool HasNaNs => false;
+        public decimal NaN => default;
         public decimal Zero => 0M;
         public decimal One => 1M;
         public decimal MinValue => decimal.MinValue;

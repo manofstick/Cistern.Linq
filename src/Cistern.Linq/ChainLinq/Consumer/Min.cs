@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
@@ -32,8 +34,47 @@ namespace Cistern.Linq.ChainLinq.Consumer
             var result = Result;
 
             _noData &= source.Length == 0;
-            foreach (var input in source)
+
+            var idx = 0;
+
+            const int NumberOfVectorsToMakeThisWorthwhile = 0; // from some random testing
+            if (maths.SupportsVectorization && ((source.Length - idx) / Vector<T>.Count > NumberOfVectorsToMakeThisWorthwhile))
             {
+                var asVector = MemoryMarshal.Cast<T, Vector<T>>(source);
+                var mins = new Vector<T>(result);
+                if (maths.HasNaNs)
+                {
+                    var nan = new Vector<T>(maths.NaN);
+                    foreach (var v in asVector)
+                    {
+                        if (Vector.EqualsAny(Vector.Xor(v, nan), Vector<T>.Zero))
+                        {
+                            Result = maths.NaN;
+                            return;
+                        }
+                        mins = Vector.Min(mins, v);
+                    }
+                }
+                else
+                {
+                    foreach (var v in asVector)
+                    {
+                        mins = Vector.Min(mins, v);
+                    }
+                }
+                for (var i = 0; i < Vector<T>.Count; ++i)
+                {
+                    var input = mins[i];
+                    if (maths.LessThan(input, result))
+                        result = input;
+                }
+
+                idx += asVector.Length * Vector<T>.Count;
+            }
+
+            for (; idx < source.Length; ++idx)
+            {
+                var input = source[idx];
                 if (maths.LessThan(input, result)) 
                     result = input;
                 else if (maths.IsNaN(input))
