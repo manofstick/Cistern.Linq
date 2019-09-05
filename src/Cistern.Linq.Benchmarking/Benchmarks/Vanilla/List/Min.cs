@@ -24,7 +24,7 @@ namespace Cistern.Linq.Benchmarking.Vanilla.List
     */
 
     [CoreJob, MemoryDiagnoser]
-	public class VanillaListe_Min : VanillaListBase
+	public class VanillaList_Min : VanillaListBase
     {
 		[Benchmark]
 		public double ForLoop()
