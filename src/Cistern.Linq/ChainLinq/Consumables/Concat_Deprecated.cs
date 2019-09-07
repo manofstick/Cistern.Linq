@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed partial class Concat<T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+    sealed partial class Concat_Deprecated<T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
     {
         /// <summary>
         /// Used for Prepender in Prepend call
@@ -15,11 +15,11 @@ namespace Cistern.Linq.ChainLinq.Consumables
         /// </summary>
         private readonly IEnumerable<T> _thirdOrNull;
 
-        public Concat(IEnumerable<T> firstOrNull, IEnumerable<T> second, IEnumerable<T> thirdOrNull, Link<T, V> link) : base(link) =>
+        public Concat_Deprecated(IEnumerable<T> firstOrNull, IEnumerable<T> second, IEnumerable<T> thirdOrNull, Link<T, V> link) : base(link) =>
             (_firstOrNull, _second, _thirdOrNull) = (firstOrNull, second, thirdOrNull);
 
-        public override Consumable<V> Create   (Link<T, V> link) => new Concat<T, V>(_firstOrNull, _second, _thirdOrNull, link);
-        public override Consumable<W> Create<W>(Link<T, W> link) => new Concat<T, W>(_firstOrNull, _second, _thirdOrNull, link);
+        public override Consumable<V> Create   (Link<T, V> link) => new Concat_Deprecated<T, V>(_firstOrNull, _second, _thirdOrNull, link);
+        public override Consumable<W> Create<W>(Link<T, W> link) => new Concat_Deprecated<T, W>(_firstOrNull, _second, _thirdOrNull, link);
 
         public override IEnumerator<V> GetEnumerator() =>
             ChainLinq.GetEnumerator.Concat.Get(_firstOrNull, _second, _thirdOrNull, Link);
@@ -34,17 +34,17 @@ namespace Cistern.Linq.ChainLinq.Consumables
                 if (_thirdOrNull == null)
                 {
                     Debug.Assert(_firstOrNull != null);
-                    return new Concat<T, V>(_firstOrNull, _second, (IEnumerable<T>)next, Link);
+                    return new Concat_Deprecated<T, V>(_firstOrNull, _second, (IEnumerable<T>)next, Link);
                 }
 
                 if (_firstOrNull == null)
                 {
                     Debug.Assert(_thirdOrNull != null);
-                    return new Concat<T, V>(_second, _thirdOrNull, (IEnumerable<T>)next, Link);
+                    return new Concat_Deprecated<T, V>(_second, _thirdOrNull, (IEnumerable<T>)next, Link);
                 }
             }
 
-            return new Concat<V, V>(this, next, null, Links.Identity<V>.Instance);
+            return new Concat_Deprecated<V, V>(this, next, null, Links.Identity<V>.Instance);
         }
 
         public Consumable<V> Prepend(IEnumerable<V> prior)
@@ -54,17 +54,17 @@ namespace Cistern.Linq.ChainLinq.Consumables
                 if (_thirdOrNull == null)
                 {
                     Debug.Assert(_firstOrNull != null);
-                    return new Concat<T, V>((IEnumerable<T>)prior, _firstOrNull, _second, Link);
+                    return new Concat_Deprecated<T, V>((IEnumerable<T>)prior, _firstOrNull, _second, Link);
                 }
 
                 if (_firstOrNull == null)
                 {
                     Debug.Assert(_thirdOrNull != null);
-                    return new Concat<T, V>((IEnumerable<T>)prior, _second, _thirdOrNull, Link);
+                    return new Concat_Deprecated<T, V>((IEnumerable<T>)prior, _second, _thirdOrNull, Link);
                 }
             }
 
-            return new Concat<V, V>(null, prior, this, Links.Identity<V>.Instance);
+            return new Concat_Deprecated<V, V>(null, prior, this, Links.Identity<V>.Instance);
         }
 
         public Consumable<V> Append(V element)
@@ -73,7 +73,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             {
                 if (_thirdOrNull is Appender<V> appender)
                 {
-                    return new Concat<T, V>(_firstOrNull, _second, (IEnumerable<T>)(object)appender.Add(element), Link);
+                    return new Concat_Deprecated<T, V>(_firstOrNull, _second, (IEnumerable<T>)(object)appender.Add(element), Link);
                 }
             }
             return Append(new Appender<V>(element));
@@ -85,7 +85,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             {
                 if (_firstOrNull is Prepender<V> prepender)
                 {
-                    return new Concat<T, V>((IEnumerable<T>)(object)prepender.Push(element), _second, _thirdOrNull, Link);
+                    return new Concat_Deprecated<T, V>((IEnumerable<T>)(object)prepender.Push(element), _second, _thirdOrNull, Link);
                 }
             }
             return Prepend(new Prepender<V>(element));

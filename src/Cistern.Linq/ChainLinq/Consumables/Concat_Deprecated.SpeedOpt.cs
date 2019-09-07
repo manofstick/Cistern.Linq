@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed partial class Concat<T, V>
+    sealed partial class Concat_Deprecated<T, V>
         : Optimizations.ICountOnConsumable
     {
         private static int GetCount(IEnumerable<T> e, bool onlyIfCheap)

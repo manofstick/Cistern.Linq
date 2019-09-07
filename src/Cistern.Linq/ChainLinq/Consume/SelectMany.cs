@@ -26,6 +26,7 @@ namespace Cistern.Linq.ChainLinq.Consume
         sealed class SelectManyOuterConsumer<Enumerable, T>
             : Consumer<Enumerable, ChainEnd>
             , Optimizations.ITailEnd<IEnumerable<T>>
+            , Optimizations.IHeadStart<IEnumerable<T>>
             where Enumerable : IEnumerable<T>
         {
             private readonly Chain<T> _chainT;
@@ -33,6 +34,26 @@ namespace Cistern.Linq.ChainLinq.Consume
 
             public SelectManyOuterConsumer(Chain<T> chainT) : base(default) =>
                 _chainT = chainT;
+
+            void Optimizations.IHeadStart<IEnumerable<T>>.Execute(ReadOnlySpan<IEnumerable<T>> source)
+            {
+                foreach (var s in source)
+                {
+                    var status = UnknownEnumerable.Consume(s, _chainT, ref _inner);
+                    if (status.IsStopped())
+                        break;
+                }
+            }
+
+            void Optimizations.IHeadStart<IEnumerable<T>>.Execute<Enumerable1, Enumerator>(Enumerable1 source)
+            {
+                foreach (var s in source)
+                {
+                    var status = UnknownEnumerable.Consume(s, _chainT, ref _inner);
+                    if (status.IsStopped())
+                        break;
+                }
+            }
 
             public override ChainStatus ProcessNext(Enumerable input) =>
                 UnknownEnumerable.Consume(input, _chainT, ref _inner);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Optimizations
@@ -19,7 +20,7 @@ namespace Cistern.Linq.ChainLinq.Optimizations
 
         public IEnumerable<T> Source { get; }
 
-        public int? TryLength => null;
+        public int? TryLength => Source is ICollection<T> ct ? (int?)ct.Count : Source is ICollection c ? (int?)c.Count : null;
 
         public IEnumerator<T> GetEnumerator() => Source.GetEnumerator();
 

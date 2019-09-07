@@ -21,16 +21,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.second);
             }
 
-            if (first is ChainLinq.Consumables.Concat<TSource, TSource> forAppending)
-            {
-                return forAppending.Append(second);
-            }
-            else if (second is ChainLinq.Consumables.Concat<TSource, TSource> forPrepending)
-            {
-                return forPrepending.Prepend(first);
-            }
-
-            return new ChainLinq.Consumables.Concat<TSource, TSource>(null, first, second, ChainLinq.Links.Identity<TSource>.Instance);
+            return ChainLinq.Consumables.Concat<TSource>.Create(first, second);
         }
     }
 }

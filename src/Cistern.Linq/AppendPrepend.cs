@@ -16,12 +16,12 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            if (source is ChainLinq.Consumables.Concat<TSource, TSource> forAppending)
+            if (source is ChainLinq.Consumables.Concat_Deprecated<TSource, TSource> forAppending)
             {
                 return forAppending.Append(element);
             }
 
-            return new ChainLinq.Consumables.Concat<TSource, TSource>(null, source, new ChainLinq.Consumables.Appender<TSource>(element), ChainLinq.Links.Identity<TSource>.Instance);
+            return new ChainLinq.Consumables.Concat_Deprecated<TSource, TSource>(null, source, new ChainLinq.Consumables.Appender<TSource>(element), ChainLinq.Links.Identity<TSource>.Instance);
         }
 
         public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> source, TSource element)
@@ -31,12 +31,12 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            if (source is ChainLinq.Consumables.Concat<TSource, TSource> forPrepending)
+            if (source is ChainLinq.Consumables.Concat_Deprecated<TSource, TSource> forPrepending)
             {
                 return forPrepending.Prepend(element);
             }
 
-            return new ChainLinq.Consumables.Concat<TSource, TSource>(new ChainLinq.Consumables.Prepender<TSource>(element), source, null, ChainLinq.Links.Identity<TSource>.Instance);
+            return new ChainLinq.Consumables.Concat_Deprecated<TSource, TSource>(new ChainLinq.Consumables.Prepender<TSource>(element), source, null, ChainLinq.Links.Identity<TSource>.Instance);
         }
 
     }

@@ -268,7 +268,6 @@ namespace Cistern.Linq.Tests
             Assert.Throws<OverflowException>(() => tinyCollection.Concat(tinyCollection).Concat(tinyCollection).Concat(supposedlyLargeCollection).ToList());
         }
 
-        [Fact(Skip = "CISTERN LINQ TBD (Currently stackoverflows).")]
         [OuterLoop("This test tries to catch stack overflows and can take a long time.")]
         public void CountOfConcatCollectionChainShouldBeResilientToStackOverflow()
         {
