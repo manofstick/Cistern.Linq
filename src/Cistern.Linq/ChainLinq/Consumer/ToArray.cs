@@ -27,9 +27,19 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
-            foreach (var item in source)
+            using (var e = source.GetEnumerator())
             {
-                Result[_index++] = item;
+                var i = _index;
+                for (; i < Result.Length; ++i)
+                {
+                    if (!e.MoveNext())
+                        break;
+
+                    Result[i] = e.Current;
+                }
+                if (i == Result.Length && e.MoveNext())
+                    throw new Exception("Logic error, enumerable contains more data that expected");
+                _index = i;
             }
         }
 

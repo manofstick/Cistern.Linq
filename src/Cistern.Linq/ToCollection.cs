@@ -23,7 +23,9 @@ namespace Cistern.Linq
                     if (consumable is ChainLinq.Optimizations.ICountOnConsumable counter)
                     {
                         count = counter.GetCount(true);
-                        if (count >= 0)
+                        if (count == 0)
+                            return Array.Empty<TSource>();
+                        else if (count > 0)
                         {
                             return ChainLinq.Utils.Consume(consumable, new ChainLinq.Consumer.ToArrayKnownSize<TSource>(count));
                         }
