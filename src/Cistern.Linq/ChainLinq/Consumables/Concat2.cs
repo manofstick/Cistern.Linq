@@ -17,32 +17,45 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
             public bool TryOwn(int length) =>
                 length == Interlocked.CompareExchange(ref _interlocked_count, length + 1, length);
-
         }
 
         public static Consumable<T> Create(IEnumerable<T> first, IEnumerable<T> second)
         {
-            if (first is ConcatConsumable<T> concat && concat.TryGetCell(out var cell, out var length))
+            if (first is ConcatConsumable<T> concat)
             {
-                if (cell.TryOwn(length))
+                if (concat.TryGetCell(out var cell, out var idx))
                 {
-                    if (length < cell.Enumerables.Length)
+                    if (cell.TryOwn(idx))
                     {
-                        cell.Enumerables[length] = second;
-                        return new ConcatConsumable<T>(cell, length + 1, Links.Identity<T>.Instance);
+                        var enumerables = cell.Enumerables;
+
+                        if (idx < enumerables.Length)
+                        {
+                            enumerables[idx] = second;
+                            return new ConcatConsumable<T>(cell, idx + 1, Links.Identity<T>.Instance);
+                        }
+
+                        return CreateNewCell(enumerables, second, idx);
                     }
-
-                    var data = new IEnumerable<T>[cell.Enumerables.Length * 2];
-                    Array.Copy(cell.Enumerables, data, length);
-                    data[length] = second;
-
-                    var enumerables = new Cell(data, length + 1);
-                    return new ConcatConsumable<T>(enumerables, length + 1, Links.Identity<T>.Instance);
                 }
             }
+            return CreateNew(first, second);
+        }
 
+        private static Consumable<T> CreateNew(IEnumerable<T> first, IEnumerable<T> second)
+        {
             var e = new Cell(new IEnumerable<T>[4] { first, second, null, null }, 2);
             return new ConcatConsumable<T>(e, 2, Links.Identity<T>.Instance);
+        }
+
+        private static Consumable<T> CreateNewCell(IEnumerable<T>[] enumerables, IEnumerable<T> second, int length)
+        {
+            var data = new IEnumerable<T>[enumerables.Length * 2];
+            Array.Copy(enumerables, data, length);
+            data[length] = second;
+
+            var cell = new Cell(data, length + 1);
+            return new ConcatConsumable<T>(cell, length + 1, Links.Identity<T>.Instance);
         }
 
         sealed partial class ConcatConsumable<V>
