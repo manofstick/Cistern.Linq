@@ -25,7 +25,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             ChainLinq.GetEnumerator.Concat.Get(_firstOrNull, _second, _thirdOrNull, Link);
 
         public override void Consume(Consumer<V> consumer) =>
-            ChainLinq.Consume.Concat.Invoke(_firstOrNull, _second, _thirdOrNull, Link, consumer);
+            ChainLinq.Consume.Concat_Deprecated.Invoke(_firstOrNull, _second, _thirdOrNull, Link, consumer);
 
         public Consumable<V> Append(IEnumerable<V> next)
         {

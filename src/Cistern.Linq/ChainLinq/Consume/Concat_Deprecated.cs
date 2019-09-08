@@ -2,7 +2,7 @@
 
 namespace Cistern.Linq.ChainLinq.Consume
 {
-    static class Concat
+    static class Concat_Deprecated
     {
         public static void Invoke<T>(IEnumerable<T> firstOrNull, IEnumerable<T> second, IEnumerable<T> thirdOrNull, Chain<T> chain)
         {
