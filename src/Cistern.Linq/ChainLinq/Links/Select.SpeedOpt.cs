@@ -19,11 +19,11 @@ namespace Cistern.Linq.ChainLinq.Links
         sealed partial class Activity
             : Optimizations.IHeadStart<T>
         {
-            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+            ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
                 if (next is Optimizations.ITailEnd<U> optimized)
                 {
-                    optimized.Select(source, _selector);
+                    return optimized.Select(source, _selector);
                 }
                 else
                 {
@@ -31,19 +31,21 @@ namespace Cistern.Linq.ChainLinq.Links
                     {
                         var state = Next(_selector(item));
                         if (state.IsStopped())
-                            break;
+                            return state;
                     }
+                    return ChainStatus.Flow;
                 }
             }
 
-            void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+            ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
             {
                 foreach (var item in source)
                 {
                     var state = Next(_selector(item));
                     if (state.IsStopped())
-                        break;
+                        return state;
                 }
+                return ChainStatus.Flow;
             }
         }
     }

@@ -17,7 +17,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         public override void ChainComplete() => Result = default(Maths).Cast(accumulator);
 
-        void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+        ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
         {
             Maths maths = default;
 
@@ -28,9 +28,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+        ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             Maths maths = default;
 
@@ -41,9 +42,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> memory, Func<T, bool> predicate)
+        ChainStatus Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> memory, Func<T, bool> predicate)
         {
             Maths maths = default;
 
@@ -55,9 +58,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.Where<Enumerable, Enumerator>(Enumerable source, Func<T, bool> predicate)
+        ChainStatus Optimizations.ITailEnd<T>.Where<Enumerable, Enumerator>(Enumerable source, Func<T, bool> predicate)
         {
             Maths maths = default;
 
@@ -69,9 +74,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> memory, Func<S, T> selector)
+        ChainStatus Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> memory, Func<S, T> selector)
         {
             Maths maths = default;
 
@@ -82,6 +89,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+
+            return ChainStatus.Flow;
         }
 
         ChainStatus Optimizations.ITailEnd<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
@@ -98,7 +107,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
+        ChainStatus Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
         {
             Maths maths = default;
 
@@ -110,9 +119,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T> selector)
+        ChainStatus Optimizations.ITailEnd<T>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T> selector)
         {
             Maths maths = default;
 
@@ -124,6 +134,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+            return ChainStatus.Flow;
         }
     }
 
@@ -141,7 +152,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         public override void ChainComplete() => Result = default(Maths).Cast(accumulator);
 
-        void Optimizations.IHeadStart<T?>.Execute(ReadOnlySpan<T?> source)
+        ChainStatus Optimizations.IHeadStart<T?>.Execute(ReadOnlySpan<T?> source)
         {
             Maths maths = default;
 
@@ -152,9 +163,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.IHeadStart<T?>.Execute<Enumerable, Enumerator>(Enumerable source)
+        ChainStatus Optimizations.IHeadStart<T?>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             Maths maths = default;
 
@@ -165,9 +177,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T?>.Where(ReadOnlySpan<T?> memory, Func<T?, bool> predicate)
+        ChainStatus Optimizations.ITailEnd<T?>.Where(ReadOnlySpan<T?> memory, Func<T?, bool> predicate)
         {
             Maths maths = default;
 
@@ -179,9 +192,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T?>.Where<Enumerable, Enumerator>(Enumerable source, Func<T?, bool> predicate)
+        ChainStatus Optimizations.ITailEnd<T?>.Where<Enumerable, Enumerator>(Enumerable source, Func<T?, bool> predicate)
         {
             Maths maths = default;
 
@@ -193,9 +208,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T?>.Select<S>(ReadOnlySpan<S> memory, Func<S, T?> selector)
+        ChainStatus Optimizations.ITailEnd<T?>.Select<S>(ReadOnlySpan<S> memory, Func<S, T?> selector)
         {
             Maths maths = default;
 
@@ -206,6 +223,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+            return ChainStatus.Flow;
         }
 
         ChainStatus Optimizations.ITailEnd<T?>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T?> resultSelector)
@@ -221,7 +239,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
             return ChainStatus.Flow;
         }
-        void Optimizations.ITailEnd<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
+        ChainStatus Optimizations.ITailEnd<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
         {
             Maths maths = default;
 
@@ -233,9 +251,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T?>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T?> selector)
+        ChainStatus Optimizations.ITailEnd<T?>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T?> selector)
         {
             Maths maths = default;
 
@@ -247,6 +266,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             accumulator = sum;
+            return ChainStatus.Flow;
         }
     }
 

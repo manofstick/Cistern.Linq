@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Cistern.Linq;
 using Cistern.Linq.Benchmarking.Benchmarks.Numeric;
 using Cistern.Linq.Benchmarking.Vanilla.Enumerable;
@@ -25,12 +26,27 @@ namespace Playground
     {
         static Playthings plaything = Playthings.benchmark;
 
+        static IEnumerable<int> F(IEnumerable<int> x)
+        {
+#if true
+            return x;
+#else
+            foreach (var y in x)
+                yield return y;
+#endif
+        }
+
         static void Benchmark()
         {
-            var toArray = new VanillaEnumerable_Aggreate();
-            toArray.NumberOfItems = 10;
-            toArray.Setup();
-            toArray.CisternLinq();
+            var x = F(new[] { 1, 2, 3 });
+            var y = F(new[] { 4, 5, 6 });
+            var z = F(new[] { 7, 8, 9 });
+
+            var a = x.Concat(y).Concat(z);
+
+            var b = a.Where(m => m < 6).Last();
+
+            Console.WriteLine(b);
         }
 
         static void Main(string[] args)

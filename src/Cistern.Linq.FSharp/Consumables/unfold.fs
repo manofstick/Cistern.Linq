@@ -57,6 +57,7 @@ type Unfold<'State, 'T, 'V>(f:'State->option<'T*'State>, seed:'State, link:Link<
             match box chain with
             | :? Optimizations.IHeadStart<'T> as optimized -> 
                 optimized.Execute<UnfoldEnumerable<'State, 'T>, UnfoldEnumerator<'State, 'T>>(new UnfoldEnumerable<'State, 'T>(f, seed))
+                |> ignore
             | _ ->
                 let rec iterate state =
                     match f state with

@@ -35,45 +35,38 @@ namespace Cistern.Linq.ChainLinq.Consume
             public SelectManyOuterConsumer(Chain<T> chainT) : base(default) =>
                 _chainT = chainT;
 
-            void Optimizations.IHeadStart<IEnumerable<T>>.Execute(ReadOnlySpan<IEnumerable<T>> source)
+            ChainStatus Optimizations.IHeadStart<IEnumerable<T>>.Execute(ReadOnlySpan<IEnumerable<T>> source)
             {
                 foreach (var s in source)
                 {
                     var status = UnknownEnumerable.Consume(s, _chainT, ref _inner);
                     if (status.IsStopped())
-                        break;
+                        return status;
                 }
-            }
-
-            void Optimizations.IHeadStart<IEnumerable<T>>.Execute<Enumerable1, Enumerator>(Enumerable1 source)
-            {
-                foreach (var s in source)
-                {
-                    var status = UnknownEnumerable.Consume(s, _chainT, ref _inner);
-                    if (status.IsStopped())
-                        break;
-                }
+                return ChainStatus.Flow;
             }
 
             public override ChainStatus ProcessNext(Enumerable input) =>
                 UnknownEnumerable.Consume(input, _chainT, ref _inner);
 
-            void Optimizations.ITailEnd<IEnumerable<T>>.Select<S>(ReadOnlySpan<S> source, Func<S, IEnumerable<T>> selector)
+            ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.Select<S>(ReadOnlySpan<S> source, Func<S, IEnumerable<T>> selector)
             {
                 foreach (var s in source)
                 {
                     var status = UnknownEnumerable.Consume(selector(s), _chainT, ref _inner);
                     if (status.IsStopped())
-                        break;
+                        return status;
                 }
+                return ChainStatus.Flow;
             }
 
-            // Only Select and SelectIndexed are use for the outer part of SelectMany to collect the IEnumerable
+            // Only Concat, Select and SelectIndexed are use for the outer part of SelectMany to collect the IEnumerable
+            ChainStatus Optimizations.IHeadStart<IEnumerable<T>>.Execute<Enumerable1, Enumerator>(Enumerable1 source) => throw new NotSupportedException();
             ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, IEnumerable<T>> resultSelector) => throw new NotSupportedException();
-            void Optimizations.ITailEnd<IEnumerable<T>>.Where(ReadOnlySpan<IEnumerable<T>> source, Func<IEnumerable<T>, bool> predicate) => throw new NotSupportedException();
-            void Optimizations.ITailEnd<IEnumerable<T>>.Where<WEnumerable, Enumerator>(WEnumerable source, Func<IEnumerable<T>, bool> predicate) => throw new NotSupportedException();
-            void Optimizations.ITailEnd<IEnumerable<T>>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, IEnumerable<T>> selector) => throw new NotSupportedException();
-            void Optimizations.ITailEnd<IEnumerable<T>>.WhereSelect<WEnumerable, Enumerator, S>(WEnumerable source, Func<S, bool> predicate, Func<S, IEnumerable<T>> selector) => throw new NotSupportedException();
+            ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.Where(ReadOnlySpan<IEnumerable<T>> source, Func<IEnumerable<T>, bool> predicate) => throw new NotSupportedException();
+            ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.Where<WEnumerable, Enumerator>(WEnumerable source, Func<IEnumerable<T>, bool> predicate) => throw new NotSupportedException();
+            ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, IEnumerable<T>> selector) => throw new NotSupportedException();
+            ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.WhereSelect<WEnumerable, Enumerator, S>(WEnumerable source, Func<S, bool> predicate, Func<S, IEnumerable<T>> selector) => throw new NotSupportedException();
         }
 
         sealed class SelectManyOuterConsumer<TSource, TCollection, T> : Consumer<(TSource, IEnumerable<TCollection>), ChainEnd>

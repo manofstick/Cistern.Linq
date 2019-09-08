@@ -27,7 +27,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
         }
 
-        void Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)
+        ChainStatus Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)
         {
             // TODO: Could optimize, if we assumed selector was immutable
             foreach (var input in source)
@@ -35,9 +35,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
                 _found = true;
                 Result = selector(input);
             }
+
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
+        ChainStatus Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
         {
             // assuming predicate is pure; reverse search was a System.Linq optimization
             for(var i=source.Length-1; i >= 0; --i)
@@ -47,12 +49,14 @@ namespace Cistern.Linq.ChainLinq.Consumer
                 {
                     _found = true;
                     Result = input;
-                    return;
+                    break;
                 }
             }
+
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.Where<Enumerable, Enumerator>(Enumerable source, Func<T, bool> predicate)
+        ChainStatus Optimizations.ITailEnd<T>.Where<Enumerable, Enumerator>(Enumerable source, Func<T, bool> predicate)
         {
             foreach (var input in source)
             {
@@ -62,6 +66,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
                     Result = input;
                 }
             }
+            return ChainStatus.Flow;
         }
 
         ChainStatus Optimizations.ITailEnd<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
@@ -74,7 +79,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
+        ChainStatus Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
         {
             foreach (var input in source)
             {
@@ -84,9 +89,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
                     Result = selector(input);
                 }
             }
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T> selector)
+        ChainStatus Optimizations.ITailEnd<T>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T> selector)
         {
             foreach (var input in source)
             {
@@ -96,6 +102,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
                     Result = selector(input);
                 }
             }
+            return ChainStatus.Flow;
         }
     }
 }

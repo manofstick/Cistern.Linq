@@ -31,12 +31,12 @@ namespace Cistern.Linq.ChainLinq.Links
 
             public override ChainStatus ProcessNext(T input) =>
                 _predicate(input) ? Next(_selector(input)) : ChainStatus.Filter;
-            
-            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+
+            ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
                 if (next is Optimizations.ITailEnd<U> optimized)
                 {
-                    optimized.WhereSelect(source, _predicate, _selector);
+                    return optimized.WhereSelect(source, _predicate, _selector);
                 }
                 else
                 {
@@ -46,17 +46,18 @@ namespace Cistern.Linq.ChainLinq.Links
                         {
                             var state = Next(_selector(item));
                             if (state.IsStopped())
-                                break;
+                                return state;
                         }
                     }
+                    return ChainStatus.Flow;
                 }
             }
 
-            void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+            ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
             {
                 if (next is Optimizations.ITailEnd<U> optimized)
                 {
-                    optimized.WhereSelect<Enumerable, Enumerator, T>(source, _predicate, _selector);
+                    return optimized.WhereSelect<Enumerable, Enumerator, T>(source, _predicate, _selector);
                 }
                 else
                 {
@@ -66,9 +67,10 @@ namespace Cistern.Linq.ChainLinq.Links
                         {
                             var state = Next(_selector(item));
                             if (state.IsStopped())
-                                break;
+                                return state;
                         }
                     }
+                    return ChainStatus.Flow;
                 }
             }
         }

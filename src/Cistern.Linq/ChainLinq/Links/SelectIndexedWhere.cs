@@ -45,7 +45,7 @@ namespace Cistern.Linq.ChainLinq.Links
                 }
             }
 
-            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> memory)
+            ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> memory)
             {
                 checked
                 {
@@ -56,13 +56,14 @@ namespace Cistern.Linq.ChainLinq.Links
                         {
                             var state = Next(u);
                             if (state.IsStopped())
-                                break;
+                                return state;
                         }
                     }
+                    return ChainStatus.Flow;
                 }
             }
 
-            void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+            ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
             {
                 checked
                 {
@@ -73,9 +74,10 @@ namespace Cistern.Linq.ChainLinq.Links
                         {
                             var state = Next(u);
                             if (state.IsStopped())
-                                break;
+                                return state;
                         }
                     }
+                    return ChainStatus.Flow;
                 }
             }
         }

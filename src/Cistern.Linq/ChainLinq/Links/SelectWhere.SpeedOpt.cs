@@ -35,7 +35,7 @@ namespace Cistern.Linq.ChainLinq.Links
                 return _predicate(item) ? Next(item) : ChainStatus.Filter;
             }
 
-            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> memory)
+            ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> memory)
             {
                 foreach (var t in memory)
                 {
@@ -44,12 +44,13 @@ namespace Cistern.Linq.ChainLinq.Links
                     {
                         var state = Next(u);
                         if (state.IsStopped())
-                            break;
+                            return state;
                     }
                 }
+                return ChainStatus.Flow;
             }
 
-            void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+            ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
             {
                 foreach (var t in source)
                 {
@@ -58,9 +59,10 @@ namespace Cistern.Linq.ChainLinq.Links
                     {
                         var state = Next(u);
                         if (state.IsStopped())
-                            break;
+                            return state;
                     }
                 }
+                return ChainStatus.Flow;
             }
         }
     }

@@ -25,24 +25,26 @@ namespace Cistern.Linq.ChainLinq.Links
             public override ChainStatus ProcessNext(T input) =>
                 Next((input, collectionSelector(input)));
 
-            void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+            ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
                 foreach (var item in source)
                 {
                     var status = Next((item, collectionSelector(item)));
                     if (status.IsStopped())
-                        break;
+                        return status;
                 }
+                return ChainStatus.Flow;
             }
 
-            void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+            ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
             {
                 foreach (var item in source)
                 {
                     var status = Next((item, collectionSelector(item)));
                     if (status.IsStopped())
-                        break;
+                        return status;
                 }
+                return ChainStatus.Flow;
             }
         }
     }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
@@ -30,43 +28,58 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return status;
         }
 
-        void Optimizations.IHeadStart<T?>.Execute(ReadOnlySpan<T?> source)
+        ChainStatus Optimizations.IHeadStart<T?>.Execute(ReadOnlySpan<T?> source)
         {
             Logic logic = default; logic.Init(Result);
+            var chainStatus = ChainStatus.Flow;
 
             foreach (var input in source)
             {
                 if (!logic.Process(input))
+                {
+                    chainStatus = ChainStatus.Stop;
                     break;
+                }
             }
 
             Result = logic.Result;
+            return chainStatus;
         }
 
-        void Optimizations.IHeadStart<T?>.Execute<Enumerable, Enumerator>(Enumerable source)
+        ChainStatus Optimizations.IHeadStart<T?>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             Logic logic = default; logic.Init(Result);
+            var chainStatus = ChainStatus.Flow;
 
             foreach (var input in source)
             {
                 if (!logic.Process(input))
+                {
+                    chainStatus = ChainStatus.Stop;
                     break;
+                }
             }
 
             Result = logic.Result;
+            return chainStatus;
         }
 
-        void Optimizations.ITailEnd<T?>.Select<S>(ReadOnlySpan<S> source, Func<S, T?> selector)
+        ChainStatus Optimizations.ITailEnd<T?>.Select<S>(ReadOnlySpan<S> source, Func<S, T?> selector)
         {
             Logic logic = default; logic.Init(Result);
+            var chainStatus = ChainStatus.Flow;
 
             foreach (var input in source)
             {
                 if (!logic.Process(selector(input)))
+                {
+                    chainStatus = ChainStatus.Stop;
                     break;
+                }
             }
 
             Result = logic.Result;
+            return chainStatus;
         }
 
         ChainStatus Optimizations.ITailEnd<T?>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T?> resultSelector)
@@ -88,68 +101,86 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return status;
         }
 
-        void Optimizations.ITailEnd<T?>.Where(ReadOnlySpan<T?> source, Func<T?, bool> predicate)
+        ChainStatus Optimizations.ITailEnd<T?>.Where(ReadOnlySpan<T?> source, Func<T?, bool> predicate)
         {
             Logic logic = default; logic.Init(Result);
+            ChainStatus chainStatus = ChainStatus.Flow;
 
             foreach (var input in source)
             {
                 if (predicate(input))
                 {
                     if (!logic.Process(input))
+                    {
+                        chainStatus = ChainStatus.Stop;
                         break;
+                    }
                 }
             }
 
             Result = logic.Result;
+            return chainStatus;
         }
 
-        void Optimizations.ITailEnd<T?>.Where<Enumerable, Enumerator>(Enumerable source, Func<T?, bool> predicate)
+        ChainStatus Optimizations.ITailEnd<T?>.Where<Enumerable, Enumerator>(Enumerable source, Func<T?, bool> predicate)
         {
             Logic logic = default; logic.Init(Result);
+            var chainStatus = ChainStatus.Flow;
 
             foreach (var input in source)
             {
                 if (predicate(input))
                 {
                     if (!logic.Process(input))
+                    {
+                        chainStatus = ChainStatus.Stop;
                         break;
+                    }
                 }
             }
 
             Result = logic.Result;
+            return chainStatus;
         }
 
-        void Optimizations.ITailEnd<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
+        ChainStatus Optimizations.ITailEnd<T?>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T?> selector)
         {
             Logic logic = default; logic.Init(Result);
-
+            var chainStatus = ChainStatus.Flow;
             foreach (var input in source)
             {
                 if (predicate(input))
                 {
                     if (!logic.Process(selector(input)))
+                    {
+                        chainStatus = ChainStatus.Stop;
                         break;
+                    }
                 }
             }
 
             Result = logic.Result;
+            return chainStatus;
         }
 
-        void Optimizations.ITailEnd<T?>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T?> selector)
+        ChainStatus Optimizations.ITailEnd<T?>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T?> selector)
         {
             Logic logic = default; logic.Init(Result);
-
+            var chainStatus = ChainStatus.Flow;
             foreach (var input in source)
             {
                 if (predicate(input))
                 {
                     if (!logic.Process(selector(input)))
+                    {
+                        chainStatus = ChainStatus.Stop;
                         break;
+                    }
                 }
             }
 
             Result = logic.Result;
+            return chainStatus;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
         }
 
-        void Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+        ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
         {
             var result = Result;
 
@@ -42,9 +42,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             Result = result;
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+        ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             var result = Result;
 
@@ -55,9 +56,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             Result = result;
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)
+        ChainStatus Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)
         {
             var result = Result;
 
@@ -68,6 +70,8 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             Result = result;
+
+            return ChainStatus.Flow;
         }
 
         ChainStatus Optimizations.ITailEnd<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
@@ -84,7 +88,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
+        ChainStatus Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
         {
             var result = Result;
 
@@ -97,9 +101,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             Result = result;
+
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.Where<Enumerable, Enumerator>(Enumerable source, Func<T, bool> predicate)
+        ChainStatus Optimizations.ITailEnd<T>.Where<Enumerable, Enumerator>(Enumerable source, Func<T, bool> predicate)
         {
             var result = Result;
 
@@ -112,9 +118,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             Result = result;
+
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
+        ChainStatus Optimizations.ITailEnd<T>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, T> selector)
         {
             var result = Result;
 
@@ -127,9 +135,10 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             Result = result;
+            return ChainStatus.Flow;
         }
 
-        void Optimizations.ITailEnd<T>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T> selector)
+        ChainStatus Optimizations.ITailEnd<T>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T> selector)
         {
             var result = Result;
 
@@ -142,6 +151,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             }
 
             Result = result;
+            return ChainStatus.Flow;
         }
     }
 }
