@@ -3,7 +3,9 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed partial class SelectMany<Enumerable, T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+    sealed partial class SelectMany<Enumerable, T, V>
+        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+        , Optimizations.ICountOnConsumable
         where Enumerable : IEnumerable<T>
     {
         private readonly Consumable<Enumerable> _selectMany;
@@ -19,6 +21,29 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override void Consume(Consumer<V> consumer) =>
             ChainLinq.Consume.SelectMany.Invoke(_selectMany, Link, consumer);
+
+        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap)
+        {
+            if (onlyIfCheap)
+            {
+                return -1;
+            }
+
+            if (Link is Optimizations.ICountOnConsumableLink countLink)
+            {
+                var selectManyCount = new Consumer.CountSelectMany<Enumerable, T>();
+                _selectMany.Consume(selectManyCount);
+                var underlyingCount = selectManyCount.Result;
+
+                var c = countLink.GetCount(underlyingCount);
+                if (underlyingCount >= 0)
+                    return underlyingCount;
+            }
+
+            var counter = new Consumer.Count<V, int, int, Maths.OpsInt>();
+            Consume(counter);
+            return counter.Result;
+        }
     }
 
     sealed partial class SelectMany<TSource, TCollection, T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>

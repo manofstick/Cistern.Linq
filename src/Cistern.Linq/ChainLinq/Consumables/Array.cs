@@ -3,7 +3,10 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed partial class Array<T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+    sealed partial class Array<T, V>
+        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+        , Optimizations.ISkipTakeOnConsumable<V>
+        , Optimizations.ICountOnConsumable
     {
         internal T[] Underlying { get; }
 
@@ -21,5 +24,17 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override void Consume(Consumer<V> consumer) =>
             ChainLinq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<T>(Underlying, _start, _length), Link, consumer);
+
+        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap) =>
+            Optimizations.Count.GetCount(this, this.Link, Underlying.Length, onlyIfCheap);
+
+        V Optimizations.ISkipTakeOnConsumable<V>.Last(bool orDefault) =>
+            Optimizations.SkipTake.Last(this, Underlying, 0, Underlying.Length, orDefault);
+
+        Consumable<V> Optimizations.ISkipTakeOnConsumable<V>.Skip(int toSkip) =>
+            Optimizations.SkipTake.Skip(this, Underlying, 0, Underlying.Length, toSkip);
+
+        Consumable<V> Optimizations.ISkipTakeOnConsumable<V>.Take(int toTake) =>
+            Optimizations.SkipTake.Take(this, Underlying, 0, Underlying.Length, toTake);
     }
 }

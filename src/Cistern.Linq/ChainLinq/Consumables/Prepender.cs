@@ -3,7 +3,10 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed partial class Prepender<T> : Consumable<T>, IConsumableInternal
+    sealed partial class Prepender<T>
+        : Consumable<T>
+        , IConsumableInternal
+        , Optimizations.ICountOnConsumable
     {
         readonly T _element;
         readonly int _count;
@@ -46,6 +49,14 @@ namespace Cistern.Linq.ChainLinq.Consumables
                 yield return next._element;
                 next = next._previous;
             } while (next != null);
+        }
+
+        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap)
+        {
+            if (_count < 0)
+                throw new OverflowException();
+
+            return _count;
         }
     }
 }

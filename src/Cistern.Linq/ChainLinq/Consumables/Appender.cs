@@ -6,6 +6,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
     sealed partial class Appender<T>
         : Consumable<T>
         , IConsumableInternal
+        , Optimizations.ICountOnConsumable
     {
         readonly T _element;
         readonly int _count;
@@ -44,6 +45,14 @@ namespace Cistern.Linq.ChainLinq.Consumables
         {
             var reversed = Reverse();
             return reversed.GetEnumerator();
+        }
+
+        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap)
+        {
+            if (_count < 0)
+                throw new OverflowException();
+
+            return _count;
         }
     }
 }

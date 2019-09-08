@@ -118,10 +118,9 @@ namespace Cistern.Linq.ChainLinq.Consumables
             }
         }
 
-        public override object TailLink => this;
+        public override object TailLink => null;
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) =>
-            throw new NotImplementedException();
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new NotImplementedException();
 
         public override Consumable<U> AddTail(Link<U, U> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, U>(Underlying, Links.Composition.Create(new Links.WhereSelect<T, U>(Predicate, Selector), transform));
