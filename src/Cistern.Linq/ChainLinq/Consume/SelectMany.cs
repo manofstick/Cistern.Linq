@@ -5,7 +5,9 @@ namespace Cistern.Linq.ChainLinq.Consume
 {
     static class SelectMany
     {
-        sealed class SelectManyInnerConsumer<TSource, TCollection, T> : Consumer<TCollection, ChainStatus>
+        sealed class SelectManyInnerConsumer<TSource, TCollection, T>
+            : Consumer<TCollection, ChainStatus>
+            , Optimizations.IHeadStart<TCollection>
         {
             private readonly Chain<T> _chainT;
             private readonly Func<TSource, TCollection, T> _resultSelector;
@@ -15,11 +17,35 @@ namespace Cistern.Linq.ChainLinq.Consume
             public SelectManyInnerConsumer(Func<TSource, TCollection, T> resultSelector, Chain<T> chainT) : base(ChainStatus.Flow) =>
                 (_chainT, _resultSelector) = (chainT, resultSelector);
 
-            public override ChainStatus ProcessNext(TCollection input)
+            public override ChainStatus ProcessNext(TCollection input) =>
+                Result = _chainT.ProcessNext(_resultSelector(Source, input));
+
+            ChainStatus Optimizations.IHeadStart<TCollection>.Execute(ReadOnlySpan<TCollection> source)
             {
-                var state = _chainT.ProcessNext(_resultSelector(Source, input));
-                Result = state;
-                return state;
+                foreach(var input in source)
+                {
+                    var status = _chainT.ProcessNext(_resultSelector(Source, input));
+                    if (status.IsStopped())
+                    {
+                        Result = status;
+                        return status;
+                    }
+                }
+                return Result;
+            }
+
+            ChainStatus Optimizations.IHeadStart<TCollection>.Execute<Enumerable, Enumerator>(Enumerable source)
+            {
+                foreach (var input in source)
+                {
+                    var status = _chainT.ProcessNext(_resultSelector(Source, input));
+                    if (status.IsStopped())
+                    {
+                        Result = status;
+                        return status;
+                    }
+                }
+                return Result;
             }
         }
 
