@@ -37,7 +37,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
             var idx = 0;
 
-            const int NumberOfVectorsToMakeThisWorthwhile = 0; // from some random testing
+            const int NumberOfVectorsToMakeThisWorthwhile = 5; // from some random testing
             if (maths.SupportsVectorization && ((source.Length - idx) / Vector<T>.Count > NumberOfVectorsToMakeThisWorthwhile))
             {
                 var asVector = MemoryMarshal.Cast<T, Vector<T>>(source);
