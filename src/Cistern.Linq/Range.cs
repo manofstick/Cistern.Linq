@@ -9,6 +9,8 @@ namespace Cistern.Linq
 {
     public static partial class Enumerable
     {
+        static readonly ChainLinq.Link<int, int> IntIdentity = ChainLinq.Links.Identity<int>.Instance;
+
         public static IEnumerable<int> Range(int start, int count)
         {
             long max = ((long)start) + count - 1;
@@ -22,7 +24,7 @@ namespace Cistern.Linq
                 return ChainLinq.Consumables.Empty<int>.Instance;
             }
 
-            return new ChainLinq.Consumables.Range<int>(start, count, ChainLinq.Links.Identity<int>.Instance);
+            return new ChainLinq.Consumables.Range<int>(start, count, IntIdentity);
         }
     }
 }
