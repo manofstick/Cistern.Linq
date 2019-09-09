@@ -4,11 +4,13 @@ namespace Cistern.Linq.ChainLinq.Consume
 {
     static class ReadOnlySpan
     {
+        const int MinSizeToCoverExecuteCosts = 10; // from some random testing (depends on pipeline length)
+
         public static void Invoke<T>(ReadOnlySpan<T> array, Chain<T> chain)
         {
             try
             {
-                if (chain is Optimizations.IHeadStart<T> optimized)
+                if (array.Length > MinSizeToCoverExecuteCosts && chain is Optimizations.IHeadStart<T> optimized)
                 {
                     optimized.Execute(array);
                 }
