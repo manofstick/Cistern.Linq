@@ -5,6 +5,8 @@ namespace Cistern.Linq.ChainLinq.Consume
 {
     static class UnknownEnumerable
     {
+        // TODO: I'm not ChainDisposing here. Is this on purpose? I need to investigate and document
+
         public sealed class ChainConsumer<T> : Consumer<T, ChainStatus>
         {
             private readonly Chain<T> _chainT;

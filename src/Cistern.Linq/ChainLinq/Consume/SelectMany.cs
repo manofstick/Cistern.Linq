@@ -95,7 +95,8 @@ namespace Cistern.Linq.ChainLinq.Consume
             ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.WhereSelect<WEnumerable, Enumerator, S>(WEnumerable source, Func<S, bool> predicate, Func<S, IEnumerable<T>> selector) => throw new NotSupportedException();
         }
 
-        sealed class SelectManyOuterConsumer<TSource, TCollection, T> : Consumer<(TSource, IEnumerable<TCollection>), ChainEnd>
+        sealed class SelectManyOuterConsumer<TSource, TCollection, T>
+            : Consumer<(TSource, IEnumerable<TCollection>), ChainEnd>
         {
             readonly Func<TSource, TCollection, T> _resultSelector;
             readonly Chain<T> _chainT;
