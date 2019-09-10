@@ -3,7 +3,9 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed partial class WhereSelectArray<T, U> : ConsumableEnumerator<U>
+    sealed partial class WhereSelectArray<T, U>
+        : ConsumableEnumerator<U>
+        , Optimizations.IMergeSelect<U>
     {
         internal T[] Underlying { get; }
         internal Func<T, bool> Predicate { get; }
@@ -39,7 +41,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             return false;
         }
 
-        public override object TailLink => this;
+        public override object TailLink => this; // for IMergeSelect<U>
 
         public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) =>
             throw new NotImplementedException();
@@ -49,9 +51,14 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override Consumable<V> AddTail<V>(Link<U, V> transform) =>
             new Array<T, V>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.WhereSelect<T, U>(Predicate, Selector), transform));
+
+        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(ConsumableCons<U> _, Func<U, V> selector) =>
+            new WhereSelectArray<T, V>(Underlying, Predicate, x => selector(Selector(x)));
     }
 
-    sealed partial class WhereSelectEnumerable<TEnumerable, TEnumerator, T, U> : ConsumableEnumerator<U>
+    sealed partial class WhereSelectEnumerable<TEnumerable, TEnumerator, T, U>
+        : ConsumableEnumerator<U>
+        , Optimizations.IMergeSelect<U>
         where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
         where TEnumerator : IEnumerator<T>
     {
@@ -118,7 +125,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             }
         }
 
-        public override object TailLink => null;
+        public override object TailLink => this; // for IMergeSelect
 
         public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new NotImplementedException();
 
@@ -127,5 +134,8 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override Consumable<V> AddTail<V>(Link<U, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.WhereSelect<T, U>(Predicate, Selector), transform));
+
+        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(ConsumableCons<U> _, Func<U, V> selector) =>
+            new WhereSelectEnumerable<TEnumerable, TEnumerator, T, V>(Underlying, Predicate, x => selector(Selector(x)));
     }
 }

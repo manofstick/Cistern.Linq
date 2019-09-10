@@ -70,7 +70,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             return true;
         }
 
-        public override object TailLink => this;
+        public override object TailLink => this; // for IMergeSelect & IMergeWhere;
 
         public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new NotImplementedException();
 
@@ -152,7 +152,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             }
         }
 
-        public override object TailLink => this;
+        public override object TailLink => this; // for IMergeSelect & IMergeWhere
 
         public override Consumable<V1> ReplaceTailLink<Unknown, V1>(Link<Unknown, V1> newLink) =>
             throw new NotImplementedException();
