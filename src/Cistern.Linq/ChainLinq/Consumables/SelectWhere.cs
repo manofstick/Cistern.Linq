@@ -43,13 +43,13 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override object TailLink => this; // for IMergeWhere
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) =>
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) =>
             throw new NotImplementedException();
 
-        public override Consumable<U> AddTail(Link<U, U> transform) =>
+        public override Consumable<U> AddTail(ILink<U, U> transform) =>
             new Array<T, U>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.SelectWhere<T, U>(Selector, Predicate), transform));
 
-        public override Consumable<V> AddTail<V>(Link<U, V> transform) =>
+        public override Consumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Array<T, V>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.SelectWhere<T, U>(Selector, Predicate), transform));
 
         Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> _, Func<U, bool> predicate) =>
@@ -127,13 +127,13 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override object TailLink => this; // for IMergeWhere
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) =>
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) =>
             throw new NotImplementedException();
 
-        public override Consumable<U> AddTail(Link<U, U> transform) =>
+        public override Consumable<U> AddTail(ILink<U, U> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, U>(Underlying, Links.Composition.Create(new Links.SelectWhere<T, U>(Selector, Predicate), transform));
 
-        public override Consumable<V> AddTail<V>(Link<U, V> transform) =>
+        public override Consumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.SelectWhere<T, U>(Selector, Predicate), transform));
         Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> _, Func<U, bool> predicate) =>
             new SelectWhereEnumerable<TEnumerable, TEnumerator, T, U>(Underlying, Selector, x => Predicate(x) && predicate(x));

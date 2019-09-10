@@ -10,11 +10,11 @@ namespace Cistern.Linq.ChainLinq.Consumables
     {
         private readonly Consumable<Enumerable> _selectMany;
 
-        public SelectMany(Consumable<Enumerable> enumerable, Link<T, V> first) : base(first) =>
+        public SelectMany(Consumable<Enumerable> enumerable, ILink<T, V> first) : base(first) =>
             _selectMany = enumerable;
 
-        public override Consumable<V> Create   (Link<T, V> first) => new SelectMany<Enumerable, T, V>(_selectMany, first);
-        public override Consumable<W> Create<W>(Link<T, W> first) => new SelectMany<Enumerable, T, W>(_selectMany, first);
+        public override Consumable<V> Create   (ILink<T, V> first) => new SelectMany<Enumerable, T, V>(_selectMany, first);
+        public override Consumable<W> Create<W>(ILink<T, W> first) => new SelectMany<Enumerable, T, W>(_selectMany, first);
 
         public override IEnumerator<V> GetEnumerator() =>
             ChainLinq.GetEnumerator.SelectMany.Get(_selectMany, Link);
@@ -51,11 +51,11 @@ namespace Cistern.Linq.ChainLinq.Consumables
         private readonly Consumable<(TSource, IEnumerable<TCollection>)> _selectMany;
         private readonly Func<TSource, TCollection, T> _resultSelector;
 
-        public SelectMany(Consumable<(TSource, IEnumerable<TCollection>)> enumerable, Func<TSource, TCollection, T> resultSelector, Link<T, V> first) : base(first) =>
+        public SelectMany(Consumable<(TSource, IEnumerable<TCollection>)> enumerable, Func<TSource, TCollection, T> resultSelector, ILink<T, V> first) : base(first) =>
             (_selectMany, _resultSelector) = (enumerable, resultSelector);
 
-        public override Consumable<V> Create   (Link<T, V> first) => new SelectMany<TSource, TCollection, T, V>(_selectMany, _resultSelector, first);
-        public override Consumable<W> Create<W>(Link<T, W> first) => new SelectMany<TSource, TCollection, T, W>(_selectMany, _resultSelector, first);
+        public override Consumable<V> Create   (ILink<T, V> first) => new SelectMany<TSource, TCollection, T, V>(_selectMany, _resultSelector, first);
+        public override Consumable<W> Create<W>(ILink<T, W> first) => new SelectMany<TSource, TCollection, T, W>(_selectMany, _resultSelector, first);
 
         public override IEnumerator<V> GetEnumerator() =>
             ChainLinq.GetEnumerator.SelectMany.Get(_selectMany, _resultSelector, Link);

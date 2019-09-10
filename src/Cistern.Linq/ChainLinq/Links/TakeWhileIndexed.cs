@@ -3,14 +3,14 @@
 namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class TakeWhileIndexed<T>
-        : Link<T, T>
+        : ILink<T, T>
     {
         public Func<T, int, bool> Predicate { get; }
 
         public TakeWhileIndexed(Func<T, int, bool> predicate) =>
             Predicate = predicate;
 
-        public override Chain<T> Compose(Chain<T> activity) =>
+        Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
             new Activity(Predicate, activity);
 
         sealed class Activity : Activity<T, T>

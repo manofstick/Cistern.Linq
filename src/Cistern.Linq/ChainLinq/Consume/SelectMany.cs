@@ -188,11 +188,11 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        public static void Invoke<Enumerable, T, V>(Consumable<Enumerable> e, Link<T, V> composition, Chain<V> consumer)
+        public static void Invoke<Enumerable, T, V>(Consumable<Enumerable> e, ILink<T, V> composition, Chain<V> consumer)
             where Enumerable : IEnumerable<T> =>
             Invoke(e, composition.Compose(consumer));
 
-        public static void Invoke<TSource, TCollection, T, V>(Consumable<(TSource, IEnumerable<TCollection>)> e, Func<TSource, TCollection, T> resultSelector, Link<T, V> composition, Chain<V> consumer) =>
+        public static void Invoke<TSource, TCollection, T, V>(Consumable<(TSource, IEnumerable<TCollection>)> e, Func<TSource, TCollection, T> resultSelector, ILink<T, V> composition, Chain<V> consumer) =>
             Invoke(e, resultSelector, composition.Compose(consumer));
     }
 }

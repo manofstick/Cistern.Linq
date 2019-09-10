@@ -17,7 +17,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        public static void Invoke<T, V>(IEnumerable<T> firstOrNull, IEnumerable<T> second, IEnumerable<T> thirdOrNull, Link<T, V> composition, Chain<V> consumer)
+        public static void Invoke<T, V>(IEnumerable<T> firstOrNull, IEnumerable<T> second, IEnumerable<T> thirdOrNull, ILink<T, V> composition, Chain<V> consumer)
             => Invoke(firstOrNull, second, thirdOrNull, composition.Compose(consumer));
 
         private static void Pipeline<T>(IEnumerable<T> firstOrNull, IEnumerable<T> second, IEnumerable<T> thirdOrNull, Chain<T> chain)

@@ -3,14 +3,14 @@
 namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class Distinct<T>
-        : Link<T, T>
+        : ILink<T, T>
     {
         private readonly IEqualityComparer<T> comparer;
 
         public Distinct(IEqualityComparer<T> comparer) =>
             this.comparer = comparer;
 
-        public override Chain<T> Compose(Chain<T> activity) =>
+        Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
             new Activity(comparer, activity);
 
         sealed class Activity : Activity<T, T>
@@ -26,13 +26,13 @@ namespace Cistern.Linq.ChainLinq.Links
     }
 
     sealed class DistinctDefaultComparer<T>
-        : Link<T, T>
+        : ILink<T, T>
     {
-        public static readonly Link<T, T> Instance = new DistinctDefaultComparer<T>();
+        public static readonly ILink<T, T> Instance = new DistinctDefaultComparer<T>();
 
         private DistinctDefaultComparer() { }
 
-        public override Chain<T> Compose(Chain<T> activity) =>
+        Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
             new Activity(activity);
 
         sealed class Activity : Activity<T, T>

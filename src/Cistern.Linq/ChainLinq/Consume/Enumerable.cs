@@ -26,7 +26,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        public static void Invoke<TEnumerable, TEnumerator, T, V>(TEnumerable source, Link<T, V> composition, Chain<V> consumer)
+        public static void Invoke<TEnumerable, TEnumerator, T, V>(TEnumerable source, ILink<T, V> composition, Chain<V> consumer)
             where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
             where TEnumerator : IEnumerator<T>
             => Invoke<TEnumerable, TEnumerator, T>(source, composition.Compose(consumer));

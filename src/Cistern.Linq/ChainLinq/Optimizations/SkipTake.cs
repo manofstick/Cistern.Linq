@@ -9,7 +9,7 @@
 
     interface ISkipTakeOnConsumableLinkUpdate<T, U>
     {
-        Link<T, U> Skip(int toSkip);
+        ILink<T, U> Skip(int toSkip);
     }
 
     interface IMergeSkip<T>

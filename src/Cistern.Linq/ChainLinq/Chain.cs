@@ -35,9 +35,9 @@ namespace Cistern.Linq.ChainLinq
         public abstract ChainStatus ProcessNext(T input);
     }
 
-    abstract class Link<T, U>
+    interface ILink<T, U>
     {
-        public abstract Chain<T> Compose(Chain<U> activity);
+        Chain<T> Compose(Chain<U> activity);
     }
 
     abstract class Activity<T, U> : Chain<T>
@@ -81,8 +81,8 @@ namespace Cistern.Linq.ChainLinq
     internal abstract class ConsumableCons<T> : Consumable<T>
     {
         public abstract object TailLink { get; }
-        public abstract Consumable<T> AddTail(Link<T, T> transform);
-        public abstract Consumable<U> AddTail<U>(Link<T, U> transform);
-        public abstract Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink);
+        public abstract Consumable<T> AddTail(ILink<T, T> transform);
+        public abstract Consumable<U> AddTail<U>(ILink<T, U> transform);
+        public abstract Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink);
     }
 }

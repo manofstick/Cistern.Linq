@@ -42,11 +42,11 @@ type UnfoldEnumerable<'State, 'T>(f:'State->option<'T*'State>, seed:'State) =
         member __.TryGetSourceAsSpan _ = false
 
 [<Sealed>]
-type Unfold<'State, 'T, 'V>(f:'State->option<'T*'State>, seed:'State, link:Link<'T, 'V>) =
+type Unfold<'State, 'T, 'V>(f:'State->option<'T*'State>, seed:'State, link:ILink<'T, 'V>) =
     inherit Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<'V, 'T>(link)
 
-    override __.Create    (first:Link<'T, 'V>) = Unfold<'State, 'T, 'V>(f, seed, first) :> Consumable<'V>
-    override __.Create<'W>(first:Link<'T, 'W>) = Unfold<'State, 'T, 'W>(f, seed, first) :> Consumable<'W>
+    override __.Create    (first:ILink<'T, 'V>) = Unfold<'State, 'T, 'V>(f, seed, first) :> Consumable<'V>
+    override __.Create<'W>(first:ILink<'T, 'W>) = Unfold<'State, 'T, 'W>(f, seed, first) :> Consumable<'W>
 
     override __.GetEnumerator () =
         upcast new ConsumerEnumerators.Enumerable<UnfoldEnumerable<'State, 'T>, UnfoldEnumerator<'State, 'T>, 'T, 'V>(new UnfoldEnumerable<'State, 'T>(f, seed), link);

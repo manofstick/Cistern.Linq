@@ -85,7 +85,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        public static void Invoke<T, V>(T element, int count, Link<T, V> composition, Chain<V> consumer) =>
+        public static void Invoke<T, V>(T element, int count, ILink<T, V> composition, Chain<V> consumer) =>
             Invoke(element, count, composition.Compose(consumer));
 
         private static void Pipeline<T>(T element, int count, Chain<T> chain)

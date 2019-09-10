@@ -4,14 +4,14 @@ using System.Collections.Generic;
 namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class SelectManyIndexed<T, U>
-        : Link<T, (T, IEnumerable<U>)>
+        : ILink<T, (T, IEnumerable<U>)>
     {
         private readonly Func<T, int, IEnumerable<U>> collectionSelector;
 
         public SelectManyIndexed(Func<T, int, IEnumerable<U>> collectionSelector) =>
             this.collectionSelector = collectionSelector;
 
-        public override Chain<T> Compose(Chain<(T, IEnumerable<U>)> next) =>
+        Chain<T> ILink<T, (T, IEnumerable<U>)>.Compose(Chain<(T, IEnumerable<U>)> next) =>
             new Activity(next, collectionSelector);
 
         private sealed class Activity : Activity<T, (T, IEnumerable<U>)>

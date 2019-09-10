@@ -9,11 +9,11 @@ namespace Cistern.Linq.ChainLinq.Consumables
     {
         internal List<T> Underlying { get; }
 
-        public List(List<T> array, Link<T, V> first) : base(first) =>
+        public List(List<T> array, ILink<T, V> first) : base(first) =>
             Underlying = array;
 
-        public override Consumable<V> Create   (Link<T, V> first) => new List<T, V>(Underlying, first);
-        public override Consumable<W> Create<W>(Link<T, W> first) => new List<T, W>(Underlying, first);
+        public override Consumable<V> Create   (ILink<T, V> first) => new List<T, V>(Underlying, first);
+        public override Consumable<W> Create<W>(ILink<T, W> first) => new List<T, W>(Underlying, first);
 
         public override IEnumerator<V> GetEnumerator() =>
             new ConsumerEnumerators.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, V>(new Optimizations.ListEnumerable<T>(Underlying), Link);

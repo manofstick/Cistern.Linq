@@ -10,11 +10,11 @@ namespace Cistern.Linq.ChainLinq.Consumables
         private readonly int _start;
         private readonly int _count;
 
-        public Range(int start, int count, Link<int, T> first) : base(first) =>
+        public Range(int start, int count, ILink<int, T> first) : base(first) =>
             (_start, _count) = (start, count);
 
-        public override Consumable<T> Create   (Link<int, T> first) => new Range<T>(_start, _count, first);
-        public override Consumable<U> Create<U>(Link<int, U> first) => new Range<U>(_start, _count, first);
+        public override Consumable<T> Create   (ILink<int, T> first) => new Range<T>(_start, _count, first);
+        public override Consumable<U> Create<U>(ILink<int, U> first) => new Range<U>(_start, _count, first);
 
         public override IEnumerator<T> GetEnumerator() =>
             ChainLinq.GetEnumerator.Range.Get(_start, _count, Link);

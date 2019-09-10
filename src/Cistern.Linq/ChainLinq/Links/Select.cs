@@ -3,7 +3,7 @@
 namespace Cistern.Linq.ChainLinq.Links
 {
     class Select<T, U>
-        : Link<T, U>
+        : ILink<T, U>
         , Optimizations.ISkipTakeOnConsumableLinkUpdate<T, U>
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
@@ -13,7 +13,7 @@ namespace Cistern.Linq.ChainLinq.Links
 
         public Func<T, U> Selector { get; }
 
-        public override Chain<T> Compose(Chain<U> activity) =>
+        Chain<T> ILink<T,U>.Compose(Chain<U> activity) =>
             new Activity(Selector, activity);
 
         public virtual Consumable<V> MergeSelect<V>(ConsumableCons<U> consumable, Func<U, V> selector) =>
@@ -22,7 +22,7 @@ namespace Cistern.Linq.ChainLinq.Links
         Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> consumable, Func<U, bool> predicate) =>
             consumable.ReplaceTailLink(new SelectWhere<T, U>(Selector, predicate));
 
-        Link<T, U> Optimizations.ISkipTakeOnConsumableLinkUpdate<T, U>.Skip(int toSkip) => this;
+        ILink<T, U> Optimizations.ISkipTakeOnConsumableLinkUpdate<T, U>.Skip(int toSkip) => this;
 
         sealed partial class Activity
             : Activity<T, U>

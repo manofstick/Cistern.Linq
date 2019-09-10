@@ -3,7 +3,7 @@
 namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class Take<T>
-        : Link<T, T>
+        : ILink<T, T>
         , Optimizations.ICountOnConsumableLink
     {
         private int _count;
@@ -11,7 +11,7 @@ namespace Cistern.Linq.ChainLinq.Links
         public Take(int count) =>
             _count = count;
 
-        public override Chain<T> Compose(Chain<T> activity) =>
+        Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
             new Activity(_count, activity);
 
         int Optimizations.ICountOnConsumableLink.GetCount(int count)

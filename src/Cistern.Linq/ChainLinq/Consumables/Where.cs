@@ -44,12 +44,12 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override object TailLink => this; // for IMergeSelect & IMergeWhere
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(Link<Unknown, V> newLink) => throw new NotImplementedException();
+        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new NotImplementedException();
 
-        public override Consumable<T> AddTail(Link<T, T> transform) =>
+        public override Consumable<T> AddTail(ILink<T, T> transform) =>
             new Array<T, T>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
-        public override Consumable<U> AddTail<U>(Link<T, U> transform) =>
+        public override Consumable<U> AddTail<U>(ILink<T, U> transform) =>
             new Array<T, U>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
         Consumable<V> Optimizations.IMergeSelect<T>.MergeSelect<V>(ConsumableCons<T> _, Func<T, V> u2v) =>
@@ -130,12 +130,12 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override object TailLink => this; // for IMergeSelect & IMergeWhere
 
-        public override Consumable<V1> ReplaceTailLink<Unknown, V1>(Link<Unknown, V1> newLink) => throw new NotImplementedException();
+        public override Consumable<V1> ReplaceTailLink<Unknown, V1>(ILink<Unknown, V1> newLink) => throw new NotImplementedException();
 
-        public override Consumable<T> AddTail(Link<T, T> transform) =>
+        public override Consumable<T> AddTail(ILink<T, T> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, T>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
-        public override Consumable<V> AddTail<V>(Link<T, V> transform) =>
+        public override Consumable<V> AddTail<V>(ILink<T, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
         Consumable<V> Optimizations.IMergeSelect<T>.MergeSelect<V>(ConsumableCons<T> consumable, Func<T, V> u2v) =>

@@ -8,10 +8,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
     {
         internal TEnumerable Underlying { get; }
 
-        public Enumerable(TEnumerable enumerable, Link<T, V> link) : base(link) => Underlying = enumerable;
+        public Enumerable(TEnumerable enumerable, ILink<T, V> link) : base(link) => Underlying = enumerable;
 
-        public override Consumable<V> Create   (Link<T, V> first) => new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, first);
-        public override Consumable<W> Create<W>(Link<T, W> first) => new Enumerable<TEnumerable, TEnumerator, T, W>(Underlying, first);
+        public override Consumable<V> Create   (ILink<T, V> first) => new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, first);
+        public override Consumable<W> Create<W>(ILink<T, W> first) => new Enumerable<TEnumerable, TEnumerator, T, W>(Underlying, first);
 
         public override IEnumerator<V> GetEnumerator() =>
             new ConsumerEnumerators.Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Link);

@@ -3,22 +3,24 @@
 namespace Cistern.Linq.ChainLinq.Links
 {
     abstract class Composition<T, U>
-        : Link<T, U>
+        : ILink<T, U>
     {
         protected Composition() { }
 
         public abstract object TailLink { get; }
-        public abstract Link<T, V> ReplaceTail<Unknown, V>(Link<Unknown, V> newLink);
+
+        public abstract Chain<T> Compose(Chain<U> activity);
+        public abstract ILink<T, V> ReplaceTail<Unknown, V>(ILink<Unknown, V> newLink);
     }
 
     sealed class Composition<T, U, V>
         : Composition<T, V>
         , Optimizations.ICountOnConsumableLink
     {
-        private readonly Link<T, U> _first;
-        private readonly Link<U, V> _second;
+        private readonly ILink<T, U> _first;
+        private readonly ILink<U, V> _second;
 
-        public Composition(Link<T, U> first, Link<U, V> second) =>
+        public Composition(ILink<T, U> first, ILink<U, V> second) =>
             (_first, _second) = (first, second);
 
         public override Chain<T> Compose(Chain<V> next) =>
@@ -26,11 +28,11 @@ namespace Cistern.Linq.ChainLinq.Links
 
         public override object TailLink => _second;
 
-        public override Link<T, W> ReplaceTail<Unknown, W>(Link<Unknown, W> newLink)
+        public override ILink<T, W> ReplaceTail<Unknown, W>(ILink<Unknown, W> newLink)
         {
             Debug.Assert(typeof(Unknown) == typeof(U));
 
-            return new Composition<T, U, W>(_first, (Link<U,W>)(object)newLink);
+            return new Composition<T, U, W>(_first, (ILink<U,W>)(object)newLink);
         }
 
         int Optimizations.ICountOnConsumableLink.GetCount(int count)
@@ -46,18 +48,18 @@ namespace Cistern.Linq.ChainLinq.Links
 
     static class Composition
     {
-        public static Link<T, V> Create<T, U, V>(Link<T, U> first, Link<U, V> second)
+        public static ILink<T, V> Create<T, U, V>(ILink<T, U> first, ILink<U, V> second)
         {
             var identity = Identity<U>.Instance;
 
             if (ReferenceEquals(identity, first))
             {
-                return (Link<T, V>)(object)second;
+                return (ILink<T, V>)(object)second;
             }
 
             if (ReferenceEquals(identity, second))
             {
-                return (Link<T, V>)(object)first;
+                return (ILink<T, V>)(object)first;
             }
 
             return new Composition<T, U, V>(first, second);

@@ -3,14 +3,14 @@
 namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class TakeWhile<T>
-        : Link<T, T>
+        : ILink<T, T>
     {
         private readonly Func<T, bool> _predicate;
 
         public TakeWhile(Func<T, bool> predicate) =>
             _predicate = predicate;
 
-        public override Chain<T> Compose(Chain<T> activity) =>
+        Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
             new Activity(_predicate, activity);
 
         sealed class Activity : Activity<T, T>

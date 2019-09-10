@@ -42,11 +42,11 @@ type UnfoldVEnumerable<'State, 'T>(f:'State->voption<'T*'State>, seed:'State) =
         member __.TryGetSourceAsSpan _ = false
 
 [<Sealed>]
-type UnfoldV<'State, 'T, 'V>(f:'State->voption<'T*'State>, seed:'State, link:Link<'T, 'V>) =
+type UnfoldV<'State, 'T, 'V>(f:'State->voption<'T*'State>, seed:'State, link:ILink<'T, 'V>) =
     inherit Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<'V, 'T>(link)
 
-    override __.Create    (first:Link<'T, 'V>) = UnfoldV<'State, 'T, 'V>(f, seed, first) :> Consumable<'V>
-    override __.Create<'W>(first:Link<'T, 'W>) = UnfoldV<'State, 'T, 'W>(f, seed, first) :> Consumable<'W>
+    override __.Create    (first:ILink<'T, 'V>) = UnfoldV<'State, 'T, 'V>(f, seed, first) :> Consumable<'V>
+    override __.Create<'W>(first:ILink<'T, 'W>) = UnfoldV<'State, 'T, 'W>(f, seed, first) :> Consumable<'W>
 
     override __.GetEnumerator () =
         upcast new ConsumerEnumerators.Enumerable<UnfoldVEnumerable<'State, 'T>, UnfoldVEnumerator<'State, 'T>, 'T, 'V>(new UnfoldVEnumerable<'State, 'T>(f, seed), link);

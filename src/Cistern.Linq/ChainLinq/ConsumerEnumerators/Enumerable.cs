@@ -12,10 +12,10 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
         private Chain<T> _chain = null;
         int _state;
 
-        Link<T, TResult> _factory;
+        ILink<T, TResult> _factory;
         internal override Chain StartOfChain => _chain;
 
-        public Enumerable(TEnumerable enumerable, Link<T, TResult> factory) =>
+        public Enumerable(TEnumerable enumerable, ILink<T, TResult> factory) =>
             (_enumerable, _factory, _state) = (enumerable, factory, Initialization);
 
         public override void ChainDispose()

@@ -9,7 +9,7 @@
 
         internal override Chain StartOfChain => _chain;
 
-        public Array(T[] array, int start, int length, Link<T, TResult> factory)
+        public Array(T[] array, int start, int length, ILink<T, TResult> factory)
         {
             _idx = start;
             checked { _endIdx = start + length; }

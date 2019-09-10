@@ -26,7 +26,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        public static void Invoke<T, V>(ReadOnlySpan<T> array, Link<T, V> composition, Chain<V> consumer) =>
+        public static void Invoke<T, V>(ReadOnlySpan<T> array, ILink<T, V> composition, Chain<V> consumer) =>
             Invoke(array, composition.Compose(consumer));
 
         internal static void Pipeline<T>(ReadOnlySpan<T> memory, Chain<T> chain)

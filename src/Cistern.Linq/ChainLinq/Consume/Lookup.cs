@@ -31,10 +31,10 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
         }
 
-        public static void Invoke<TKey, TElement, V>(Grouping<TKey, TElement> lastGrouping, Link<IGrouping<TKey, TElement>, V> composition, Chain<V> consumer) =>
+        public static void Invoke<TKey, TElement, V>(Grouping<TKey, TElement> lastGrouping, ILink<IGrouping<TKey, TElement>, V> composition, Chain<V> consumer) =>
             Invoke(lastGrouping, composition.Compose(consumer));
 
-        public static void Invoke<TKey, TElement, TResult, V>(Grouping<TKey, TElement> lastGrouping, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, Link<TResult, V> composition, Chain<V> consumer) =>
+        public static void Invoke<TKey, TElement, TResult, V>(Grouping<TKey, TElement> lastGrouping, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, ILink<TResult, V> composition, Chain<V> consumer) =>
             Invoke(lastGrouping, resultSelector, composition.Compose(consumer));
 
         private static void Pipeline<TKey, TElement>(Grouping<TKey, TElement> lastGrouping, Chain<IGrouping<TKey, TElement>> chain)

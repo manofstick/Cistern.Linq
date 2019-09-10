@@ -101,9 +101,9 @@ namespace Cistern.Linq.ChainLinq
         struct Construct<T, U>
             : IConstruct<T, U>
         {
-            private readonly Link<T, U> link;
+            private readonly ILink<T, U> link;
 
-            public Construct(Link<T, U> link) => this.link = link;
+            public Construct(ILink<T, U> link) => this.link = link;
 
             public Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
                 where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
@@ -111,7 +111,7 @@ namespace Cistern.Linq.ChainLinq
         }
 
 
-        internal static Consumable<U> CreateConsumable<T, U>(IEnumerable<T> e, Link<T, U> transform)
+        internal static Consumable<U> CreateConsumable<T, U>(IEnumerable<T> e, ILink<T, U> transform)
         {
             if (e is T[] array)
             {
@@ -236,7 +236,7 @@ namespace Cistern.Linq.ChainLinq
 
         // TTTransform is faster tahn TUTransform as AddTail version call can avoid
         // expensive JIT generic interface call
-        internal static Consumable<T> PushTTTransform<T>(IEnumerable<T> e, Link<T, T> transform)
+        internal static Consumable<T> PushTTTransform<T>(IEnumerable<T> e, ILink<T, T> transform)
         {
             if (e is ConsumableCons<T> consumable)
             {
@@ -249,7 +249,7 @@ namespace Cistern.Linq.ChainLinq
         }
 
         // TUTrasform is more flexible but slower than TTTransform
-        internal static Consumable<U> PushTUTransform<T, U>(IEnumerable<T> e, Link<T, U> transform)
+        internal static Consumable<U> PushTUTransform<T, U>(IEnumerable<T> e, ILink<T, U> transform)
         {
             if (e is ConsumableCons<T> consumable)
             {

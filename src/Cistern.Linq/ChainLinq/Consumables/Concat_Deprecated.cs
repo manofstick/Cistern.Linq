@@ -15,11 +15,11 @@ namespace Cistern.Linq.ChainLinq.Consumables
         /// </summary>
         private readonly IEnumerable<T> _thirdOrNull;
 
-        public Concat_Deprecated(IEnumerable<T> firstOrNull, IEnumerable<T> second, IEnumerable<T> thirdOrNull, Link<T, V> link) : base(link) =>
+        public Concat_Deprecated(IEnumerable<T> firstOrNull, IEnumerable<T> second, IEnumerable<T> thirdOrNull, ILink<T, V> link) : base(link) =>
             (_firstOrNull, _second, _thirdOrNull) = (firstOrNull, second, thirdOrNull);
 
-        public override Consumable<V> Create   (Link<T, V> link) => new Concat_Deprecated<T, V>(_firstOrNull, _second, _thirdOrNull, link);
-        public override Consumable<W> Create<W>(Link<T, W> link) => new Concat_Deprecated<T, W>(_firstOrNull, _second, _thirdOrNull, link);
+        public override Consumable<V> Create   (ILink<T, V> link) => new Concat_Deprecated<T, V>(_firstOrNull, _second, _thirdOrNull, link);
+        public override Consumable<W> Create<W>(ILink<T, W> link) => new Concat_Deprecated<T, W>(_firstOrNull, _second, _thirdOrNull, link);
 
         public override IEnumerator<V> GetEnumerator() =>
             ChainLinq.GetEnumerator.Concat.Get(_firstOrNull, _second, _thirdOrNull, Link);

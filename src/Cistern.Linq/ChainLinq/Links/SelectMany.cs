@@ -4,14 +4,14 @@ using System.Collections.Generic;
 namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class SelectMany<T, U>
-        : Link<T, (T, IEnumerable<U>)>
+        : ILink<T, (T, IEnumerable<U>)>
     {
         private readonly Func<T, IEnumerable<U>> collectionSelector;
 
         public SelectMany(Func<T, IEnumerable<U>> collectionSelector) =>
             this.collectionSelector = collectionSelector;
 
-        public override Chain<T> Compose(Chain<(T, IEnumerable<U>)> next) =>
+        Chain<T> ILink<T, (T, IEnumerable<U>)>.Compose(Chain<(T, IEnumerable<U>)> next) =>
             new Activity(next, collectionSelector);
 
         private sealed class Activity

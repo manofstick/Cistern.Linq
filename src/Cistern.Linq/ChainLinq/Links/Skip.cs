@@ -3,7 +3,7 @@
 namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class Skip<T>
-        : Link<T, T>
+        : ILink<T, T>
         , Optimizations.IMergeSkip<T>
         , Optimizations.ICountOnConsumableLink
     {
@@ -12,7 +12,7 @@ namespace Cistern.Linq.ChainLinq.Links
         public Skip(int toSkip) =>
             _toSkip = toSkip;
 
-        public override Chain<T> Compose(Chain<T> activity) =>
+        Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
             new Activity(_toSkip, activity);
 
         int Optimizations.ICountOnConsumableLink.GetCount(int count)

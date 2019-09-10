@@ -3,7 +3,7 @@
 namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class SelectIndexed<T, U>
-        : Link<T, U>
+        : ILink<T, U>
         , Optimizations.IMergeWhere<U>
         , Optimizations.ISkipTakeOnConsumableLinkUpdate<T, U>
     {
@@ -18,7 +18,7 @@ namespace Cistern.Linq.ChainLinq.Links
         Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> consumable, Func<U, bool> second) =>
             consumable.ReplaceTailLink(new SelectIndexedWhere<T, U>(_selector, second));
 
-        Link<T, U> Optimizations.ISkipTakeOnConsumableLinkUpdate<T, U>.Skip(int toSkip)
+        ILink<T, U> Optimizations.ISkipTakeOnConsumableLinkUpdate<T, U>.Skip(int toSkip)
         {
             checked
             {
@@ -26,7 +26,7 @@ namespace Cistern.Linq.ChainLinq.Links
             }
         }
 
-        public override Chain<T> Compose(Chain<U> activity) =>
+        Chain<T> ILink<T,U>.Compose(Chain<U> activity) =>
             new Activity(_selector, _startIndex, activity);
 
         sealed class Activity

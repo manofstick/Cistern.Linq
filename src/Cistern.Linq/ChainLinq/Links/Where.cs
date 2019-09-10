@@ -3,7 +3,7 @@
 namespace Cistern.Linq.ChainLinq.Links
 {
     class Where<T>
-        : Link<T, T>
+        : ILink<T, T>
         , Optimizations.IMergeSelect<T>
         , Optimizations.IMergeWhere<T>
     {
@@ -12,7 +12,7 @@ namespace Cistern.Linq.ChainLinq.Links
         public Where(Func<T, bool> predicate) =>
             Predicate = predicate;
 
-        public override Chain<T> Compose(Chain<T> activity) =>
+        Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
             new Activity(Predicate, activity);
 
         Consumable<U> Optimizations.IMergeSelect<T>.MergeSelect<U>(ConsumableCons<T> consumable, Func<T, U> selector) =>

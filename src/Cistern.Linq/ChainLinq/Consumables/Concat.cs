@@ -65,7 +65,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             Cell _enumerables;
             int _length;
 
-            public ConcatConsumable(Cell enumerables, int length, Link<T, V> link) : base(link)
+            public ConcatConsumable(Cell enumerables, int length, ILink<T, V> link) : base(link)
             {
                 _enumerables = enumerables;
                 _length = length;
@@ -87,8 +87,8 @@ namespace Cistern.Linq.ChainLinq.Consumables
             private Consumable<IEnumerable<T>> GetEnumerableAsConsumable() =>
                 new Array<IEnumerable<T>, IEnumerable<T>>(_enumerables.Enumerables, 0, _length, Links.Identity<IEnumerable<T>>.Instance);
 
-            public override Consumable<V> Create(Link<T, V> link) => new ConcatConsumable<V>(_enumerables, _length, link);
-            public override Consumable<W> Create<W>(Link<T, W> link) => new ConcatConsumable<W>(_enumerables, _length, link);
+            public override Consumable<V> Create(ILink<T, V> link) => new ConcatConsumable<V>(_enumerables, _length, link);
+            public override Consumable<W> Create<W>(ILink<T, W> link) => new ConcatConsumable<W>(_enumerables, _length, link);
 
             public override IEnumerator<V> GetEnumerator() =>
                 ChainLinq.GetEnumerator.SelectMany.Get(GetEnumerableAsConsumable(), Link);

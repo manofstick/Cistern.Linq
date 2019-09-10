@@ -9,7 +9,7 @@ namespace Cistern.Linq
 {
     public static partial class Enumerable
     {
-        static readonly ChainLinq.Link<int, int> IntIdentity = ChainLinq.Links.Identity<int>.Instance;
+        static readonly ChainLinq.ILink<int, int> IntIdentity = ChainLinq.Links.Identity<int>.Instance;
 
         public static IEnumerable<int> Range(int start, int count)
         {
