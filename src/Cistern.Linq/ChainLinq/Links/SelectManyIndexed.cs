@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Links
 {
-    internal sealed class SelectManyIndexed<T, U> : Link<T, (T, IEnumerable<U>)>
+    sealed class SelectManyIndexed<T, U>
+        : Link<T, (T, IEnumerable<U>)>
     {
         private readonly Func<T, int, IEnumerable<U>> collectionSelector;
 

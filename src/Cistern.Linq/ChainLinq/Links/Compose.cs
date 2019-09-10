@@ -2,7 +2,8 @@
 
 namespace Cistern.Linq.ChainLinq.Links
 {
-    abstract class Composition<T, U> : Link<T, U>
+    abstract class Composition<T, U>
+        : Link<T, U>
     {
         protected Composition() { }
 
@@ -10,7 +11,9 @@ namespace Cistern.Linq.ChainLinq.Links
         public abstract Link<T, V> ReplaceTail<Unknown, V>(Link<Unknown, V> newLink);
     }
 
-    sealed partial class Composition<T, U, V> : Composition<T, V>
+    sealed class Composition<T, U, V>
+        : Composition<T, V>
+        , Optimizations.ICountOnConsumableLink
     {
         private readonly Link<T, U> _first;
         private readonly Link<U, V> _second;
@@ -28,6 +31,16 @@ namespace Cistern.Linq.ChainLinq.Links
             Debug.Assert(typeof(Unknown) == typeof(U));
 
             return new Composition<T, U, W>(_first, (Link<U,W>)(object)newLink);
+        }
+
+        int Optimizations.ICountOnConsumableLink.GetCount(int count)
+        {
+            if (_first is Optimizations.ICountOnConsumableLink first && _second is Optimizations.ICountOnConsumableLink second)
+            {
+                count = first.GetCount(count);
+                return count < 0 ? count : second.GetCount(count);
+            }
+            return -1;
         }
     }
 
@@ -50,5 +63,4 @@ namespace Cistern.Linq.ChainLinq.Links
             return new Composition<T, U, V>(first, second);
         }
     }
-
 }

@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Links
 {
-    internal sealed class SelectWhere<T, U>
+    sealed class SelectWhere<T, U>
         : Link<T, U>
         , Optimizations.IMergeWhere<U>
     {
@@ -16,7 +15,7 @@ namespace Cistern.Linq.ChainLinq.Links
         public override Chain<T> Compose(Chain<U> activity) =>
             new Activity(Selector, Predicate, activity);
 
-        public Consumable<U> MergeWhere(ConsumableCons<U> consumable, Func<U, bool> second) =>
+        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> consumable, Func<U, bool> second) =>
             consumable.ReplaceTailLink(new SelectWhere<T, U>(Selector, t => Predicate(t) && second(t)));
 
         sealed class Activity

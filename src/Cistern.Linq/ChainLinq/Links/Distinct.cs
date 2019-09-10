@@ -2,7 +2,8 @@
 
 namespace Cistern.Linq.ChainLinq.Links
 {
-    sealed class Distinct<T> : Link<T, T>
+    sealed class Distinct<T>
+        : Link<T, T>
     {
         private readonly IEqualityComparer<T> comparer;
 
@@ -24,7 +25,8 @@ namespace Cistern.Linq.ChainLinq.Links
         }
     }
 
-    sealed class DistinctDefaultComparer<T> : Link<T, T>
+    sealed class DistinctDefaultComparer<T>
+        : Link<T, T>
     {
         public static readonly Link<T, T> Instance = new DistinctDefaultComparer<T>();
 
@@ -44,5 +46,4 @@ namespace Cistern.Linq.ChainLinq.Links
                 _seen.Add(input) ? Next(input) : ChainStatus.Filter;
         }
     }
-
 }

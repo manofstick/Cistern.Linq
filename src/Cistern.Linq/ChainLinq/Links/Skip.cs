@@ -1,6 +1,11 @@
-﻿namespace Cistern.Linq.ChainLinq.Links
+﻿using System;
+
+namespace Cistern.Linq.ChainLinq.Links
 {
-    sealed partial class Skip<T> : Link<T, T>
+    sealed class Skip<T>
+        : Link<T, T>
+        , Optimizations.IMergeSkip<T>
+        , Optimizations.ICountOnConsumableLink
     {
         private int _toSkip;
 
@@ -9,6 +14,23 @@
 
         public override Chain<T> Compose(Chain<T> activity) =>
             new Activity(_toSkip, activity);
+
+        int Optimizations.ICountOnConsumableLink.GetCount(int count)
+        {
+            checked
+            {
+                return Math.Max(0, count - _toSkip);
+            }
+        }
+
+        Consumable<T> Optimizations.IMergeSkip<T>.MergeSkip(ConsumableCons<T> consumable, int count)
+        {
+            if ((long)_toSkip + count > int.MaxValue)
+                return consumable.AddTail(new Skip<T>(count));
+
+            var totalCount = _toSkip + count;
+            return consumable.ReplaceTailLink(new Skip<T>(totalCount));
+        }
 
         sealed class Activity : Activity<T, T>
         {

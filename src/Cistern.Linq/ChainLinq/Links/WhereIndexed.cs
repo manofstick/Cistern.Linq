@@ -2,7 +2,8 @@
 
 namespace Cistern.Linq.ChainLinq.Links
 {
-    sealed class WhereIndexed<T> : Link<T, T>
+    sealed class WhereIndexed<T>
+        : Link<T, T>
     {
         public Func<T, int, bool> Predicate { get; }
 

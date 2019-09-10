@@ -2,7 +2,8 @@
 
 namespace Cistern.Linq.ChainLinq.Links
 {
-    sealed partial class TakeWhile<T> : Link<T, T>
+    sealed class TakeWhile<T>
+        : Link<T, T>
     {
         private readonly Func<T, bool> _predicate;
 

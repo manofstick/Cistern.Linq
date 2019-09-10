@@ -2,7 +2,8 @@
 
 namespace Cistern.Linq.ChainLinq.Links
 {
-    sealed class Except<T> : Link<T, T>
+    sealed class Except<T>
+        : Link<T, T>
     {
         private readonly IEqualityComparer<T> _comparer;
         private readonly IEnumerable<T> _second;
