@@ -35,17 +35,8 @@ namespace Cistern.Linq.ChainLinq
         public abstract ChainStatus ProcessNext(T input);
     }
 
-    abstract class Link
+    abstract class Link<T, U>
     {
-        protected Link(Links.LinkType linkType) => LinkType = linkType;
-
-        public Links.LinkType LinkType { get; }
-    }
-
-    abstract class Link<T, U> : Link
-    {
-        protected Link(Links.LinkType linkType) : base(linkType) {}
-
         public abstract Chain<T> Compose(Chain<U> activity);
     }
 

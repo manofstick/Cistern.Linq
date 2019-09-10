@@ -7,7 +7,7 @@ namespace Cistern.Linq.ChainLinq.Links
         private readonly IEqualityComparer<T> _comparer;
         private readonly IEnumerable<T> _second;
 
-        public Except(IEqualityComparer<T> comparer, IEnumerable<T> second) : base(LinkType.Except) =>
+        public Except(IEqualityComparer<T> comparer, IEnumerable<T> second) =>
             (_comparer, _second) = (comparer, second);
 
         public override Chain<T> Compose(Chain<T> activity) =>
@@ -31,7 +31,7 @@ namespace Cistern.Linq.ChainLinq.Links
     {
         private readonly IEnumerable<T> _second;
 
-        public ExceptDefaultComparer(IEnumerable<T> second) : base(LinkType.Except) =>
+        public ExceptDefaultComparer(IEnumerable<T> second) =>
             _second = second;
 
         public override Chain<T> Compose(Chain<T> activity) =>

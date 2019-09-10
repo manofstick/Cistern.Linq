@@ -6,7 +6,7 @@ namespace Cistern.Linq.ChainLinq.Links
     {
         public Func<T, int, bool> Predicate { get; }
 
-        public WhereIndexed(Func<T, int, bool> predicate) : base(LinkType.WhereIndexed) =>
+        public WhereIndexed(Func<T, int, bool> predicate) =>
             Predicate = predicate;
 
         public override Chain<T> Compose(Chain<T> activity) =>

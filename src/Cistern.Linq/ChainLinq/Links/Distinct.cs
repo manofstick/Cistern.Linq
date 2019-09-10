@@ -6,7 +6,7 @@ namespace Cistern.Linq.ChainLinq.Links
     {
         private readonly IEqualityComparer<T> comparer;
 
-        public Distinct(IEqualityComparer<T> comparer) : base(LinkType.Distinct) =>
+        public Distinct(IEqualityComparer<T> comparer) =>
             this.comparer = comparer;
 
         public override Chain<T> Compose(Chain<T> activity) =>
@@ -28,7 +28,7 @@ namespace Cistern.Linq.ChainLinq.Links
     {
         public static readonly Link<T, T> Instance = new DistinctDefaultComparer<T>();
 
-        private DistinctDefaultComparer() : base(LinkType.Distinct) { }
+        private DistinctDefaultComparer() { }
 
         public override Chain<T> Compose(Chain<T> activity) =>
             new Activity(activity);

@@ -6,7 +6,7 @@ namespace Cistern.Linq.ChainLinq.Links
     {
         private readonly Func<T, bool> _predicate;
 
-        public TakeWhile(Func<T, bool> predicate) : base(LinkType.TakeWhile) =>
+        public TakeWhile(Func<T, bool> predicate) =>
             _predicate = predicate;
 
         public override Chain<T> Compose(Chain<T> activity) =>

@@ -6,7 +6,7 @@ namespace Cistern.Linq.ChainLinq.Links
     {
         public Func<T, int, bool> Predicate { get; }
 
-        public TakeWhileIndexed(Func<T, int, bool> predicate) : base(LinkType.TakeWhileIndexed) =>
+        public TakeWhileIndexed(Func<T, int, bool> predicate) =>
             Predicate = predicate;
 
         public override Chain<T> Compose(Chain<T> activity) =>

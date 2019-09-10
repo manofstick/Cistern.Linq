@@ -4,7 +4,7 @@ namespace Cistern.Linq.ChainLinq.Links
 {
     abstract class Composition<T, U> : Link<T, U>
     {
-        protected Composition() : base(LinkType.Compose) { }
+        protected Composition() { }
 
         public abstract object TailLink { get; }
         public abstract Link<T, V> ReplaceTail<Unknown, V>(Link<Unknown, V> newLink);

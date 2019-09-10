@@ -4,7 +4,7 @@ namespace Cistern.Linq.ChainLinq.Links
 {
     partial class Select<T, U> : Link<T, U>
     {
-        public Select(Func<T, U> selector) : base(LinkType.Select) =>
+        public Select(Func<T, U> selector) =>
             Selector = selector;
 
         public Func<T, U> Selector { get; }

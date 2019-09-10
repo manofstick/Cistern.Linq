@@ -10,7 +10,7 @@ namespace Cistern.Linq.ChainLinq.Links
         public Func<T, bool> Predicate { get; }
         public Func<T, U> Selector { get; }
 
-        public WhereSelect(Func<T, bool> predicate, Func<T, U> selector) : base(LinkType.WhereSelect) =>
+        public WhereSelect(Func<T, bool> predicate, Func<T, U> selector) =>
             (Predicate, Selector) = (predicate, selector);
 
         public override Chain<T> Compose(Chain<U> activity) =>

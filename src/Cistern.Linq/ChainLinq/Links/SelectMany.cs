@@ -7,7 +7,7 @@ namespace Cistern.Linq.ChainLinq.Links
     {
         private readonly Func<T, IEnumerable<U>> collectionSelector;
 
-        public SelectMany(Func<T, IEnumerable<U>> collectionSelector) : base(LinkType.SelectMany) =>
+        public SelectMany(Func<T, IEnumerable<U>> collectionSelector) =>
             this.collectionSelector = collectionSelector;
 
         public override Chain<T> Compose(Chain<(T, IEnumerable<U>)> next) =>

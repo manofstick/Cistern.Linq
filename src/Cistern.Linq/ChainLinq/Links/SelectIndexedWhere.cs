@@ -9,7 +9,7 @@ namespace Cistern.Linq.ChainLinq.Links
         public Func<T, int, U> Selector { get; }
         public Func<U, bool> Predicate { get; }
 
-        public SelectIndexedWhere(Func<T, int, U> selector, Func<U, bool> predicate) : base(LinkType.SelectWhere) =>
+        public SelectIndexedWhere(Func<T, int, U> selector, Func<U, bool> predicate) =>
             (Selector, Predicate) = (selector, predicate);
 
         public override Chain<T> Compose(Chain<U> activity) =>

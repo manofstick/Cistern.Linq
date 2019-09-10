@@ -4,7 +4,7 @@
     {
         private int _count;
 
-        public Take(int count) : base(LinkType.Take) =>
+        public Take(int count) =>
             _count = count;
 
         public override Chain<T> Compose(Chain<T> activity) =>

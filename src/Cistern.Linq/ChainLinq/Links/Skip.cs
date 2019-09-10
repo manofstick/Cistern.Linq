@@ -4,7 +4,7 @@
     {
         private int _toSkip;
 
-        public Skip(int toSkip) : base(LinkType.Skip) =>
+        public Skip(int toSkip) =>
             _toSkip = toSkip;
 
         public override Chain<T> Compose(Chain<T> activity) =>

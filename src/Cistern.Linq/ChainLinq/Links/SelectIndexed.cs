@@ -10,7 +10,7 @@ namespace Cistern.Linq.ChainLinq.Links
         readonly int _startIndex;
         readonly Func<T, int, U> _selector;
 
-        private SelectIndexed(Func<T, int, U> selector, int startIndex) : base(LinkType.SelectIndexed) =>
+        private SelectIndexed(Func<T, int, U> selector, int startIndex) =>
             (_selector, _startIndex) = (selector, startIndex);
 
         public SelectIndexed(Func<T, int, U> selector) : this(selector, 0) { }

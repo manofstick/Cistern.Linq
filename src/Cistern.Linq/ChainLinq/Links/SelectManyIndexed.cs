@@ -7,7 +7,7 @@ namespace Cistern.Linq.ChainLinq.Links
     {
         private readonly Func<T, int, IEnumerable<U>> collectionSelector;
 
-        public SelectManyIndexed(Func<T, int, IEnumerable<U>> collectionSelector) : base(LinkType.SelectManyIndexed) =>
+        public SelectManyIndexed(Func<T, int, IEnumerable<U>> collectionSelector) =>
             this.collectionSelector = collectionSelector;
 
         public override Chain<T> Compose(Chain<(T, IEnumerable<U>)> next) =>
