@@ -39,6 +39,18 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
+        ChainStatus Optimizations.ITailEnd<T>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, T> selector)
+        {
+            // TODO: Could optimize, if we assumed selector was immutable
+            foreach (var input in source)
+            {
+                _found = true;
+                Result = selector(input);
+            }
+
+            return ChainStatus.Flow;
+        }
+
         ChainStatus Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
         {
             // assuming predicate is pure; reverse search was a System.Linq optimization

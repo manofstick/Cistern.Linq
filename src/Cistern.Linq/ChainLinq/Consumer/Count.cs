@@ -71,6 +71,22 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
+        ChainStatus Optimizations.ITailEnd<T>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, T> selector)
+        {
+            // really this should have be "Result += source.Length", but someone decided that we want selector side effects...
+            Maths maths = default;
+
+            var result = Result;
+            foreach (var input in source)
+            {
+                var forTheSideEffect = selector(input);
+                result = maths.Add(result, maths.One);
+            }
+            Result = result;
+
+            return ChainStatus.Flow;
+        }
+
         ChainStatus Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
         {
             Maths maths = default;

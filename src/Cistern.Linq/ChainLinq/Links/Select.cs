@@ -56,13 +56,20 @@ namespace Cistern.Linq.ChainLinq.Links
 
             ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
             {
-                foreach (var item in source)
+                if (next is Optimizations.ITailEnd<U> optimized)
                 {
-                    var state = Next(_selector(item));
-                    if (state.IsStopped())
-                        return state;
+                    return optimized.Select<Enumerable, Enumerator, T>(source, _selector);
                 }
-                return ChainStatus.Flow;
+                else
+                {
+                    foreach (var item in source)
+                    {
+                        var state = Next(_selector(item));
+                        if (state.IsStopped())
+                            return state;
+                    }
+                    return ChainStatus.Flow;
+                }
             }
         }
     }

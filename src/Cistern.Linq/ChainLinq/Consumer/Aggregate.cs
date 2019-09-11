@@ -65,6 +65,18 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
+        ChainStatus Optimizations.ITailEnd<T>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, T> selector)
+        {
+            var accumulate = _accumulate;
+
+            foreach (var input in source)
+                accumulate = _func(accumulate, selector(input));
+
+            _accumulate = accumulate;
+
+            return ChainStatus.Flow;
+        }
+
         ChainStatus Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
         {
             var accumulate = _accumulate;

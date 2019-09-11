@@ -93,6 +93,21 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
+        ChainStatus Optimizations.ITailEnd<T>.Select<Enumerable, Enumerator, S>(Enumerable memory, Func<S, T> selector)
+        {
+            Maths maths = default;
+
+            Accumulator sum = accumulator;
+            foreach (var x in memory)
+            {
+                sum = maths.Add(sum, selector(x));
+            }
+
+            accumulator = sum;
+
+            return ChainStatus.Flow;
+        }
+
         ChainStatus Optimizations.ITailEnd<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
         {
             Maths maths = default;
@@ -213,6 +228,20 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
 
         ChainStatus Optimizations.ITailEnd<T?>.Select<S>(ReadOnlySpan<S> memory, Func<S, T?> selector)
+        {
+            Maths maths = default;
+
+            Accumulator sum = accumulator;
+            foreach (var x in memory)
+            {
+                sum = maths.Add(sum, selector(x));
+            }
+
+            accumulator = sum;
+            return ChainStatus.Flow;
+        }
+
+        ChainStatus Optimizations.ITailEnd<T?>.Select<Enumerable, Enumerator, S>(Enumerable memory, Func<S, T?> selector)
         {
             Maths maths = default;
 

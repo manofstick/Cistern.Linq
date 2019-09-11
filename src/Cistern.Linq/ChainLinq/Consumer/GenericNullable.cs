@@ -82,6 +82,24 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return chainStatus;
         }
 
+        ChainStatus Optimizations.ITailEnd<T?>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, T?> selector)
+        {
+            Logic logic = default; logic.Init(Result);
+            var chainStatus = ChainStatus.Flow;
+
+            foreach (var input in source)
+            {
+                if (!logic.Process(selector(input)))
+                {
+                    chainStatus = ChainStatus.Stop;
+                    break;
+                }
+            }
+
+            Result = logic.Result;
+            return chainStatus;
+        }
+
         ChainStatus Optimizations.ITailEnd<T?>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T?> resultSelector)
         {
             Logic logic = default; logic.Init(Result);

@@ -55,6 +55,16 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
+        ChainStatus Optimizations.ITailEnd<T>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, T> selector)
+        {
+            foreach (var item in source)
+            {
+                Result[_index++] = selector(item);
+            }
+
+            return ChainStatus.Flow;
+        }
+
         ChainStatus Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
         {
             foreach (var item in source)
@@ -156,6 +166,16 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
 
         ChainStatus Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)
+        {
+            foreach (var item in source)
+            {
+                builder.Add(selector(item));
+            }
+
+            return ChainStatus.Flow;
+        }
+
+        ChainStatus Optimizations.ITailEnd<T>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, T> selector)
         {
             foreach (var item in source)
             {

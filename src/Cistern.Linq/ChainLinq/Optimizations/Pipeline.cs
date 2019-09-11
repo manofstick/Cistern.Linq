@@ -14,6 +14,9 @@ namespace Cistern.Linq.ChainLinq.Optimizations
     interface ITailEnd<T>
     {
         ChainStatus Select<S>(ReadOnlySpan<S> source, Func<S, T> selector);
+        ChainStatus Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, T> selector)
+            where Enumerable : ITypedEnumerable<S, Enumerator>
+            where Enumerator : IEnumerator<S>;
 
         ChainStatus Where(ReadOnlySpan<T> source, Func<T, bool> predicate);
         ChainStatus Where<Enumerable, Enumerator>(Enumerable source, Func<T, bool> predicate)

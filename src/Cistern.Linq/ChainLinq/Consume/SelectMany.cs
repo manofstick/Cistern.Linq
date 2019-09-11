@@ -86,6 +86,17 @@ namespace Cistern.Linq.ChainLinq.Consume
                 return ChainStatus.Flow;
             }
 
+            ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, IEnumerable<T>> selector)
+            {
+                foreach (var s in source)
+                {
+                    var status = UnknownEnumerable.Consume(selector(s), _chainT, ref _inner);
+                    if (status.IsStopped())
+                        return status;
+                }
+                return ChainStatus.Flow;
+            }
+
             // Only Concat, Select and SelectIndexed are use for the outer part of SelectMany to collect the IEnumerable
             ChainStatus Optimizations.IHeadStart<IEnumerable<T>>.Execute<Enumerable1, Enumerator>(Enumerable1 source) => throw new NotSupportedException();
             ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, IEnumerable<T>> resultSelector) => throw new NotSupportedException();

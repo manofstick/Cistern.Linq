@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
@@ -87,10 +86,29 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override void Consume(Consumer<U> consumer)
         {
-            if (Underlying.TryGetSourceAsSpan(out var span))
-                ChainLinq.Consume.ReadOnlySpan.Invoke(span, new Links.Select<T, U>(Selector), consumer);
+            if (consumer is Optimizations.ITailEnd<U> optimized)
+            {
+                try
+                {
+                    if (Underlying.TryGetSourceAsSpan(out var span))
+                        optimized.Select(span, Selector);
+                    else
+                        optimized.Select<TEnumerable, TEnumerator, T>(Underlying, Selector);
+
+                    consumer.ChainComplete();
+                }
+                finally
+                {
+                    consumer.ChainDispose();
+                }
+            }
             else
-                ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, U>(Underlying, new Links.Select<T, U>(Selector), consumer);
+            {
+                if (Underlying.TryGetSourceAsSpan(out var span))
+                    ChainLinq.Consume.ReadOnlySpan.Invoke(span, new Links.Select<T, U>(Selector), consumer);
+                else
+                    ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, U>(Underlying, new Links.Select<T, U>(Selector), consumer);
+            }
         }
 
         internal override ConsumableEnumerator<U> Clone() =>

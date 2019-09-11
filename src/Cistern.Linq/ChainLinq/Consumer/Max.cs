@@ -136,6 +136,24 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
+        ChainStatus Optimizations.ITailEnd<T>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, T> selector)
+        {
+            Maths maths = default;
+
+            var result = Result;
+
+            foreach (var s in source)
+            {
+                _noData = false;
+                var t = selector(s);
+                if (maths.GreaterThan(t, result) || maths.IsNaN(result))
+                    result = t;
+            }
+
+            Result = result;
+            return ChainStatus.Flow;
+        }
+
         ChainStatus Optimizations.ITailEnd<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
         {
             Maths maths = default;
