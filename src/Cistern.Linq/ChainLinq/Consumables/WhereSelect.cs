@@ -16,8 +16,25 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public WhereSelectArray(T[] array, Func<T, bool> predicate, Func<T, U> selector) =>
             (Underlying, Predicate, Selector) = (array, predicate, selector);
 
-        public override void Consume(Consumer<U> consumer) =>
-            ChainLinq.Consume.ReadOnlySpan.Invoke(Underlying, new Links.WhereSelect<T, U>(Predicate, Selector), consumer);
+        public override void Consume(Consumer<U> consumer)
+        {
+            if (consumer is Optimizations.ITailEnd<U> optimized)
+            {
+                try
+                {
+                    optimized.WhereSelect(Underlying, Predicate, Selector);
+                    consumer.ChainComplete();
+                }
+                finally
+                {
+                    consumer.ChainDispose();
+                }
+            }
+            else
+            {
+                ChainLinq.Consume.ReadOnlySpan.Invoke(Underlying, new Links.WhereSelect<T, U>(Predicate, Selector), consumer);
+            }
+        }
 
         internal override ConsumableEnumerator<U> Clone() =>
             new WhereSelectArray<T, U>(Underlying, Predicate, Selector);
@@ -73,10 +90,29 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override void Consume(Consumer<U> consumer)
         {
-            if (Underlying.TryGetSourceAsSpan(out var span))
-                ChainLinq.Consume.ReadOnlySpan.Invoke(span, new Links.WhereSelect<T, U>(Predicate, Selector), consumer);
+            if (consumer is Optimizations.ITailEnd<U> optimized)
+            {
+                try
+                {
+                    if (Underlying.TryGetSourceAsSpan(out var span))
+                        optimized.WhereSelect(span, Predicate, Selector);
+                    else
+                        optimized.WhereSelect<TEnumerable, TEnumerator, T>(Underlying, Predicate, Selector);
+
+                    consumer.ChainComplete();
+                }
+                finally
+                {
+                    consumer.ChainDispose();
+                }
+            }
             else
-                ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, U>(Underlying, new Links.WhereSelect<T, U>(Predicate, Selector), consumer);
+            {
+                if (Underlying.TryGetSourceAsSpan(out var span))
+                    ChainLinq.Consume.ReadOnlySpan.Invoke(span, new Links.WhereSelect<T, U>(Predicate, Selector), consumer);
+                else
+                    ChainLinq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T, U>(Underlying, new Links.WhereSelect<T, U>(Predicate, Selector), consumer);
+            }
         }
 
         internal override ConsumableEnumerator<U> Clone() =>
