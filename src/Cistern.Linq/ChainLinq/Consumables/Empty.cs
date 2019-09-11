@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed class Empty<T> : ConsumableCons<T>, IEnumerator<T>, IConsumableInternal
+    sealed class Empty<T> : ConsumableCons<T>, IEnumerator<T>
     {
         public static Consumable<T> Instance = new Empty<T>();
 

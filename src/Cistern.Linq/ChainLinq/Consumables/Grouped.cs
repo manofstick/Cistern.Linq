@@ -5,7 +5,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     internal sealed partial class GroupedEnumerable<TSource, TKey>
         : ConsumableCons<IGrouping<TKey, TSource>>
-        , IConsumableInternal
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -77,7 +76,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
     internal sealed partial class GroupedEnumerable<TSource, TKey, TElement>
         : ConsumableCons<IGrouping<TKey, TElement>>
-        , IConsumableInternal
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -158,7 +156,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
     internal sealed partial class GroupedResultEnumerable<TSource, TKey, TResult>
         : ConsumableCons<TResult>
-        , IConsumableInternal
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -239,7 +236,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
     internal sealed partial class GroupedResultEnumerable<TSource, TKey, TElement, TResult>
         : ConsumableCons<TResult>
-        , IConsumableInternal
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;

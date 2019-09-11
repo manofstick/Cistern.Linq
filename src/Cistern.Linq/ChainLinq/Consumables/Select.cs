@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    abstract class ConsumableEnumerator<V> : ConsumableCons<V>, IEnumerable<V>, IEnumerator<V>, IConsumableInternal
+    abstract class ConsumableEnumerator<V> : ConsumableCons<V>, IEnumerable<V>, IEnumerator<V>
     {
         private readonly int _threadId;
         internal int _state;

@@ -5,7 +5,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed partial class Appender<T>
         : Consumable<T>
-        , IConsumableInternal
         , Optimizations.ICountOnConsumable
     {
         readonly T _element;

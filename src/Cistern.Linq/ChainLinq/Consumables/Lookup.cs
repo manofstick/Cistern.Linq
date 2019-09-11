@@ -12,7 +12,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
     internal abstract partial class Lookup<TKey, TElement> 
         : ConsumableCons<IGrouping<TKey, TElement>>
         , ILookup<TKey, TElement>
-        , IConsumableInternal
     {
         GroupingArrayPool<TElement> _pool;
 
@@ -190,7 +189,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
     class LookupResultsSelector<TKey, TElement, TResult>
         : ConsumableCons<TResult>
-        , IConsumableInternal
     {
         private readonly Grouping<TKey, TElement> _lastGrouping;
         private readonly Func<TKey, IEnumerable<TElement>, TResult> _resultSelector;
