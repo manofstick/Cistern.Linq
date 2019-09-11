@@ -17,8 +17,25 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public SelectArray(T[] array, Func<T, U> selector) =>
             (Underlying, Selector) = (array, selector);
 
-        public override void Consume(Consumer<U> consumer) =>
-            ChainLinq.Consume.ReadOnlySpan.Invoke(Underlying, new Links.Select<T, U>(Selector), consumer);
+        public override void Consume(Consumer<U> consumer)
+        {
+            if (consumer is Optimizations.ITailEnd<U> optimized)
+            {
+                try
+                {
+                    optimized.Select(Underlying, Selector);
+                    consumer.ChainComplete();
+                }
+                finally
+                {
+                    consumer.ChainDispose();
+                }
+            }
+            else
+            {
+                ChainLinq.Consume.ReadOnlySpan.Invoke(Underlying, new Links.Select<T, U>(Selector), consumer);
+            }
+        }
 
         internal override ConsumableEnumerator<U> Clone() =>
             new SelectArray<T, U>(Underlying, Selector);
