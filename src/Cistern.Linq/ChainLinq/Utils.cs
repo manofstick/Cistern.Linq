@@ -293,11 +293,27 @@ namespace Cistern.Linq.ChainLinq
             }
             else if (e is T[] array)
             {
-                ChainLinq.Consume.ReadOnlySpan.Invoke(array, consumer);
+                if (array.Length == 0)
+                {
+                    try { consumer.ChainComplete(); }
+                    finally { consumer.ChainDispose(); }
+                }
+                else
+                {
+                    ChainLinq.Consume.ReadOnlySpan.Invoke(array, consumer);
+                }
             }
             else if (e is List<T> list)
             {
-                ChainLinq.Consume.List.Invoke(list, consumer);
+                if (list.Count == 0)
+                {
+                    try { consumer.ChainComplete(); }
+                    finally { consumer.ChainDispose(); }
+                }
+                else
+                {
+                    ChainLinq.Consume.List.Invoke(list, consumer);
+                }
             }
             else if (e is Consumables.IConsumableProvider<T> provider)
             {
