@@ -86,7 +86,7 @@ namespace Cistern.Linq.ChainLinq.Consume
                 return ChainStatus.Flow;
             }
 
-            ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, IEnumerable<T>> selector)
+            ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.Select<WEnumerable, Enumerator, S>(WEnumerable source, Func<S, IEnumerable<T>> selector)
             {
                 foreach (var s in source)
                 {
