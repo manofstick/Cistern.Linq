@@ -6,7 +6,7 @@ namespace Cistern.Linq.ChainLinq.Consume
 {
     static class Repeat
     {
-        struct RepeatEnumerator<T> : IEnumerator<T>
+        public struct RepeatEnumerator<T> : IEnumerator<T>
         {
             private readonly int Count;
 
@@ -38,7 +38,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             public void Reset() => throw new System.NotImplementedException();
         }
 
-        struct RepeatEnumerable<T>
+        public struct RepeatEnumerable<T>
             : Optimizations.ITypedEnumerable<T, RepeatEnumerator<T>>
         {
             private readonly int Count;
