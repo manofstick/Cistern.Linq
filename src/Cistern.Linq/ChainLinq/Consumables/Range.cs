@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
@@ -6,6 +7,8 @@ namespace Cistern.Linq.ChainLinq.Consumables
         : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<T, int>
         , Optimizations.ISkipTakeOnConsumable<T>
         , Optimizations.ICountOnConsumable
+        , Optimizations.IMergeSelect<T>
+        , Optimizations.IMergeWhere<T>
     {
         private readonly int _start;
         private readonly int _count;
@@ -93,5 +96,13 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
             return AddTail(new Links.Take<T>(count));
         }
+
+        public override object TailLink => IsIdentity ? this : base.TailLink;
+
+        Consumable<U> Optimizations.IMergeSelect<T>.MergeSelect<U>(ConsumableCons<T> consumable, Func<T, U> selector) =>
+            new SelectEnumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int, U>(new Consume.Range.RangeEnumerable(_start, _count), (Func<int, U>)(object)selector);
+
+        public Consumable<T> MergeWhere(ConsumableCons<T> consumable, Func<T, bool> predicate) =>
+            (Consumable<T>)(object)new WhereEnumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int>(new Consume.Range.RangeEnumerable(_start, _count), (Func<int, bool>) (object)predicate);
     }
 }

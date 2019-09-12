@@ -6,7 +6,7 @@ namespace Cistern.Linq.ChainLinq.Consume
 {
     static class Range
     {
-        struct RangeEnumerator : IEnumerator<int>
+        public struct RangeEnumerator : IEnumerator<int>
         {
             private readonly int End;
 
@@ -34,7 +34,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             public void Reset() => throw new System.NotImplementedException();
         }
 
-        struct RangeEnumerable
+        public struct RangeEnumerable
             : Optimizations.ITypedEnumerable<int, RangeEnumerator>
         {
             private readonly int Count;

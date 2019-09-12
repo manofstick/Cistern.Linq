@@ -4,27 +4,27 @@ using System;
 namespace Cistern.Linq.Benchmarking.Select.Range
 {
     /*
-    |         Method | NumberOfItems |         Mean |       Error |      StdDev |       Median | Ratio | RatioSD |  Gen 0 | Gen 1 | Gen 2 | Allocated |
-    |--------------- |-------------- |-------------:|------------:|------------:|-------------:|------:|--------:|-------:|------:|------:|----------:|
-    |  SystemForLoop |             0 |           NA |          NA |          NA |           NA |     ? |       ? |      - |     - |     - |         - |
-    | CisternForLoop |             0 |           NA |          NA |          NA |           NA |     ? |       ? |      - |     - |     - |         - |
-    |     SystemLinq |             0 |           NA |          NA |          NA |           NA |     ? |       ? |      - |     - |     - |         - |
-    |    CisternLinq |             0 |           NA |          NA |          NA |           NA |     ? |       ? |      - |     - |     - |         - |
-    |                |               |              |             |             |              |       |         |        |       |       |           |
-    |  SystemForLoop |             1 |     86.47 ns |   1.6226 ns |   1.5177 ns |     86.24 ns |  1.05 |    0.02 | 0.0304 |     - |     - |      96 B |
-    | CisternForLoop |             1 |    100.40 ns |   2.0446 ns |   4.3572 ns |     98.86 ns |  1.30 |    0.03 | 0.0559 |     - |     - |     176 B |
-    |     SystemLinq |             1 |     82.05 ns |   0.8081 ns |   0.7559 ns |     81.84 ns |  1.00 |    0.00 | 0.0304 |     - |     - |      96 B |
-    |    CisternLinq |             1 |     90.90 ns |   1.0111 ns |   0.9458 ns |     91.01 ns |  1.11 |    0.02 | 0.0483 |     - |     - |     152 B |
-    |                |               |              |             |             |              |       |         |        |       |       |           |
-    |  SystemForLoop |            10 |    218.83 ns |   1.7277 ns |   1.5316 ns |    219.59 ns |  1.05 |    0.01 | 0.0303 |     - |     - |      96 B |
-    | CisternForLoop |            10 |    192.74 ns |   2.4559 ns |   2.2972 ns |    192.54 ns |  0.93 |    0.01 | 0.0558 |     - |     - |     176 B |
-    |     SystemLinq |            10 |    207.43 ns |   1.1282 ns |   1.0001 ns |    207.76 ns |  1.00 |    0.00 | 0.0303 |     - |     - |      96 B |
-    |    CisternLinq |            10 |    135.03 ns |   1.4742 ns |   1.3790 ns |    135.16 ns |  0.65 |    0.01 | 0.0482 |     - |     - |     152 B |
-    |                |               |              |             |             |              |       |         |        |       |       |           |
-    |  SystemForLoop |          1000 | 12,325.77 ns | 160.2355 ns | 125.1014 ns | 12,346.77 ns |  0.97 |    0.01 | 0.0153 |     - |     - |      96 B |
-    | CisternForLoop |          1000 |  9,602.98 ns |  47.3668 ns |  44.3069 ns |  9,604.33 ns |  0.75 |    0.01 | 0.0458 |     - |     - |     176 B |
-    |     SystemLinq |          1000 | 12,747.57 ns | 134.0515 ns | 118.8332 ns | 12,800.57 ns |  1.00 |    0.00 | 0.0153 |     - |     - |      96 B |
-    |    CisternLinq |          1000 |  3,989.69 ns |  78.4699 ns | 178.7158 ns |  4,051.27 ns |  0.29 |    0.02 | 0.0458 |     - |     - |     152 B |
+    |         Method | NumberOfItems |         Mean |       Error |      StdDev | Ratio | RatioSD |  Gen 0 | Gen 1 | Gen 2 | Allocated |
+    |--------------- |-------------- |-------------:|------------:|------------:|------:|--------:|-------:|------:|------:|----------:|
+    |  SystemForLoop |             0 |           NA |          NA |          NA |     ? |       ? |      - |     - |     - |         - |
+    | CisternForLoop |             0 |           NA |          NA |          NA |     ? |       ? |      - |     - |     - |         - |
+    |     SystemLinq |             0 |           NA |          NA |          NA |     ? |       ? |      - |     - |     - |         - |
+    |    CisternLinq |             0 |           NA |          NA |          NA |     ? |       ? |      - |     - |     - |         - |
+    |                |               |              |             |             |       |         |        |       |       |           |
+    |  SystemForLoop |             1 |     88.04 ns |   1.0323 ns |   0.9656 ns |  1.05 |    0.01 | 0.0304 |     - |     - |      96 B |
+    | CisternForLoop |             1 |     71.53 ns |   0.6859 ns |   0.6081 ns |  0.86 |    0.01 | 0.0279 |     - |     - |      88 B |
+    |     SystemLinq |             1 |     83.41 ns |   0.9830 ns |   0.8714 ns |  1.00 |    0.00 | 0.0304 |     - |     - |      96 B |
+    |    CisternLinq |             1 |     95.64 ns |   0.9161 ns |   0.8569 ns |  1.15 |    0.01 | 0.0380 |     - |     - |     120 B |
+    |                |               |              |             |             |       |         |        |       |       |           |
+    |  SystemForLoop |            10 |    214.58 ns |   1.0053 ns |   0.9403 ns |  1.02 |    0.01 | 0.0303 |     - |     - |      96 B |
+    | CisternForLoop |            10 |    162.37 ns |   2.8981 ns |   2.5691 ns |  0.77 |    0.02 | 0.0279 |     - |     - |      88 B |
+    |     SystemLinq |            10 |    211.35 ns |   2.2069 ns |   1.9564 ns |  1.00 |    0.00 | 0.0303 |     - |     - |      96 B |
+    |    CisternLinq |            10 |    121.02 ns |   1.7980 ns |   1.6819 ns |  0.57 |    0.01 | 0.0379 |     - |     - |     120 B |
+    |                |               |              |             |             |       |         |        |       |       |           |
+    |  SystemForLoop |          1000 | 12,170.18 ns | 124.4131 ns | 116.3761 ns |  0.96 |    0.02 | 0.0153 |     - |     - |      96 B |
+    | CisternForLoop |          1000 |  9,478.92 ns | 112.2296 ns | 104.9796 ns |  0.75 |    0.01 | 0.0153 |     - |     - |      88 B |
+    |     SystemLinq |          1000 | 12,679.82 ns | 211.2398 ns | 197.5939 ns |  1.00 |    0.00 | 0.0153 |     - |     - |      96 B |
+    |    CisternLinq |          1000 |  3,346.49 ns |  23.2265 ns |  20.5897 ns |  0.26 |    0.00 | 0.0343 |     - |     - |     120 B |
     */
 
     [CoreJob, MemoryDiagnoser]
