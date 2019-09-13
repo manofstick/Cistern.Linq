@@ -26,7 +26,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<int, ChainLinq.Consumer.MaxNullableLogic<int, int, Maths.OpsInt>>());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<int, ChainLinq.Consumer.MaxNullableLogic<int, int, double, Maths.OpsInt>>());
         }
 
         public static long Max(this IEnumerable<long> source)
@@ -46,7 +46,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<long, ChainLinq.Consumer.MaxNullableLogic<long, long, Maths.OpsLong>>());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<long, ChainLinq.Consumer.MaxNullableLogic<long, long, double, Maths.OpsLong>>());
         }
 
         public static double Max(this IEnumerable<double> source)
@@ -66,7 +66,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<double, ChainLinq.Consumer.MaxNullableLogic<double, double, Maths.OpsDouble>>());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<double, ChainLinq.Consumer.MaxNullableLogic<double, double, double, Maths.OpsDouble>>());
         }
 
         public static float Max(this IEnumerable<float> source)
@@ -86,7 +86,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<float, ChainLinq.Consumer.MaxNullableLogic<float, double, Maths.OpsFloat>>());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<float, ChainLinq.Consumer.MaxNullableLogic<float, double, float, Maths.OpsFloat>>());
         }
 
         public static decimal Max(this IEnumerable<decimal> source)
@@ -106,7 +106,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<decimal, ChainLinq.Consumer.MaxNullableLogic<decimal, decimal, Maths.OpsDecimal>>());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.GenericNullable<decimal, ChainLinq.Consumer.MaxNullableLogic<decimal, decimal, decimal, Maths.OpsDecimal>>());
         }
 
         public static TSource Max<TSource>(this IEnumerable<TSource> source)

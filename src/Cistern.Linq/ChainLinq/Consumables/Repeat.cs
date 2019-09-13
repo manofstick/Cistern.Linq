@@ -41,7 +41,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         private int FullCount()
         {
-            var counter = new Consumer.Count<U, int, int, Maths.OpsInt>();
+            var counter = new Consumer.Count<U, int, int, double, Maths.OpsInt>();
             Consume(counter);
             return counter.Result;
         }

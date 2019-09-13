@@ -3,13 +3,14 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
-    abstract class SumGeneric<T, Accumulator, Maths>
+    abstract class SumGeneric<T, Accumulator, Quotient, Maths>
         : Consumer<T, T>
         , Optimizations.IHeadStart<T>
         , Optimizations.ITailEnd<T>
         where T : struct
         where Accumulator : struct
-        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
+        where Quotient : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator, Quotient>
     {
         protected Accumulator accumulator = default(Maths).Zero;
 
@@ -153,13 +154,14 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    abstract class SumGenericNullable<T, Accumulator, Maths>
+    abstract class SumGenericNullable<T, Accumulator, Quotient, Maths>
         : Consumer<T?, T>
         , Optimizations.IHeadStart<T?>
         , Optimizations.ITailEnd<T?>
         where T : struct
         where Accumulator : struct
-        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
+        where Quotient : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator, Quotient>
     {
         protected Accumulator accumulator = default(Maths).Zero;
 
@@ -299,7 +301,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumDouble : SumGeneric<double, double, Maths.OpsDouble>
+    sealed class SumDouble : SumGeneric<double, double, double, Maths.OpsDouble>
     {
         public override ChainStatus ProcessNext(double input)
         {
@@ -308,7 +310,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumNullableDouble : SumGenericNullable<double, double, Maths.OpsDouble>
+    sealed class SumNullableDouble : SumGenericNullable<double, double, double, Maths.OpsDouble>
     {
         public override ChainStatus ProcessNext(double? input)
         {
@@ -317,7 +319,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumFloat : SumGeneric<float, double, Maths.OpsFloat>
+    sealed class SumFloat : SumGeneric<float, double, float, Maths.OpsFloat>
     {
         public override ChainStatus ProcessNext(float input)
         {
@@ -326,7 +328,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumNullableFloat : SumGenericNullable<float, double, Maths.OpsFloat>
+    sealed class SumNullableFloat : SumGenericNullable<float, double, float, Maths.OpsFloat>
     {
         public override ChainStatus ProcessNext(float? input)
         {
@@ -335,7 +337,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumInt : SumGeneric<int, int, Maths.OpsInt>
+    sealed class SumInt : SumGeneric<int, int, double, Maths.OpsInt>
     {
         public override ChainStatus ProcessNext(int input)
         {
@@ -347,7 +349,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumNullableInt : SumGenericNullable<int, int, Maths.OpsInt>
+    sealed class SumNullableInt : SumGenericNullable<int, int, double, Maths.OpsInt>
     {
         public override ChainStatus ProcessNext(int? input)
         {
@@ -359,7 +361,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumLong : SumGeneric<long, long, Maths.OpsLong>
+    sealed class SumLong : SumGeneric<long, long, double, Maths.OpsLong>
     {
         public override ChainStatus ProcessNext(long input)
         {
@@ -371,7 +373,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumNullableLong : SumGenericNullable<long, long, Maths.OpsLong>
+    sealed class SumNullableLong : SumGenericNullable<long, long, double, Maths.OpsLong>
     {
         public override ChainStatus ProcessNext(long? input)
         {
@@ -383,7 +385,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumDecimal : SumGeneric<decimal, decimal, Maths.OpsDecimal>
+    sealed class SumDecimal : SumGeneric<decimal, decimal, decimal, Maths.OpsDecimal>
     {
         public override ChainStatus ProcessNext(decimal input)
         {
@@ -392,7 +394,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class SumNullableDecimal : SumGenericNullable<decimal, decimal, Maths.OpsDecimal>
+    sealed class SumNullableDecimal : SumGenericNullable<decimal, decimal, decimal, Maths.OpsDecimal>
     {
         public override ChainStatus ProcessNext(decimal? input)
         {

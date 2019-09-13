@@ -34,7 +34,7 @@ namespace Cistern.Linq
                 return opt.GetCount(false);
             }
 
-            return ChainLinq.Utils.Consume(consumable, new ChainLinq.Consumer.Count<TSource, int, int, Maths.OpsInt>());
+            return ChainLinq.Utils.Consume(consumable, new ChainLinq.Consumer.Count<TSource, int, int, double, Maths.OpsInt>());
         }
 
         public static int Count<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) => source.Where(predicate).Count();
@@ -46,7 +46,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.Count<TSource, long, long, Maths.OpsLong>());
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.Count<TSource, long, long, double, Maths.OpsLong>());
         }
 
         public static long LongCount<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) => source.Where(predicate).Count();

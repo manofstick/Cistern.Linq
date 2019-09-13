@@ -9,10 +9,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
     static class MaxGenericImpl
     {
         // Appears to help the JIT, faster FSharpList.Max in benchmarks
-        public static T HeadStartExecuteEnumerable_InnerLoop<T, Accumulator, Maths, Enumerator>(Maths maths, T result, Enumerator e)
+        public static T HeadStartExecuteEnumerable_InnerLoop<T, Accumulator, Quotient, Maths, Enumerator>(Maths maths, T result, Enumerator e)
             where T : struct
             where Accumulator : struct
-            where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
+            where Quotient : struct
+            where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator, Quotient>
             where Enumerator : IEnumerator<T>
         {
             while (e.MoveNext())
@@ -25,13 +26,14 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    abstract class MaxGeneric<T, Accumulator, Maths>
+    abstract class MaxGeneric<T, Accumulator, Quotient, Maths>
         : Consumer<T, T>
         , Optimizations.IHeadStart<T>
         , Optimizations.ITailEnd<T>
         where T : struct
         where Accumulator : struct
-        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
+        where Quotient : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator, Quotient>
     {
         protected bool _noData;
 
@@ -110,7 +112,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
                 }
                 if (moveNext)
                 {
-                    result = MaxGenericImpl.HeadStartExecuteEnumerable_InnerLoop<T, Accumulator, Maths, Enumerator>(maths, result, e);
+                    result = MaxGenericImpl.HeadStartExecuteEnumerable_InnerLoop<T, Accumulator, Quotient, Maths, Enumerator>(maths, result, e);
                 }
             }
 
@@ -267,10 +269,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    struct MaxNullableLogic<T, Accumulator, Maths> : INullableGenericLogic<T>
+    struct MaxNullableLogic<T, Accumulator, Quotient, Maths> : INullableGenericLogic<T>
         where T : struct
         where Accumulator : struct
-        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
+        where Quotient : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator, Quotient>
     {
         bool found;
         T result;
@@ -311,7 +314,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MaxInt : MaxGeneric<int, int, Maths.OpsInt>
+    sealed class MaxInt : MaxGeneric<int, int, double, Maths.OpsInt>
     {
         public override ChainStatus ProcessNext(int input)
         {
@@ -324,7 +327,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MaxLong : MaxGeneric<long, long, Maths.OpsLong>
+    sealed class MaxLong : MaxGeneric<long, long, double, Maths.OpsLong>
     {
         public override ChainStatus ProcessNext(long input)
         {
@@ -337,7 +340,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MaxDouble : MaxGeneric<double, double, Maths.OpsDouble>
+    sealed class MaxDouble : MaxGeneric<double, double, double, Maths.OpsDouble>
     {
         public override ChainStatus ProcessNext(double input)
         {
@@ -350,7 +353,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MaxFloat : MaxGeneric<float, double, Maths.OpsFloat>
+    sealed class MaxFloat : MaxGeneric<float, double, float, Maths.OpsFloat>
     {
         public override ChainStatus ProcessNext(float input)
         {
@@ -363,7 +366,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MaxDecimal : MaxGeneric<decimal, decimal, Maths.OpsDecimal>
+    sealed class MaxDecimal : MaxGeneric<decimal, decimal, decimal, Maths.OpsDecimal>
     {
         public override ChainStatus ProcessNext(decimal input)
         {

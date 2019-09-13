@@ -2,9 +2,10 @@
 
 namespace Cistern.Linq.Maths
 {
-    interface IMathsOperations<T, Accumulator>
+    interface IMathsOperations<T, Accumulator, Quotient>
         where T : struct
         where Accumulator : struct
+        where Quotient : struct
     {
         bool SupportsVectorization { get; }
 
@@ -20,6 +21,7 @@ namespace Cistern.Linq.Maths
         Accumulator Add(Accumulator lhs, T rhs);
         Accumulator Add(Accumulator lhs, T? rhs);
         Accumulator AddInt(Accumulator lhs, int rhs);
+        Quotient DivLong(Accumulator lhs, long rhs);
 
         T Cast(Accumulator a);
         T Cast(int a);
@@ -34,7 +36,7 @@ namespace Cistern.Linq.Maths
         T MinInit { get; }
     }
 
-    struct OpsDouble : IMathsOperations<double, double>
+    struct OpsDouble : IMathsOperations<double, double, double>
     {
         public bool SupportsVectorization => true;
         public bool HasNaNs => true;
@@ -46,6 +48,7 @@ namespace Cistern.Linq.Maths
         public double Add(double lhs, double rhs) => lhs + rhs;
         public double Add(double lhs, double? rhs) => lhs + rhs.GetValueOrDefault();
         public double AddInt(double lhs, int rhs) => lhs + rhs;
+        public double DivLong(double lhs, long rhs) => lhs / rhs;
         public double Cast(double a) => a;
         public double Cast(int a) => a;
         public bool IsNaN(double x) => double.IsNaN(x);
@@ -56,7 +59,7 @@ namespace Cistern.Linq.Maths
         public double MinInit => double.PositiveInfinity;
     }
 
-    struct OpsFloat : IMathsOperations<float, double>
+    struct OpsFloat : IMathsOperations<float, double, float>
     {
         public bool SupportsVectorization => true;
         public bool HasNaNs => true;
@@ -68,6 +71,7 @@ namespace Cistern.Linq.Maths
         public double Add(double lhs, float rhs) => lhs + rhs;
         public double Add(double lhs, float? rhs) => lhs + rhs.GetValueOrDefault();
         public double AddInt(double lhs, int rhs) => lhs + rhs;
+        public float DivLong(double lhs, long rhs) => (float)(lhs / rhs);
         public float Cast(double a) => (float)a;
         public float Cast(int a) => a;
         public double Cast(float a) => a;
@@ -78,7 +82,7 @@ namespace Cistern.Linq.Maths
         public float MinInit => float.PositiveInfinity;
     }
 
-    struct OpsInt : IMathsOperations<int, int>
+    struct OpsInt : IMathsOperations<int, int, double>
     {
         public bool SupportsVectorization => true;
         public bool HasNaNs => false;
@@ -90,6 +94,7 @@ namespace Cistern.Linq.Maths
         public int Add(int lhs, int rhs) { checked { return lhs + rhs; } }
         public int Add(int lhs, int? rhs) { checked { return lhs + rhs.GetValueOrDefault(); } }
         public int AddInt(int lhs, int rhs) { checked { return lhs + rhs; } }
+        public double DivLong(int lhs, long rhs) => (double)lhs / rhs;
         public int Cast(int a) => a;
         public bool IsNaN(int x) => false;
         public bool GreaterThan(int lhs, int rhs) => lhs > rhs;
@@ -98,7 +103,7 @@ namespace Cistern.Linq.Maths
         public int MinInit => int.MaxValue;
     }
 
-    struct OpsLong : IMathsOperations<long, long>
+    struct OpsLong : IMathsOperations<long, long, double>
     {
         public bool SupportsVectorization => true;
         public bool HasNaNs => false;
@@ -110,6 +115,7 @@ namespace Cistern.Linq.Maths
         public long Add(long lhs, long rhs) { checked { return lhs + rhs; } }
         public long Add(long lhs, long? rhs) { checked { return lhs + rhs.GetValueOrDefault(); } }
         public long AddInt(long lhs, int rhs) { checked { return lhs + rhs; } }
+        public double DivLong(long lhs, long rhs) => (double)lhs / rhs;
         public long Cast(long a) => a;
         public long Cast(int a) => a;
         public bool IsNaN(long x) => false;
@@ -120,7 +126,7 @@ namespace Cistern.Linq.Maths
     }
 
 
-    struct OpsDecimal : IMathsOperations<decimal, decimal>
+    struct OpsDecimal : IMathsOperations<decimal, decimal, decimal>
     {
         public bool SupportsVectorization => false;
         public bool HasNaNs => false;
@@ -132,6 +138,7 @@ namespace Cistern.Linq.Maths
         public decimal Add(decimal lhs, decimal rhs) => lhs + rhs;
         public decimal Add(decimal lhs, decimal? rhs) => lhs + rhs.GetValueOrDefault();
         public decimal AddInt(decimal lhs, int rhs) { checked { return lhs + rhs; } }
+        public decimal DivLong(decimal lhs, long rhs) => lhs / rhs;
         public decimal Cast(decimal a) => a;
         public decimal Cast(int a) => a;
         public bool IsNaN(decimal x) => false;

@@ -6,13 +6,14 @@ using System.Runtime.InteropServices;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
-    abstract class MinGeneric<T, Accumulator, Maths>
+    abstract class MinGeneric<T, Accumulator, Quotient, Maths>
         : Consumer<T, T>
         , Optimizations.IHeadStart<T>
         , Optimizations.ITailEnd<T>
         where T : struct
         where Accumulator : struct
-        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
+        where Quotient : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator, Quotient>
     {
         protected bool _noData;
 
@@ -311,7 +312,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MinInt : MinGeneric<int, int, Maths.OpsInt>
+    sealed class MinInt : MinGeneric<int, int, double, Maths.OpsInt>
     {
         public override ChainStatus ProcessNext(int input)
         {
@@ -323,7 +324,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
     }
-    sealed class MinLong : MinGeneric<long, long, Maths.OpsLong>
+    sealed class MinLong : MinGeneric<long, long, double, Maths.OpsLong>
     {
         public override ChainStatus ProcessNext(long input)
         {
@@ -336,7 +337,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MinFloat : MinGeneric<float, double, Maths.OpsFloat>
+    sealed class MinFloat : MinGeneric<float, double, float, Maths.OpsFloat>
     {
         public override ChainStatus ProcessNext(float input)
         {
@@ -354,7 +355,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MinDouble : MinGeneric<double, double, Maths.OpsDouble>
+    sealed class MinDouble : MinGeneric<double, double, double, Maths.OpsDouble>
     {
         public override ChainStatus ProcessNext(double input)
         {
@@ -372,7 +373,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    sealed class MinDecimal : MinGeneric<decimal, decimal, Maths.OpsDecimal>
+    sealed class MinDecimal : MinGeneric<decimal, decimal, decimal, Maths.OpsDecimal>
     {
         public override ChainStatus ProcessNext(decimal input)
         {
@@ -385,10 +386,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
         }
     }
 
-    struct MinNullableLogic<T, Accumulator, Maths> : INullableGenericLogic<T>
+    struct MinNullableLogic<T, Accumulator, Quotient, Maths> : INullableGenericLogic<T>
         where T : struct
         where Accumulator : struct
-        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator>
+        where Quotient : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<T, Accumulator, Quotient>
     {
         public T? Result { get; private set; }
 

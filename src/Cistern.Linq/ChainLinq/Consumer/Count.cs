@@ -3,13 +3,14 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
-    sealed class Count<T, TCount, Accumulator, Maths>
+    sealed class Count<T, TCount, Accumulator, Quotient, Maths>
         : Consumer<T, Accumulator>
         , Optimizations.IHeadStart<T>
         , Optimizations.ITailEnd<T>
         where TCount : struct
         where Accumulator : struct
-        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<TCount, Accumulator>
+        where Quotient : struct
+        where Maths : struct, Cistern.Linq.Maths.IMathsOperations<TCount, Accumulator, Quotient>
     {
         public Count() : base(default(Maths).Zero) {}
 
