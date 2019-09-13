@@ -88,6 +88,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         public static IEnumerable<object[]> Max_Long_TestData()
@@ -133,6 +138,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Fact]
@@ -207,6 +217,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Fact]
@@ -300,6 +315,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Fact]
@@ -379,6 +399,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Fact]
@@ -440,6 +465,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Theory, MemberData(nameof(Max_NullableInt_TestData))]
@@ -501,6 +531,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Fact]
@@ -564,6 +599,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Fact]
@@ -627,6 +667,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Fact]
@@ -681,6 +726,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Fact]
@@ -734,6 +784,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Fact]
@@ -793,6 +848,11 @@ namespace Cistern.Linq.Tests
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max());
             Assert.Equal(expected, source.InjectWhereSelect().Max(x => x));
             Assert.Equal(expected, source.ToList().InjectWhereSelect().Max(x => x));
+
+            Assert.Equal(expected, source.InjectSelectMany().Max());
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max());
+            Assert.Equal(expected, source.InjectSelectMany().Max(x => x));
+            Assert.Equal(expected, source.ToList().InjectSelectMany().Max(x => x));
         }
 
         [Theory, MemberData(nameof(Max_String_TestData))]

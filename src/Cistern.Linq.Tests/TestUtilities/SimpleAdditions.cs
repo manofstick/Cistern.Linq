@@ -10,5 +10,6 @@ namespace Cistern.Linq.Tests.TestUtilities
         public static IEnumerable<T> InjectWhereSelect<T>(this IEnumerable<T> t) => t.Where(_ => true).Select(x => x);
         public static IEnumerable<T> InjectSelect<T>(this IEnumerable<T> t) => t.Select(x => x);
         public static IEnumerable<T> InjectSelectWhere<T>(this IEnumerable<T> t) => t.Select(x => x).Where(_ => true);
+        public static IEnumerable<T> InjectSelectMany<T>(this IEnumerable<T> t) => t.SelectMany(x => new [] { x }).Where(_ => true);
     }
 }
