@@ -111,7 +111,6 @@ type Unfold_MaxByGetEnumerable() =
 type Unfold_Map_Max() =
     inherit UnfoldBase ()
 
-
     [<Benchmark (Baseline = true)>]
     member this.Seq () = Seq.unfold this.folder 0 |> Seq.map id |> Seq.max
 
@@ -144,7 +143,6 @@ type Unfold_Map_Max() =
 [<CoreJob; MemoryDiagnoser>]
 type Unfold_Filter_Max() =
     inherit UnfoldBase ()
-
 
     [<Benchmark (Baseline = true)>]
     member this.Seq () = Seq.unfold this.folder 0 |> Seq.filter (fun _ -> true) |> Seq.max
