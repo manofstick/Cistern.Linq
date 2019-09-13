@@ -89,23 +89,23 @@ type Unfold_MaxByGetEnumerable() =
     member this.CisternV () = Linq.unfoldV this.folderV 0 |> max
 
 (*
-|   Method | NumberOfItems |        Mean |      Error |       StdDev | Ratio | RatioSD |   Gen 0 | Gen 1 | Gen 2 | Allocated |
-|--------- |-------------- |------------:|-----------:|-------------:|------:|--------:|--------:|------:|------:|----------:|
-|      Seq |             0 |          NA |         NA |           NA |     ? |       ? |       - |     - |     - |         - |
-|  Cistern |             0 |          NA |         NA |           NA |     ? |       ? |       - |     - |     - |         - |
-| CisternV |             0 |          NA |         NA |           NA |     ? |       ? |       - |     - |     - |         - |
-|          |               |             |            |              |       |         |         |       |       |           |
-|      Seq |             1 |    151.1 ns |   3.054 ns |     5.736 ns |  1.00 |    0.00 |  0.1142 |     - |     - |     360 B |
-|  Cistern |             1 |    202.2 ns |   4.036 ns |     5.104 ns |  1.33 |    0.06 |  0.1118 |     - |     - |     352 B |
-| CisternV |             1 |    195.6 ns |   3.886 ns |     7.007 ns |  1.30 |    0.07 |  0.1042 |     - |     - |     328 B |
-|          |               |             |            |              |       |         |         |       |       |           |
-|      Seq |            10 |    508.1 ns |  10.206 ns |    24.255 ns |  1.00 |    0.00 |  0.2737 |     - |     - |     864 B |
-|  Cistern |            10 |    377.4 ns |   7.156 ns |     7.029 ns |  0.73 |    0.04 |  0.2718 |     - |     - |     856 B |
-| CisternV |            10 |    329.7 ns |   4.271 ns |     3.567 ns |  0.63 |    0.03 |  0.1955 |     - |     - |     616 B |
-|          |               |             |            |              |       |         |         |       |       |           |
-|      Seq |          1000 | 35,776.8 ns | 793.109 ns | 1,211.161 ns |  1.00 |    0.00 | 17.8833 |     - |     - |   56304 B |
-|  Cistern |          1000 | 18,171.2 ns | 345.069 ns |   322.777 ns |  0.51 |    0.03 | 17.8833 |     - |     - |   56296 B |
-| CisternV |          1000 | 15,769.5 ns |  83.256 ns |    69.523 ns |  0.44 |    0.02 | 10.2539 |     - |     - |   32296 B |
+|   Method | NumberOfItems |        Mean |       Error |      StdDev | Ratio | RatioSD |   Gen 0 | Gen 1 | Gen 2 | Allocated |
+|--------- |-------------- |------------:|------------:|------------:|------:|--------:|--------:|------:|------:|----------:|
+|      Seq |             0 |          NA |          NA |          NA |     ? |       ? |       - |     - |     - |         - |
+|  Cistern |             0 |          NA |          NA |          NA |     ? |       ? |       - |     - |     - |         - |
+| CisternV |             0 |          NA |          NA |          NA |     ? |       ? |       - |     - |     - |         - |
+|          |               |             |             |             |       |         |         |       |       |           |
+|      Seq |             1 |    148.4 ns |   1.1836 ns |   1.1071 ns |  1.00 |    0.00 |  0.1142 |     - |     - |     360 B |
+|  Cistern |             1 |    150.6 ns |   0.8537 ns |   0.7986 ns |  1.01 |    0.01 |  0.1042 |     - |     - |     328 B |
+| CisternV |             1 |    146.0 ns |   1.0233 ns |   0.9572 ns |  0.98 |    0.01 |  0.0966 |     - |     - |     304 B |
+|          |               |             |             |             |       |         |         |       |       |           |
+|      Seq |            10 |    499.1 ns |   2.7969 ns |   2.6162 ns |  1.00 |    0.00 |  0.2737 |     - |     - |     864 B |
+|  Cistern |            10 |    338.0 ns |   2.5977 ns |   2.4299 ns |  0.68 |    0.00 |  0.2642 |     - |     - |     832 B |
+| CisternV |            10 |    291.2 ns |   2.3059 ns |   2.1569 ns |  0.58 |    0.01 |  0.1879 |     - |     - |     592 B |
+|          |               |             |             |             |       |         |         |       |       |           |
+|      Seq |          1000 | 37,161.7 ns | 228.9311 ns | 214.1423 ns |  1.00 |    0.00 | 17.8833 |     - |     - |   56304 B |
+|  Cistern |          1000 | 19,163.6 ns | 188.2024 ns | 176.0446 ns |  0.52 |    0.01 | 17.8833 |     - |     - |   56272 B |
+| CisternV |          1000 | 14,139.3 ns |  91.6801 ns |  85.7576 ns |  0.38 |    0.00 | 10.2539 |     - |     - |   32272 B |
 *)
 [<CoreJob; MemoryDiagnoser>]
 type Unfold_Map_Max() =
@@ -120,3 +120,37 @@ type Unfold_Map_Max() =
 
     [<Benchmark>]
     member this.CisternV () = Linq.unfoldV this.folderV 0 |> Linq.map id |> Linq.max
+
+
+(*
+|   Method | NumberOfItems |        Mean |       Error |      StdDev | Ratio | RatioSD |   Gen 0 | Gen 1 | Gen 2 | Allocated |
+|--------- |-------------- |------------:|------------:|------------:|------:|--------:|--------:|------:|------:|----------:|
+|      Seq |             0 |          NA |          NA |          NA |     ? |       ? |       - |     - |     - |         - |
+|  Cistern |             0 |          NA |          NA |          NA |     ? |       ? |       - |     - |     - |         - |
+| CisternV |             0 |          NA |          NA |          NA |     ? |       ? |       - |     - |     - |         - |
+|          |               |             |             |             |       |         |         |       |       |           |
+|      Seq |             1 |    149.6 ns |   0.9867 ns |   0.9229 ns |  1.00 |    0.00 |  0.1194 |     - |     - |     376 B |
+|  Cistern |             1 |    144.9 ns |   1.1695 ns |   1.0940 ns |  0.97 |    0.01 |  0.1042 |     - |     - |     328 B |
+| CisternV |             1 |    141.5 ns |   1.0907 ns |   1.0202 ns |  0.95 |    0.01 |  0.0966 |     - |     - |     304 B |
+|          |               |             |             |             |       |         |         |       |       |           |
+|      Seq |            10 |    507.0 ns |   3.5784 ns |   3.3472 ns |  1.00 |    0.00 |  0.2794 |     - |     - |     880 B |
+|  Cistern |            10 |    328.8 ns |   2.3507 ns |   2.1988 ns |  0.65 |    0.01 |  0.2642 |     - |     - |     832 B |
+| CisternV |            10 |    285.1 ns |   2.4630 ns |   2.3039 ns |  0.56 |    0.01 |  0.1879 |     - |     - |     592 B |
+|          |               |             |             |             |       |         |         |       |       |           |
+|      Seq |          1000 | 37,534.8 ns | 292.9716 ns | 274.0458 ns |  1.00 |    0.00 | 17.8833 |     - |     - |   56320 B |
+|  Cistern |          1000 | 18,722.2 ns | 153.1992 ns | 143.3027 ns |  0.50 |    0.01 | 17.8833 |     - |     - |   56272 B |
+| CisternV |          1000 | 14,432.6 ns |  95.0000 ns |  88.8631 ns |  0.38 |    0.00 | 10.2539 |     - |     - |   32272 B |
+*)
+[<CoreJob; MemoryDiagnoser>]
+type Unfold_Filter_Max() =
+    inherit UnfoldBase ()
+
+
+    [<Benchmark (Baseline = true)>]
+    member this.Seq () = Seq.unfold this.folder 0 |> Seq.filter (fun _ -> true) |> Seq.max
+
+    [<Benchmark>]
+    member this.Cistern () = Linq.unfold this.folder 0 |> Linq.filter (fun _ -> true) |> Linq.max
+
+    [<Benchmark>]
+    member this.CisternV () = Linq.unfoldV this.folderV 0 |> Linq.filter (fun _ -> true) |> Linq.max

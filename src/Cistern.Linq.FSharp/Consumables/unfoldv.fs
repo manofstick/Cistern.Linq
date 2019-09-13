@@ -48,6 +48,16 @@ type UnfoldV<'State, 'T, 'V>(f:'State->voption<'T*'State>, seed:'State, link:ILi
     override __.Create    (first:ILink<'T, 'V>) = UnfoldV<'State, 'T, 'V>(f, seed, first) :> Consumable<'V>
     override __.Create<'W>(first:ILink<'T, 'W>) = UnfoldV<'State, 'T, 'W>(f, seed, first) :> Consumable<'W>
 
+    override this.TailLink = if base.IsIdentity then box this else base.TailLink
+
+    interface Optimizations.IMergeSelect<'V> with
+        member __.MergeSelect<'W> (_,selector:System.Func<'V,'W>) = 
+            Unchecked.unbox (new SelectEnumerable<_,_,_,'W>(UnfoldVEnumerable(f, seed), Unchecked.unbox selector))
+
+    interface Optimizations.IMergeWhere<'V> with
+        member __.MergeWhere (_,selector) = 
+            Unchecked.unbox (new WhereEnumerable<_,_,'T>(UnfoldVEnumerable(f, seed), Unchecked.unbox selector))
+
     override __.GetEnumerator () =
         upcast new ConsumerEnumerators.Enumerable<UnfoldVEnumerable<'State, 'T>, UnfoldVEnumerator<'State, 'T>, 'T, 'V>(new UnfoldVEnumerable<'State, 'T>(f, seed), link);
     
