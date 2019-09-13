@@ -3,7 +3,7 @@
 open BenchmarkDotNet.Attributes
 open Cistern.Linq.FSharp
 
-type UnfoldFSharpListBase () =
+type UnfoldBase () =
     [<Params(0, 1, 10, 1000)>]
     member val NumberOfItems = 0 with get, set
 
@@ -37,8 +37,8 @@ type UnfoldFSharpListBase () =
 |  Cistern |          1000 | 16,165.86 ns | 107.6515 ns | 100.6973 ns |  0.70 |    0.00 |
 | CisternV |          1000 | 11,340.76 ns |  47.8941 ns |  44.8002 ns |  0.49 |    0.00 |
 *)
-type UnfoldFSharpList_Max() =
-    inherit UnfoldFSharpListBase ()
+type Unfold_Max() =
+    inherit UnfoldBase ()
 
 
     [<Benchmark (Baseline = true)>]
@@ -69,8 +69,8 @@ type UnfoldFSharpList_Max() =
 |  Cistern |          1000 | 21,514.93 ns | 75.8685 ns | 70.9675 ns |  0.88 |
 | CisternV |          1000 | 17,973.90 ns | 67.1035 ns | 62.7687 ns |  0.74 |
 *)
-type UnfoldFSharpList_MaxByGetEnumerable() =
-    inherit UnfoldFSharpListBase ()
+type Unfold_MaxByGetEnumerable() =
+    inherit UnfoldBase ()
 
     let max (unfold:seq<float>) =
         let mutable max = System.Double.MinValue
@@ -88,3 +88,35 @@ type UnfoldFSharpList_MaxByGetEnumerable() =
     [<Benchmark>]
     member this.CisternV () = Linq.unfoldV this.folderV 0 |> max
 
+(*
+|   Method | NumberOfItems |        Mean |      Error |       StdDev | Ratio | RatioSD |   Gen 0 | Gen 1 | Gen 2 | Allocated |
+|--------- |-------------- |------------:|-----------:|-------------:|------:|--------:|--------:|------:|------:|----------:|
+|      Seq |             0 |          NA |         NA |           NA |     ? |       ? |       - |     - |     - |         - |
+|  Cistern |             0 |          NA |         NA |           NA |     ? |       ? |       - |     - |     - |         - |
+| CisternV |             0 |          NA |         NA |           NA |     ? |       ? |       - |     - |     - |         - |
+|          |               |             |            |              |       |         |         |       |       |           |
+|      Seq |             1 |    151.1 ns |   3.054 ns |     5.736 ns |  1.00 |    0.00 |  0.1142 |     - |     - |     360 B |
+|  Cistern |             1 |    202.2 ns |   4.036 ns |     5.104 ns |  1.33 |    0.06 |  0.1118 |     - |     - |     352 B |
+| CisternV |             1 |    195.6 ns |   3.886 ns |     7.007 ns |  1.30 |    0.07 |  0.1042 |     - |     - |     328 B |
+|          |               |             |            |              |       |         |         |       |       |           |
+|      Seq |            10 |    508.1 ns |  10.206 ns |    24.255 ns |  1.00 |    0.00 |  0.2737 |     - |     - |     864 B |
+|  Cistern |            10 |    377.4 ns |   7.156 ns |     7.029 ns |  0.73 |    0.04 |  0.2718 |     - |     - |     856 B |
+| CisternV |            10 |    329.7 ns |   4.271 ns |     3.567 ns |  0.63 |    0.03 |  0.1955 |     - |     - |     616 B |
+|          |               |             |            |              |       |         |         |       |       |           |
+|      Seq |          1000 | 35,776.8 ns | 793.109 ns | 1,211.161 ns |  1.00 |    0.00 | 17.8833 |     - |     - |   56304 B |
+|  Cistern |          1000 | 18,171.2 ns | 345.069 ns |   322.777 ns |  0.51 |    0.03 | 17.8833 |     - |     - |   56296 B |
+| CisternV |          1000 | 15,769.5 ns |  83.256 ns |    69.523 ns |  0.44 |    0.02 | 10.2539 |     - |     - |   32296 B |
+*)
+[<CoreJob; MemoryDiagnoser>]
+type Unfold_Map_Max() =
+    inherit UnfoldBase ()
+
+
+    [<Benchmark (Baseline = true)>]
+    member this.Seq () = Seq.unfold this.folder 0 |> Seq.map id |> Seq.max
+
+    [<Benchmark>]
+    member this.Cistern () = Linq.unfold this.folder 0 |> Linq.map id |> Linq.max
+
+    [<Benchmark>]
+    member this.CisternV () = Linq.unfoldV this.folderV 0 |> Linq.map id |> Linq.max
