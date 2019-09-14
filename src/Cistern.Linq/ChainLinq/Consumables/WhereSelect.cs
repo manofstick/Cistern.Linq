@@ -76,7 +76,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
     sealed partial class WhereSelectEnumerable<TEnumerable, TEnumerator, T, U>
         : ConsumableEnumerator<U>
         , Optimizations.IMergeSelect<U>
-        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
         where TEnumerator : IEnumerator<T>
     {
         internal TEnumerable Underlying { get; }

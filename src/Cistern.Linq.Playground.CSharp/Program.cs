@@ -36,17 +36,37 @@ namespace Playground
 #endif
         }
 
+        static IEnumerable<int> F()
+        {
+            int x = 0;
+            while (true)
+                yield return x++;
+        }
+
+
         static void Benchmark()
         {
-            var x = F(new[] { 1, 2, 3 });
-            var y = F(new[] { 4, 5, 6 });
-            var z = F(new[] { 7, 8, 9 });
+            var largeNumber = 100;
 
-            var a = x.Concat(y).Concat(z);
+            var n = F().Take(largeNumber).Skip(largeNumber).ToList();
 
-            var b = a.Where(m => m < 6).Last();
+            //var x = new Cistern.Linq.Benchmarking.Benchmarks.Numeric.SkipBenchmark();
+            var x = new Cistern.Linq.Benchmarking.Benchmarks.Numeric.TakeBenchmark();
 
-            Console.WriteLine(b);
+            x.NumberOfItems = 100;
+            x.Setup();
+
+            x.CisternLinq();
+
+            //var x = F(new[] { 1, 2, 3 });
+            //var y = F(new[] { 4, 5, 6 });
+            //var z = F(new[] { 7, 8, 9 });
+
+            //var a = x.Concat(y).Concat(z);
+
+            //var b = a.Where(m => m < 6).Last();
+
+            //Console.WriteLine(b);
         }
 
         static void Main(string[] args)

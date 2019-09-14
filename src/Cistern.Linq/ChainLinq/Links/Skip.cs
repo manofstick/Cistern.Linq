@@ -1,19 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class Skip<T>
-        : ILink<T, T>
+        : ActivityLink<T, T>
         , Optimizations.ICountOnConsumableLink
+        , Optimizations.IHeadStart<T>
     {
-        private int _toSkip;
+        private readonly int _toSkip;
+
+        private int _index;
 
         public Skip(int toSkip) =>
             _toSkip = toSkip;
 
-        Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
-            new Activity(_toSkip, activity);
+        internal override ActivityLink<T, T> Clone() => new Skip<T>(_toSkip);
 
         int Optimizations.ICountOnConsumableLink.GetCount(int count)
         {
@@ -23,73 +24,61 @@ namespace Cistern.Linq.ChainLinq.Links
             }
         }
 
-        sealed class Activity
-            : Activity<T, T>
-            , Optimizations.IHeadStart<T>
+        ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
         {
-            private readonly int _toSkip;
+            if (_toSkip >= source.Length)
+                return ChainStatus.Flow;
 
-            private int _index;
+            source = source.Slice(_toSkip);
 
-            public Activity(int toSkip, Chain<T> next) : base(next) =>
-                (_toSkip, _index) = (toSkip, 0);
-
-            ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+            if (next is Optimizations.IHeadStart<T> optimizations)
+                return optimizations.Execute(source);
+            else
             {
-                if (_toSkip >= source.Length)
-                    return ChainStatus.Flow;
-
-                source = source.Slice(_toSkip);
-
-                if (next is Optimizations.IHeadStart<T> optimizations)
-                    return optimizations.Execute(source);
-                else
+                foreach (var item in source)
                 {
-                    foreach (var item in source)
-                    {
-                        var status = Next(item);
-                        if (status.IsStopped())
-                            return status;
-                    }
-                    return ChainStatus.Flow;
+                    var status = Next(item);
+                    if (status.IsStopped())
+                        return status;
                 }
-            }
-
-            ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
-            {
-                using (var e = source.GetEnumerator())
-                {
-                    bool moveNext = true;
-                    while (moveNext && _index < _toSkip)
-                    {
-                        _index++;
-                        moveNext = e.MoveNext();
-                    }
-
-                    while (e.MoveNext())
-                    {
-                        var status = Next(e.Current);
-                        if (status.IsStopped())
-                            return status;
-                    }
-                }
-
                 return ChainStatus.Flow;
             }
+        }
 
-            public override ChainStatus ProcessNext(T input)
+        ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+        {
+            using (var e = source.GetEnumerator())
             {
-                checked
+                bool moveNext = true;
+                while (moveNext && _index < _toSkip)
                 {
                     _index++;
+                    moveNext = e.MoveNext();
                 }
 
-                if (_index <= _toSkip)
+                while (e.MoveNext())
                 {
-                    return ChainStatus.Filter;
+                    var status = Next(e.Current);
+                    if (status.IsStopped())
+                        return status;
                 }
-                return Next(input);
             }
+
+            return ChainStatus.Flow;
+        }
+
+        public override ChainStatus ProcessNext(T input)
+        {
+            checked
+            {
+                _index++;
+            }
+
+            if (_index <= _toSkip)
+            {
+                return ChainStatus.Filter;
+            }
+            return Next(input);
         }
     }
 }

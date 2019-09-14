@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 {
     internal sealed class Enumerable<TEnumerable, TEnumerator, T, TResult> : ConsumerEnumerator<TResult>
-        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
         where TEnumerator : IEnumerator<T>
     {
         private TEnumerable _enumerable;

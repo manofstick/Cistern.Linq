@@ -35,11 +35,12 @@ type UnfoldEnumerator<'State, 'T> =
 
 [<Struct; NoComparison; NoEquality>]
 type UnfoldEnumerable<'State, 'T>(f:'State->option<'T*'State>, seed:'State) =
-    interface Optimizations.ITypedEnumerable<'T, UnfoldEnumerator<'State, 'T>> with
+    interface Optimizations.ITypedEnumerable<'T, UnfoldEnumerable<'State, 'T>, UnfoldEnumerator<'State, 'T>> with
         member __.GetEnumerator () = new UnfoldEnumerator<'State, 'T>(f, seed)
         member __.Source = Unchecked.defaultof<_>
         member __.TryLength = System.Nullable ()
         member __.TryGetSourceAsSpan _ = false
+        member __.TrySkip (_,_) = false
 
 [<Sealed>]
 type Unfold<'State, 'T, 'V>(f:'State->option<'T*'State>, seed:'State, link:ILink<'T, 'V>) =

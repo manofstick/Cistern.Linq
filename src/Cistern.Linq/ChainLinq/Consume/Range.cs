@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cistern.Linq.ChainLinq.Optimizations;
 
 namespace Cistern.Linq.ChainLinq.Consume
 {
@@ -35,7 +36,7 @@ namespace Cistern.Linq.ChainLinq.Consume
         }
 
         public struct RangeEnumerable
-            : Optimizations.ITypedEnumerable<int, RangeEnumerator>
+            : Optimizations.ITypedEnumerable<int, RangeEnumerable, RangeEnumerator>
         {
             private readonly int Count;
             private readonly int Start;
@@ -56,6 +57,15 @@ namespace Cistern.Linq.ChainLinq.Consume
             {
                 readOnlySpan = default;
                 return false;
+            }
+
+            public bool TrySkip(int count, out RangeEnumerable skipped)
+            {
+                checked
+                {
+                    skipped = new RangeEnumerable(Start + count, Math.Max(0, Count - count));
+                    return true;
+                }
             }
         }
 

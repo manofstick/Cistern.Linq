@@ -22,7 +22,7 @@ namespace Cistern.Linq.Immutable
     }
 
     struct ImmutableArrayEnumerable<T>
-        : ITypedEnumerable<T, ImmutableArrayEnumerator<T>>
+        : ITypedEnumerable<T, ImmutableArrayEnumerable<T>, ImmutableArrayEnumerator<T>>
     {
         private ImmutableArray<T> source;
         public ImmutableArrayEnumerable(ImmutableArray<T> source) => this.source = source;
@@ -37,10 +37,16 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = source.AsSpan();
             return true;
         }
+
+        public bool TrySkip(int count, out ImmutableArrayEnumerable<T> skipped)
+        {
+            skipped = default;
+            return false;
+        }
     }
 
     struct ImmutableHashSetEnumerable<T>
-        : ITypedEnumerable<T, ImmutableHashSet<T>.Enumerator>
+        : ITypedEnumerable<T, ImmutableHashSetEnumerable<T>, ImmutableHashSet<T>.Enumerator>
     {
         private ImmutableHashSet<T> source;
         public ImmutableHashSetEnumerable(ImmutableHashSet<T> source) => this.source = source;
@@ -55,10 +61,16 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TrySkip(int count, out ImmutableHashSetEnumerable<T> skipped)
+        {
+            skipped = default;
+            return false;
+        }
     }
 
     struct ImmutableListEnumerable<T>
-        : ITypedEnumerable<T, ImmutableList<T>.Enumerator>
+        : ITypedEnumerable<T, ImmutableListEnumerable<T>, ImmutableList<T>.Enumerator>
     {
         private ImmutableList<T> source;
         public ImmutableListEnumerable(ImmutableList<T> source) => this.source = source;
@@ -70,6 +82,12 @@ namespace Cistern.Linq.Immutable
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
             readOnlySpan = default;
+            return false;
+        }
+
+        public bool TrySkip(int count, out ImmutableListEnumerable<T> skipped)
+        {
+            skipped = default;
             return false;
         }
     }
@@ -91,7 +109,7 @@ namespace Cistern.Linq.Immutable
     }
 
     struct ImmutableQueueEnumerable<T>
-        : ITypedEnumerable<T, ImmutableQueueEnumerator<T>>
+        : ITypedEnumerable<T, ImmutableQueueEnumerable<T>, ImmutableQueueEnumerator<T>>
     {
         private ImmutableQueue<T> source;
         public ImmutableQueueEnumerable(ImmutableQueue<T> source) => this.source = source;
@@ -105,10 +123,16 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TrySkip(int count, out ImmutableQueueEnumerable<T> skipped)
+        {
+            skipped = default;
+            return false;
+        }
     }
 
     struct ImmutableSortedSetEnumerable<T>
-        : ITypedEnumerable<T, ImmutableSortedSet<T>.Enumerator>
+        : ITypedEnumerable<T, ImmutableSortedSetEnumerable<T>, ImmutableSortedSet<T>.Enumerator>
     {
         private ImmutableSortedSet<T> source;
         public ImmutableSortedSetEnumerable(ImmutableSortedSet<T> source) => this.source = source;
@@ -120,6 +144,12 @@ namespace Cistern.Linq.Immutable
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
             readOnlySpan = default;
+            return false;
+        }
+
+        public bool TrySkip(int count, out ImmutableSortedSetEnumerable<T> skipped)
+        {
+            skipped = default;
             return false;
         }
     }
@@ -141,7 +171,7 @@ namespace Cistern.Linq.Immutable
     }
 
     struct ImmutableStackEnumerable<T>
-        : ITypedEnumerable<T, ImmutableStackEnumerator<T>>
+        : ITypedEnumerable<T, ImmutableStackEnumerable<T>, ImmutableStackEnumerator<T>>
     {
         private ImmutableStack<T> source;
         public ImmutableStackEnumerable(ImmutableStack<T> source) => this.source = source;
@@ -153,6 +183,12 @@ namespace Cistern.Linq.Immutable
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
             readOnlySpan = default;
+            return false;
+        }
+
+        public bool TrySkip(int count, out ImmutableStackEnumerable<T> skipped)
+        {
+            skipped = default;
             return false;
         }
     }

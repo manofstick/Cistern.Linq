@@ -5,7 +5,7 @@ namespace Cistern.Linq.ChainLinq.Consume
     static class Enumerable
     {
         public static void Invoke<TEnumerable, TEnumerator, T>(TEnumerable source, Chain<T> chain)
-            where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+            where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
             where TEnumerator : IEnumerator<T>
         {
             try
@@ -27,12 +27,12 @@ namespace Cistern.Linq.ChainLinq.Consume
         }
 
         public static void Invoke<TEnumerable, TEnumerator, T, V>(TEnumerable source, ILink<T, V> composition, Chain<V> consumer)
-            where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+            where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
             where TEnumerator : IEnumerator<T>
             => Invoke<TEnumerable, TEnumerator, T>(source, composition.Compose(consumer));
 
         private static void Pipeline<TEnumerable, TEnumerator, T>(TEnumerable source, Chain<T> chain)
-            where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+            where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
             where TEnumerator : IEnumerator<T>
         {
             foreach (var item in source)

@@ -3,7 +3,7 @@
 namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed class Enumerable<TEnumerable, TEnumerator, T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
-        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
         where TEnumerator : IEnumerator<T>
     {
         internal TEnumerable Underlying { get; }

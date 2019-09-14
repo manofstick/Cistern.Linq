@@ -67,9 +67,7 @@ namespace Cistern.Linq
                     }
                 }
 
-                var builder = new ChainLinq.Consumer.ToList<TSource>();
-                consumable.Consume(builder);
-                return builder.Result;
+                return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.ToList<TSource>());
             }
 
             return new List<TSource>(source);

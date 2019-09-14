@@ -39,14 +39,14 @@ namespace Cistern.Linq.ChainLinq
         internal interface IConstruct<T, U>
         {
             Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
-                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
                 where TEnumerator : IEnumerator<T>;
         }
 
         internal interface IInvoker<T>
         {
             void Invoke<TEnumerable, TEnumerator>(TEnumerable e)
-                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
                 where TEnumerator : IEnumerator<T>;
         }
 
@@ -106,7 +106,7 @@ namespace Cistern.Linq.ChainLinq
             public Construct(ILink<T, U> link) => this.link = link;
 
             public Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
-                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
                 where TEnumerator : IEnumerator<T> => new Consumables.Enumerable<TEnumerable, TEnumerator, T, U>(e, link);
         }
 
@@ -150,7 +150,7 @@ namespace Cistern.Linq.ChainLinq
             public ConstructWhere(Func<T, bool> predicate) => this.predicate = predicate;
 
             public Consumable<T> Create<TEnumerable, TEnumerator>(TEnumerable e)
-                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
                 where TEnumerator : IEnumerator<T> => new Consumables.WhereEnumerable<TEnumerable, TEnumerator, T>(e, predicate);
         }
 
@@ -190,7 +190,7 @@ namespace Cistern.Linq.ChainLinq
             public ConstructSelect(Func<T, U> selector) => this.selector = selector;
 
             public Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
-                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
                 where TEnumerator : IEnumerator<T> => new Consumables.SelectEnumerable<TEnumerable, TEnumerator, T, U>(e, selector);
         }
 
@@ -275,7 +275,7 @@ namespace Cistern.Linq.ChainLinq
             public Invoker(Consumer<T> consumer) => this.consumer = consumer;
 
             public void Invoke<TEnumerable, TEnumerator>(TEnumerable e)
-                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
                 where TEnumerator : IEnumerator<T>
             {
                 if (e.TryGetSourceAsSpan(out var span))

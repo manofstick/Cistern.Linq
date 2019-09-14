@@ -39,7 +39,7 @@ namespace Cistern.Linq.ChainLinq.Consume
         }
 
         public struct RepeatEnumerable<T>
-            : Optimizations.ITypedEnumerable<T, RepeatEnumerator<T>>
+            : Optimizations.ITypedEnumerable<T, RepeatEnumerable<T>, RepeatEnumerator<T>>
         {
             private readonly int Count;
             private readonly T Element;
@@ -60,6 +60,11 @@ namespace Cistern.Linq.ChainLinq.Consume
             {
                 readOnlySpan = default;
                 return false;
+            }
+            public bool TrySkip(int count, out RepeatEnumerable<T> skipped)
+            {
+                skipped = new RepeatEnumerable<T>(Element, Math.Max(0, Count));
+                return true;
             }
         }
 

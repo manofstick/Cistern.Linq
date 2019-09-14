@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.Immutable
 {
     struct LinkedListEnumerable<T>
-        : ITypedEnumerable<T, LinkedList<T>.Enumerator>
+        : ITypedEnumerable<T, LinkedListEnumerable<T>, LinkedList<T>.Enumerator>
     {
         private LinkedList<T> source;
         public LinkedListEnumerable(LinkedList<T> source) => this.source = source;
@@ -21,10 +21,16 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TrySkip(int count, out LinkedListEnumerable<T> skipped)
+        {
+            skipped = default;
+            return false;
+        }
     }
 
     struct HashSetEnumerable<T>
-        : ITypedEnumerable<T, HashSet<T>.Enumerator>
+        : ITypedEnumerable<T, HashSetEnumerable<T>, HashSet<T>.Enumerator>
     {
         private HashSet<T> source;
         public HashSetEnumerable(HashSet<T> source) => this.source = source;
@@ -38,10 +44,16 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TrySkip(int count, out HashSetEnumerable<T> skipped)
+        {
+            skipped = default;
+            return false;
+        }
     }
 
     struct StackEnumerable<T>
-        : ITypedEnumerable<T, Stack<T>.Enumerator>
+        : ITypedEnumerable<T, StackEnumerable<T>, Stack<T>.Enumerator>
     {
         private Stack<T> source;
         public StackEnumerable(Stack<T> source) => this.source = source;
@@ -55,10 +67,16 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TrySkip(int count, out StackEnumerable<T> skipped)
+        {
+            skipped = default;
+            return false;
+        }
     }
 
     struct QueueEnumerable<T>
-        : ITypedEnumerable<T, Queue<T>.Enumerator>
+        : ITypedEnumerable<T, QueueEnumerable<T>, Queue<T>.Enumerator>
     {
         private Queue<T> source;
         public QueueEnumerable(Queue<T> source) => this.source = source;
@@ -72,10 +90,16 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TrySkip(int count, out QueueEnumerable<T> skipped)
+        {
+            skipped = default;
+            return false;
+        }
     }
 
     struct SortedSetEnumerable<T>
-        : ITypedEnumerable<T, SortedSet<T>.Enumerator>
+        : ITypedEnumerable<T, SortedSetEnumerable<T>, SortedSet<T>.Enumerator>
     {
         private SortedSet<T> source;
         public SortedSetEnumerable(SortedSet<T> source) => this.source = source;
@@ -87,6 +111,12 @@ namespace Cistern.Linq.Immutable
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
             readOnlySpan = default;
+            return false;
+        }
+
+        public bool TrySkip(int count, out SortedSetEnumerable<T> skipped)
+        {
+            skipped = default;
             return false;
         }
     }

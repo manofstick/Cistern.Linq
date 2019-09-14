@@ -38,7 +38,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             object IEnumerator.Current => throw new System.NotImplementedException();
         }
 
-        struct IListEnumerable<T> : Optimizations.ITypedEnumerable<T, IListEnumerator<T>>
+        struct IListEnumerable<T> : Optimizations.ITypedEnumerable<T, IListEnumerable<T>, IListEnumerator<T>>
         {
             private readonly IList<T> list;
             private readonly int start;
@@ -60,6 +60,15 @@ namespace Cistern.Linq.ChainLinq.Consume
             {
                 readOnlySpan = default;
                 return false;
+            }
+
+            public bool TrySkip(int count, out IListEnumerable<T> skipped)
+            {
+                checked
+                {
+                    skipped = new IListEnumerable<T>(list, start + count, Math.Max(0, this.count - count));
+                    return true;
+                }
             }
         }
 

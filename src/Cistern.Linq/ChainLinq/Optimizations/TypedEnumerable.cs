@@ -4,17 +4,18 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Optimizations
 {
-    interface ITypedEnumerable<T, Enumerator>
+    interface ITypedEnumerable<T, Enumerable, Enumerator>
         where Enumerator : IEnumerator<T>
     {
         IEnumerable<T> Source { get; }
         int? TryLength { get; }
         bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan);
         Enumerator GetEnumerator();
+        bool TrySkip(int count, out Enumerable skipped);
     }
 
     struct IEnumerableEnumerable<T>
-        : ITypedEnumerable<T, IEnumerator<T>>
+        : ITypedEnumerable<T, IEnumerableEnumerable<T>, IEnumerator<T>>
     {
         public IEnumerableEnumerable(IEnumerable<T> source) => Source = source;
 
@@ -31,10 +32,15 @@ namespace Cistern.Linq.ChainLinq.Optimizations
             readOnlySpan = default;
             return false;
         }
+        public bool TrySkip(int count, out IEnumerableEnumerable<T> skipped)
+        {
+            skipped = default;
+            return false;
+        }
     }
 
     struct ListEnumerable<T>
-        : ITypedEnumerable<T, List<T>.Enumerator>
+        : ITypedEnumerable<T, ListEnumerable<T>, List<T>.Enumerator>
     {
         private List<T> source;
         public ListEnumerable(List<T> source) => this.source = source;
@@ -48,6 +54,11 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
             readOnlySpan = default;
+            return false;
+        }
+        public bool TrySkip(int count, out ListEnumerable<T> skipped)
+        {
+            skipped = default;
             return false;
         }
     }

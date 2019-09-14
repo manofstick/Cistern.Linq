@@ -40,6 +40,31 @@ namespace Cistern.Linq.ChainLinq
         Chain<T> Compose(Chain<U> activity);
     }
 
+    abstract class ActivityLink<T, U> : Chain<T>, ILink<T, U>
+    {
+        internal Chain<U> next;
+
+        readonly int _threadId;
+        protected bool _used;
+
+        protected ActivityLink() => (_used, _threadId) = (false, Environment.CurrentManagedThreadId);
+
+        protected ChainStatus Next(U u) => next.ProcessNext(u);
+
+        public override void ChainComplete() => next.ChainComplete();
+        public override void ChainDispose() => next.ChainDispose();
+
+        public Chain<T> Compose(Chain<U> activity)
+        {
+            var chainT = (_threadId == Environment.CurrentManagedThreadId && !_used) ? this : Clone();
+            chainT._used = true;
+            chainT.next = activity;
+            return chainT;
+        }
+        internal abstract ActivityLink<T, U> Clone();
+    }
+
+
     abstract class Activity<T, U> : Chain<T>
     {
         readonly internal Chain<U> next;

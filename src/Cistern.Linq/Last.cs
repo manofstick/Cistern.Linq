@@ -16,10 +16,10 @@ namespace Cistern.Linq
             GetLast(source, true);
 
         public static TSource Last<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) =>
-            GetLast(source, predicate, false);
+            source.Where(predicate).Last();
 
         public static TSource LastOrDefault<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate) =>
-            GetLast(source, predicate, true);
+            source.Where(predicate).LastOrDefault();
 
         private static TSource GetLast<TSource>(IEnumerable<TSource> source, bool orDefault)
         {
@@ -28,45 +28,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            var consumable = ChainLinq.Utils.AsConsumable(source);
-
-            var last = new ChainLinq.Consumer.Last<TSource>(orDefault);
-            consumable.Consume(last);
-            return last.Result;
-        }
-
-        private static TSource GetLast<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate, bool orDefault)
-        {
-            if (source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
-
-            if (predicate == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.predicate);
-            }
-
-            if (source is IList<TSource> list)
-            {
-                for (int i = list.Count - 1; i >= 0; --i)
-                {
-                    TSource result = list[i];
-                    if (predicate(result))
-                    {
-                        return result;
-                    }
-                }
-
-                if (orDefault)
-                {
-                    return default(TSource);
-                }
-
-                ThrowHelper.ThrowNoElementsException();
-            }
-
-            return GetLast(source.Where(predicate), orDefault);
+            return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.Last<TSource>(orDefault));
         }
     }
 }

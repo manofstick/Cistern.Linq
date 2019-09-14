@@ -73,7 +73,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         : ConsumableEnumerator<U>
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
-        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+        where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerable, TEnumerator>
         where TEnumerator : IEnumerator<T>
     {
         internal TEnumerable Underlying { get; }
