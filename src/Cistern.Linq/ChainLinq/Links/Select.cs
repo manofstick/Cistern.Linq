@@ -4,7 +4,6 @@ namespace Cistern.Linq.ChainLinq.Links
 {
     class Select<T, U>
         : ILink<T, U>
-        , Optimizations.ISkipTakeOnConsumableLinkUpdate<T, U>
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
     {
@@ -21,8 +20,6 @@ namespace Cistern.Linq.ChainLinq.Links
 
         Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> consumable, Func<U, bool> predicate) =>
             consumable.ReplaceTailLink(new SelectWhere<T, U>(Selector, predicate));
-
-        ILink<T, U> Optimizations.ISkipTakeOnConsumableLinkUpdate<T, U>.Skip(int toSkip) => this;
 
         sealed partial class Activity
             : Activity<T, U>

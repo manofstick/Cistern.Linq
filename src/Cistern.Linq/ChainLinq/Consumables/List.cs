@@ -4,7 +4,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed partial class List<T, V>
         : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
-        , Optimizations.ISkipTakeOnConsumable<V>
         , Optimizations.ICountOnConsumable
     {
         internal List<T> Underlying { get; }
@@ -23,14 +22,5 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap) =>
             Optimizations.Count.GetCount(this, Link, Underlying.Count, onlyIfCheap);
-
-        V Optimizations.ISkipTakeOnConsumable<V>.Last(bool orDefault) =>
-            Optimizations.SkipTake.Last(this, Underlying, 0, Underlying.Count, orDefault);
-
-        Consumable<V> Optimizations.ISkipTakeOnConsumable<V>.Skip(int toSkip) =>
-            Optimizations.SkipTake.Skip(this, Underlying, 0, Underlying.Count, toSkip);
-
-        Consumable<V> Optimizations.ISkipTakeOnConsumable<V>.Take(int toTake) =>
-            Optimizations.SkipTake.Take(this, Underlying, 0, Underlying.Count, toTake);
     }
 }

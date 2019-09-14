@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Links
 {
@@ -22,7 +23,9 @@ namespace Cistern.Linq.ChainLinq.Links
             }
         }
 
-        sealed class Activity : Activity<T, T>
+        sealed class Activity
+            : Activity<T, T>
+            , Optimizations.IHeadStart<T>
         {
             private readonly int count;
 
@@ -48,6 +51,45 @@ namespace Cistern.Linq.ChainLinq.Links
                 else
                     return Next(input);
             }
+
+            ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+            {
+                if (count < source.Length)
+                    source = source.Slice(0, count);
+
+                if (next is Optimizations.IHeadStart<T> optimizations)
+                    return optimizations.Execute(source);
+                else
+                {
+                    foreach (var item in source)
+                    {
+                        var status = Next(item);
+                        if (status.IsStopped())
+                            return status;
+                    }
+                    return ChainStatus.Flow;
+                }
+            }
+
+            ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+            {
+                foreach (var input in source)
+                {
+                    checked
+                    {
+                        index++;
+                    }
+
+                    if (index >= count)
+                        return ChainStatus.Stop | Next(input);
+
+                    var status = Next(input);
+                    if (status.IsStopped())
+                        return status;
+                }
+                return ChainStatus.Flow;
+            }
+
         }
     }
 }

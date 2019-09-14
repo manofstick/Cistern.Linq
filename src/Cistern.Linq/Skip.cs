@@ -29,28 +29,8 @@ namespace Cistern.Linq
                 count = 0;
             }
 
-            var consumable = ChainLinq.Utils.AsConsumable(source);
-
-            if (consumable is ChainLinq.Optimizations.ISkipTakeOnConsumable<TSource> opt)
-            {
-                return opt.Skip(count);
-            }
-
-            if (consumable is ChainLinq.ConsumableCons<TSource> merger)
-            {
-                if (merger.TailLink is ChainLinq.Optimizations.IMergeSkip<TSource> skipMerge)
-                {
-                    return skipMerge.MergeSkip(merger, count);
-                }
-
-                return merger.AddTail(CreateSkipLink<TSource>(count));
-            }
-
-            return ChainLinq.Utils.PushTTTransform(consumable, CreateSkipLink<TSource>(count));
+            return ChainLinq.Utils.PushTTTransform(source, new ChainLinq.Links.Skip<TSource>(count));
         }
-
-        private static ChainLinq.Links.Skip<TSource> CreateSkipLink<TSource>(int count) =>
-            new ChainLinq.Links.Skip<TSource>(count);
 
         public static IEnumerable<TSource> SkipWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {

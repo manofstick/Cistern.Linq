@@ -19,11 +19,6 @@ namespace Cistern.Linq
 
             var consumable = ChainLinq.Utils.AsConsumable(source);
 
-            if (consumable is ChainLinq.Optimizations.ISkipTakeOnConsumable<TSource> opt)
-            {
-                return opt.Take(count);
-            }
-
             return
                 count <= 0
                   ? ChainLinq.Consumables.Empty<TSource>.Instance

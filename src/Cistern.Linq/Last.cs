@@ -30,11 +30,6 @@ namespace Cistern.Linq
 
             var consumable = ChainLinq.Utils.AsConsumable(source);
 
-            if (consumable is ChainLinq.Optimizations.ISkipTakeOnConsumable<TSource> opt)
-            {
-                return opt.Last(orDefault);
-            }
-
             var last = new ChainLinq.Consumer.Last<TSource>(orDefault);
             consumable.Consume(last);
             return last.Result;

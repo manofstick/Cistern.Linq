@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Cistern.Linq.ChainLinq.Optimizations;
 
 namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class Skip<T>
         : ILink<T, T>
-        , Optimizations.IMergeSkip<T>
         , Optimizations.ICountOnConsumableLink
     {
         private int _toSkip;
@@ -25,15 +23,6 @@ namespace Cistern.Linq.ChainLinq.Links
             }
         }
 
-        Consumable<T> Optimizations.IMergeSkip<T>.MergeSkip(ConsumableCons<T> consumable, int count)
-        {
-            if ((long)_toSkip + count > int.MaxValue)
-                return consumable.AddTail(new Skip<T>(count));
-
-            var totalCount = _toSkip + count;
-            return consumable.ReplaceTailLink(new Skip<T>(totalCount));
-        }
-
         sealed class Activity
             : Activity<T, T>
             , Optimizations.IHeadStart<T>
@@ -45,21 +34,28 @@ namespace Cistern.Linq.ChainLinq.Links
             public Activity(int toSkip, Chain<T> next) : base(next) =>
                 (_toSkip, _index) = (toSkip, 0);
 
-            public ChainStatus Execute(ReadOnlySpan<T> source)
+            ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
-                for (var i = _toSkip; i < source.Length; ++i)
-                {
-                    var status = Next(source[i]);
-                    if (status.IsStopped())
-                        return status;
-                }
+                if (_toSkip >= source.Length)
+                    return ChainStatus.Flow;
 
-                return ChainStatus.Flow;
+                source = source.Slice(_toSkip);
+
+                if (next is Optimizations.IHeadStart<T> optimizations)
+                    return optimizations.Execute(source);
+                else
+                {
+                    foreach (var item in source)
+                    {
+                        var status = Next(item);
+                        if (status.IsStopped())
+                            return status;
+                    }
+                    return ChainStatus.Flow;
+                }
             }
 
-            public ChainStatus Execute<Enumerable, Enumerator>(Enumerable source)
-                where Enumerable : ITypedEnumerable<T, Enumerator>
-                where Enumerator : IEnumerator<T>
+            ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
             {
                 using (var e = source.GetEnumerator())
                 {

@@ -5,7 +5,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed partial class Range<T>
         : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<T, int>
-        , Optimizations.ISkipTakeOnConsumable<T>
         , Optimizations.ICountOnConsumable
         , Optimizations.IMergeSelect<T>
         , Optimizations.IMergeWhere<T>
@@ -42,59 +41,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
             var counter = new Consumer.Count<T, int, int, double, Maths.OpsInt>();
             Consume(counter);
             return counter.Result;
-        }
-
-        T Optimizations.ISkipTakeOnConsumable<T>.Last(bool orDefault)
-        {
-            var skipped = ((Optimizations.ISkipTakeOnConsumable<T>)this).Skip(_count - 1);
-
-            var last = new Consumer.Last<T>(orDefault);
-            skipped.Consume(last);
-            return last.Result;
-        }
-
-        Consumable<T> Optimizations.ISkipTakeOnConsumable<T>.Skip(int toSkip)
-        {
-            if (toSkip == 0)
-                return this;
-
-            if (Link is Optimizations.ISkipTakeOnConsumableLinkUpdate<int, T> skipLink)
-            {
-                checked
-                {
-                    var newCount = _count - toSkip;
-                    if (newCount <= 0)
-                    {
-                        return Empty<T>.Instance;
-                    }
-
-                    var newStart = _start + toSkip;
-                    var newLink = skipLink.Skip(toSkip);
-
-                    return new Range<T>(newStart, newCount, newLink);
-                }
-            }
-            return AddTail(new Links.Skip<T>(toSkip));
-        }
-
-        Consumable<T> Optimizations.ISkipTakeOnConsumable<T>.Take(int count)
-        {
-            if (count <= 0)
-            {
-                return Empty<T>.Instance;
-            }
-
-            if (count >= _count)
-            {
-                return this;
-            }
-
-            if (Link is Optimizations.ISkipTakeOnConsumableLinkUpdate<int, T>)
-            {
-                return new Range<T>(_start, count, Link);
-            }
-
-            return AddTail(new Links.Take<T>(count));
         }
 
         public override object TailLink => IsIdentity ? this : base.TailLink;

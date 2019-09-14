@@ -2,7 +2,6 @@
 {
     sealed partial class Identity<T>
         : ILink<T, T>
-        , Optimizations.ISkipTakeOnConsumableLinkUpdate<T, T>
         , Optimizations.ICountOnConsumableLink
     {
         public static ILink<T, T> Instance { get; } = new Identity<T>();
@@ -11,7 +10,5 @@
         Chain<T> ILink<T,T>.Compose(Chain<T> next) => next;
 
         int Optimizations.ICountOnConsumableLink.GetCount(int count) => count;
-
-        ILink<T, T> Optimizations.ISkipTakeOnConsumableLinkUpdate<T, T>.Skip(int toSkip) => this;
     }
 }
