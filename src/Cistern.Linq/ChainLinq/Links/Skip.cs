@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using Cistern.Linq.ChainLinq.Optimizations;
 
 namespace Cistern.Linq.ChainLinq.Links
 {
@@ -32,7 +34,9 @@ namespace Cistern.Linq.ChainLinq.Links
             return consumable.ReplaceTailLink(new Skip<T>(totalCount));
         }
 
-        sealed class Activity : Activity<T, T>
+        sealed class Activity
+            : Activity<T, T>
+            , Optimizations.IHeadStart<T>
         {
             private readonly int _toSkip;
 
@@ -40,6 +44,42 @@ namespace Cistern.Linq.ChainLinq.Links
 
             public Activity(int toSkip, Chain<T> next) : base(next) =>
                 (_toSkip, _index) = (toSkip, 0);
+
+            public ChainStatus Execute(ReadOnlySpan<T> source)
+            {
+                for (var i = _toSkip; i < source.Length; ++i)
+                {
+                    var status = Next(source[i]);
+                    if (status.IsStopped())
+                        return status;
+                }
+
+                return ChainStatus.Flow;
+            }
+
+            public ChainStatus Execute<Enumerable, Enumerator>(Enumerable source)
+                where Enumerable : ITypedEnumerable<T, Enumerator>
+                where Enumerator : IEnumerator<T>
+            {
+                using (var e = source.GetEnumerator())
+                {
+                    bool moveNext = true;
+                    while (moveNext && _index < _toSkip)
+                    {
+                        _index++;
+                        moveNext = e.MoveNext();
+                    }
+
+                    while (e.MoveNext())
+                    {
+                        var status = Next(e.Current);
+                        if (status.IsStopped())
+                            return status;
+                    }
+                }
+
+                return ChainStatus.Flow;
+            }
 
             public override ChainStatus ProcessNext(T input)
             {
