@@ -25,6 +25,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
             ChainLinq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<T>(Underlying, _start, _length), Link, consumer);
 
         int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap) =>
-            Optimizations.Count.GetCount(this, this.Link, Underlying.Length, onlyIfCheap);
+            Optimizations.Count.GetCount(this, this.Link, _length, onlyIfCheap);
     }
 }

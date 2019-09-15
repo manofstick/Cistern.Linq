@@ -29,7 +29,7 @@ namespace Cistern.Linq
                 count = 0;
             }
 
-            return ChainLinq.Utils.PushTTTransform(source, new ChainLinq.Links.Skip<TSource>(count));
+            return ChainLinq.Utils.Skip(source, count);
         }
 
         public static IEnumerable<TSource> SkipWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)

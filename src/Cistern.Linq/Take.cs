@@ -17,12 +17,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            var consumable = ChainLinq.Utils.AsConsumable(source);
-
-            return
-                count <= 0
-                  ? ChainLinq.Consumables.Empty<TSource>.Instance
-                  : ChainLinq.Utils.PushTTTransform(consumable, new ChainLinq.Links.Take<TSource>(count));
+            return ChainLinq.Utils.Take(source, count);
         }
 
         public static IEnumerable<TSource> TakeWhile<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)

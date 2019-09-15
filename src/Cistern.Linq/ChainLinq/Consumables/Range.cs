@@ -8,6 +8,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         , Optimizations.ICountOnConsumable
         , Optimizations.IMergeSelect<T>
         , Optimizations.IMergeWhere<T>
+        , Optimizations.IMergeSkipTake<T>
     {
         private readonly int _start;
         private readonly int _count;
@@ -50,5 +51,28 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public Consumable<T> MergeWhere(ConsumableCons<T> consumable, Func<T, bool> predicate) =>
             (Consumable<T>)(object)new WhereEnumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int>(new Consume.Range.RangeEnumerable(_start, _count), (Func<int, bool>) (object)predicate);
+
+        public Consumable<T> MergeSkip(ConsumableCons<T> consumable, int skip)
+        {
+            checked
+            {
+                var start = _start + skip;
+                var count = _count - skip;
+                if (count <= 0)
+                    return Empty<T>.Instance;
+                return new Range<T>(start, count, Link);
+            }
+        }
+
+        public Consumable<T> MergeTake(ConsumableCons<T> consumable, int take)
+        {
+            checked
+            {
+                var count = Math.Min(_count, take);
+                if (count <= 0)
+                    return Empty<T>.Instance;
+                return new Range<T>(_start, count, Link);
+            }
+        }
     }
 }

@@ -222,6 +222,65 @@ namespace Cistern.Linq.ChainLinq
             }
         }
 
+        internal static ILink<T, T> GetSkipLink<T>(int skip) =>
+            skip == 0 ? Links.Identity<T>.Instance : new Links.Skip<T>(skip);
+        internal static IEnumerable<T> Skip<T>(IEnumerable<T> source, int skip)
+        {
+            switch (source)
+            {
+                case ConsumableCons<T> consumable:
+                    if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
+                    {
+                        return optimization.MergeSkip(consumable, skip);
+                    }
+
+                    return consumable.AddTail(GetSkipLink<T>(skip));
+
+                case T[] array:
+                    var start = skip;
+                    var count = array.Length - skip;
+
+                    if (count <= 0)
+                        return Consumables.Empty<T>.Instance;
+                    else
+                        return new Consumables.Array<T, T>(array, start, count, Links.Identity<T>.Instance);
+
+                case List<T> list:
+                    return new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, T>(new Optimizations.ListEnumerable<T>(list), GetSkipLink<T>(skip));
+
+                default:
+                    return CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(GetSkipLink<T>(skip)), source);
+            }
+        }
+
+        internal static IEnumerable<T> Take<T>(IEnumerable<T> source, int take)
+        {
+            if (take <= 0)
+                return Consumables.Empty<T>.Instance;
+
+            switch (source)
+            {
+                case ConsumableCons<T> consumable:
+                    if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
+                    {
+                        return optimization.MergeTake(consumable, take);
+                    }
+                    return consumable.AddTail(new Links.Take<T>(take));
+
+                case T[] array:
+                    if (array.Length <= 0)
+                        return Consumables.Empty<T>.Instance;
+                    else
+                        return new Consumables.Array<T, T>(array, 0, Math.Min(take, array.Length), Links.Identity<T>.Instance);
+
+                case List<T> list:
+                    return new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, T>(new Optimizations.ListEnumerable<T>(list), new Links.Take<T>(take));
+
+                default:
+                    return CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(new Links.Take<T>(take)), source);
+            }
+        }
+
         internal static Consumable<T> AsConsumable<T>(IEnumerable<T> e)
         {
             if (e is Consumable<T> c)

@@ -4,7 +4,7 @@ namespace Cistern.Linq.ChainLinq.Consume
 {
     static class ReadOnlySpan
     {
-        const int MinSizeToCoverExecuteCosts = 10; // from some random testing (depends on pipeline length)
+        const int MinSizeToCoverExecuteCosts = 5; // from some random testing (depends on pipeline length)
 
         public static void Invoke<T>(ReadOnlySpan<T> array, Chain<T> chain)
         {
