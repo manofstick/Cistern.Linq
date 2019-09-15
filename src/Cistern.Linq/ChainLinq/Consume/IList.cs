@@ -61,6 +61,17 @@ namespace Cistern.Linq.ChainLinq.Consume
                 readOnlySpan = default;
                 return false;
             }
+
+            public bool TryLast(out T result)
+            {
+                if (count == 0)
+                {
+                    result = default;
+                    return false;
+                }
+                result = list[start + count - 1];
+                return true;
+            }
         }
 
         public static void Invoke<T>(IList<T> array, int start, int count, Chain<T> chain)

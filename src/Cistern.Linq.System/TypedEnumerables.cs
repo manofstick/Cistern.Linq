@@ -21,6 +21,19 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TryLast(out T result)
+        {
+            var last = source.Last;
+            if (last == null)
+            {
+                result = default;
+                return false;
+            }
+            result = last.Value;
+            return true;
+        }
+
     }
 
     struct HashSetEnumerable<T>
@@ -36,6 +49,12 @@ namespace Cistern.Linq.Immutable
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
             readOnlySpan = default;
+            return false;
+        }
+
+        public bool TryLast(out T result)
+        {
+            result = default;
             return false;
         }
     }
@@ -55,6 +74,12 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TryLast(out T result)
+        {
+            result = default;
+            return false;
+        }
     }
 
     struct QueueEnumerable<T>
@@ -72,6 +97,12 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TryLast(out T result)
+        {
+            result = default;
+            return false;
+        }
     }
 
     struct SortedSetEnumerable<T>
@@ -87,6 +118,12 @@ namespace Cistern.Linq.Immutable
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
             readOnlySpan = default;
+            return false;
+        }
+
+        public bool TryLast(out T result)
+        {
+            result = default;
             return false;
         }
     }

@@ -61,6 +61,16 @@ namespace Cistern.Linq.ChainLinq.Consume
                 readOnlySpan = default;
                 return false;
             }
+            public bool TryLast(out T result)
+            {
+                if (Count == 0)
+                {
+                    result = default;
+                    return false;
+                }
+                result = Element;
+                return true;
+            }
         }
 
         const int MinSizeToCoverExecuteCosts = 10; // from some random testing (depends on pipeline length)

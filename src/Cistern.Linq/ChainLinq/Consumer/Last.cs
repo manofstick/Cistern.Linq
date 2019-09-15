@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
     sealed class Last<T>
         : Consumer<T, T>
+        , Optimizations.IHeadStart<T>
         , Optimizations.ITailEnd<T>
     {
         private bool _found;
@@ -25,6 +27,36 @@ namespace Cistern.Linq.ChainLinq.Consumer
             {
                 ThrowHelper.ThrowNoElementsException();
             }
+        }
+
+        ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+        {
+            if (source.Length > 0)
+            {
+                _found = true;
+                Result = source[source.Length-1];
+            }
+
+            return ChainStatus.Flow;
+        }
+
+        ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+        {
+            if (source.TryLast(out var result))
+            {
+                _found = true;
+                Result = result;
+            }
+            else
+            {
+                foreach (var input in source)
+                {
+                    _found = true;
+                    Result = input;
+                }
+            }
+
+            return ChainStatus.Flow;
         }
 
         ChainStatus Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)

@@ -40,6 +40,7 @@ type UnfoldVEnumerable<'State, 'T>(f:'State->voption<'T*'State>, seed:'State) =
         member __.Source = Unchecked.defaultof<_>
         member __.TryLength = System.Nullable ()
         member __.TryGetSourceAsSpan _ = false
+        member __.TryLast _ = false
 
 [<Sealed>]
 type UnfoldV<'State, 'T, 'V>(f:'State->voption<'T*'State>, seed:'State, link:ILink<'T, 'V>) =

@@ -37,3 +37,10 @@ type FSharpListEnumerable<'T>(lst:list<'T>) =
         member __.TryGetSourceAsSpan _ = false
         member __.TryLength = System.Nullable lst.Length // is this O(1)??
         member __.GetEnumerator () = new FSharpListEnumerator<'T>(lst)
+        member __.TryLast result =
+            match lst with
+            | [] -> false
+            | _ ->
+                result <- List.last lst
+                true
+

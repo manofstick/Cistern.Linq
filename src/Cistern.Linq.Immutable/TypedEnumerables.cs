@@ -37,6 +37,16 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = source.AsSpan();
             return true;
         }
+        public bool TryLast(out T result)
+        {
+            if (source.Length == 0)
+            {
+                result = default;
+                return false;
+            }
+            result = source[source.Length - 1];
+            return true;
+        }
     }
 
     struct ImmutableHashSetEnumerable<T>
@@ -55,6 +65,12 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TryLast(out T result)
+        {
+            result = default;
+            return false;
+        }
     }
 
     struct ImmutableListEnumerable<T>
@@ -70,6 +86,12 @@ namespace Cistern.Linq.Immutable
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
             readOnlySpan = default;
+            return false;
+        }
+
+        public bool TryLast(out T result)
+        {
+            result = default;
             return false;
         }
     }
@@ -105,6 +127,13 @@ namespace Cistern.Linq.Immutable
             readOnlySpan = default;
             return false;
         }
+
+        public bool TryLast(out T result)
+        {
+            // TODO: Check Peek? or is that the wrong end?
+            result = default;
+            return false;
+        }
     }
 
     struct ImmutableSortedSetEnumerable<T>
@@ -120,6 +149,13 @@ namespace Cistern.Linq.Immutable
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
             readOnlySpan = default;
+            return false;
+        }
+
+        public bool TryLast(out T result)
+        {
+            // TODO: Sorted, so should be able to pull off last, need to check API
+            result = default;
             return false;
         }
     }
@@ -153,6 +189,12 @@ namespace Cistern.Linq.Immutable
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
             readOnlySpan = default;
+            return false;
+        }
+
+        public bool TryLast(out T result)
+        {
+            result = default;
             return false;
         }
     }

@@ -11,6 +11,7 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         int? TryLength { get; }
         bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan);
         Enumerator GetEnumerator();
+        bool TryLast(out T result);
     }
 
     struct IEnumerableEnumerable<T>
@@ -31,6 +32,12 @@ namespace Cistern.Linq.ChainLinq.Optimizations
             readOnlySpan = default;
             return false;
         }
+
+        public bool TryLast(out T result)
+        {
+            result = default;
+            return false;
+        }
     }
 
     struct ListEnumerable<T>
@@ -49,6 +56,17 @@ namespace Cistern.Linq.ChainLinq.Optimizations
         {
             readOnlySpan = default;
             return false;
+        }
+
+        public bool TryLast(out T result)
+        {
+            if (source.Count == 0)
+            {
+                result = default;
+                return false;
+            }
+            result = source[source.Count - 1];
+            return true;
         }
     }
 }
