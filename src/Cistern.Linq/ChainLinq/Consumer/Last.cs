@@ -70,12 +70,29 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         ChainStatus Optimizations.ITailEnd<T>.Where<Enumerable, Enumerator>(Enumerable source, Func<T, bool> predicate)
         {
-            foreach (var input in source)
+            if (source.Source is System.Collections.Generic.IList<T> list)
             {
-                if (predicate(input))
+                // assuming predicate is pure; reverse search was a System.Linq optimization
+                for (var i = list.Count - 1; i >= 0; --i)
                 {
-                    _found = true;
-                    Result = input;
+                    var input = list[i];
+                    if (predicate(input))
+                    {
+                        _found = true;
+                        Result = input;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var input in source)
+                {
+                    if (predicate(input))
+                    {
+                        _found = true;
+                        Result = input;
+                    }
                 }
             }
             return ChainStatus.Flow;
