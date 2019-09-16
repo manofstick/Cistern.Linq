@@ -6,6 +6,9 @@ open Cistern.Linq.FSharp
 open System
 open System.Runtime.CompilerServices
 
+module Linq =
+    let empty<'T> : seq<'T> = Seq.empty<'T>
+
 type Linq =
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     static member unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Unfold (f, seed, Links.Identity.Instance) :> seq<'T>
@@ -87,14 +90,14 @@ type Linq =
     static member inline choose (chooser:'T -> 'U option) (source:seq<'T>) : seq<'U> = Seq.choose chooser source
     static member inline chunkBySize (chunkSize:int) (source:seq<'T>) : seq<array<'T>> = Seq.chunkBySize chunkSize source
     static member inline compareWith (comparer:'T->'T->int) (source1:seq<'T>) (source2:seq<'T>) : int = Seq.compareWith comparer source1 source2
-    static member inline concat (sources:#seq<'Collection>) : seq<'Collection> = Seq.concat sources
+    static member inline concat (sources:seq<#seq<'Collection>>) : seq<'Collection> = Seq.concat sources
     static member inline contains (value:'T) (source:seq<'T>) : bool = Seq.contains value source
     static member inline countBy (projection:'T->'Key) (source:seq<'T>) : seq<'Key*int> = Seq.countBy projection source
     static member inline delay (generator:unit->seq<'T>) : seq<'T> = Seq.delay generator
     static member inline distinct (source:seq<'T>) : seq<'T> = Seq.distinct source
     static member inline distinctBy (projection:'T->'Key) (source:seq<'T>) : seq<'T> = Seq.distinctBy projection source
     static member inline splitInto (count:int) (source:seq<'T>) : seq<array<'T>> = Seq.splitInto count source
-    static member inline empty () : seq<'T> = Seq.empty<'T>
+    //static member inline empty () : seq<'T> = Seq.empty<'T>
     static member inline except (itemsToExclude:seq<'T>) (source:seq<'T>) : seq<'T> = Seq.except itemsToExclude source
     static member inline exists2 (predicate:'T1->'T2->bool) (source1:seq<'T1>) (source2:seq<'T2>) : bool = Seq.exists2 predicate source1 source2
     static member inline find (predicate:'T->bool) (source:seq<'T>) = Seq.find predicate source
