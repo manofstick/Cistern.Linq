@@ -2,40 +2,55 @@
 
 namespace Cistern.Linq.ChainLinq.Links
 {
-    sealed class Take<T>
+    sealed class TakeSkip<T>
         : ILink<T, T>
         , Optimizations.ICountOnConsumableLink
         , Optimizations.IMergeSkipTake<T>
     {
-        private int _count;
+        private int _take;
+        private int _skip;
 
-        public Take(int count) =>
-            _count = count;
+        public TakeSkip(int take, int skip) => (_take, _skip) = (take, skip);
 
         public Consumable<T> MergeSkip(ConsumableCons<T> consumable, int skip)
         {
-            if (skip == 0)
-                return consumable;
+            checked
+            {
+                if (skip == 0)
+                    return consumable;
 
-            return consumable.ReplaceTailLink(new TakeSkip<T>(_count, skip));
+                // trying to skip more than MaxValue is a no-op, as take can only have
+                // a maximum of int.Value
+                var totalSkip = (int)Math.Min(int.MaxValue, (long)_skip + skip);
+
+                return consumable.ReplaceTailLink(new TakeSkip<T>(_take, totalSkip));
+            }
         }
 
         public Consumable<T> MergeTake(ConsumableCons<T> consumable, int take)
         {
-            if (take > _count)
-                return consumable;
+            checked
+            {
+                if (_skip == 0)
+                {
+                    if (take >= _take)
+                        return consumable;
 
-            return consumable.ReplaceTailLink(new Take<T>(take));
+                    return consumable.ReplaceTailLink(new Take<T>(take));
+                }
+
+                return consumable.ReplaceTailLink(Composition.Create(this, new Take<T>(take)));
+            }
         }
 
         Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
-            new Activity(_count, activity);
+            new Activity(_take, _skip, activity);
 
         int Optimizations.ICountOnConsumableLink.GetCount(int count)
         {
             checked
             {
-                return Math.Min(_count, count);
+                return Math.Min(_take-_skip, count);
             }
         }
 
@@ -43,16 +58,20 @@ namespace Cistern.Linq.ChainLinq.Links
             : Activity<T, T>
             , Optimizations.IHeadStart<T>
         {
-            private readonly int count;
+            private readonly int take;
+            private readonly int skip;
 
             private int index;
 
-            public Activity(int count, Chain<T> next) : base(next) =>
-                (this.count, index) = (count, 0);
+            public Activity(int take, int skip, Chain<T> next) : base(next)
+            {
+                (this.take, this.skip) = (take, Math.Min(skip, take));
+                index = 0;
+            }
 
             public override ChainStatus ProcessNext(T input)
             {
-                if (index >= count)
+                if (index >= take || skip >= take)
                 {
                     return ChainStatus.Stop;
                 }
@@ -62,7 +81,9 @@ namespace Cistern.Linq.ChainLinq.Links
                     index++;
                 }
 
-                if (index >= count)
+                if (index <= skip)
+                    return ChainStatus.Filter;
+                else if (index >= take)
                     return ChainStatus.Stop | Next(input);
                 else
                     return Next(input);
@@ -70,8 +91,8 @@ namespace Cistern.Linq.ChainLinq.Links
 
             ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
             {
-                if (count < source.Length)
-                    source = source.Slice(0, count);
+                if (take < source.Length)
+                    source = source.Slice(skip, Math.Max(0, take-skip));
 
                 if (next is Optimizations.IHeadStart<T> optimizations)
                     return optimizations.Execute(source);
@@ -89,6 +110,9 @@ namespace Cistern.Linq.ChainLinq.Links
 
             ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
             {
+                if (skip >= take)
+                    return ChainStatus.Filter;
+
                 foreach (var input in source)
                 {
                     checked
@@ -96,7 +120,10 @@ namespace Cistern.Linq.ChainLinq.Links
                         index++;
                     }
 
-                    if (index >= count)
+                    if (index <= skip)
+                        continue;
+
+                    if (index >= take)
                         return ChainStatus.Stop | Next(input);
 
                     var status = Next(input);
