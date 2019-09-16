@@ -4,7 +4,10 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-    sealed class Empty<T> : ConsumableCons<T>, IEnumerator<T>
+    sealed class Empty<T> 
+        : ConsumableCons<T>
+        , IEnumerator<T>
+        , Optimizations.ICountOnConsumable
     {
         public static Consumable<T> Instance = new Empty<T>();
 
@@ -39,5 +42,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override object TailLink => null;
         public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new InvalidOperationException();
+
+        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap) => 0;
     }
 }
