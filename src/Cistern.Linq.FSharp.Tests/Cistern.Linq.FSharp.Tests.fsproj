@@ -15,9 +15,11 @@
 
   <ItemGroup>
     <Compile Include="NUnitFrameworkShims.fs" />
+    <Compile Include="Utils.fs" />
     <Compile Include="LibraryTestFx.fs" />
     <Compile Include="LinqModule.fs" />
     <Compile Include="LinqModule2.fs" />
+    <Compile Include="CollectionModulesConsistency.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

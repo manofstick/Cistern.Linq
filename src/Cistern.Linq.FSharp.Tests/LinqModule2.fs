@@ -8,7 +8,17 @@ open NUnit.Framework
 open FSharp.Core.UnitTests.LibraryTestFx
 
 open Cistern.Linq.FSharp
+(* CISTERN NOTES:
 
+0: 
+As per https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.ienumerator-1.current
+Current is undefined for calls before MoveNext is called as well as after MoveNext has returned false.
+Cistern does not throw an exception, where as Seq does
+
+1:
+The FSharp compiler, given the choice of multiple functions for Max/Min/Sum must have a type defined
+
+*)
 
 type SeqWindowedTestInput<'t> =
     {
@@ -544,7 +554,7 @@ type SeqModule2() =
         let e = ([1;2] |> map f).GetEnumerator()
         
         if expectExceptions then
-            CheckThrowsInvalidOperationExn  (fun _ -> e.Current|>ignore)
+            (*CISTERN[0]:CheckThrowsInvalidOperationExn  (fun _ -> e.Current|>ignore)*)
             Assert.AreEqual(0, !i)
         if not (e.MoveNext()) then Assert.Fail()
         Assert.AreEqual(1, !i)
@@ -563,7 +573,7 @@ type SeqModule2() =
         if e.MoveNext() then Assert.Fail()
         Assert.AreEqual(2, !i)
         if expectExceptions then
-            CheckThrowsInvalidOperationExn (fun _ -> e.Current |> ignore)
+            (*CISTERN[0]:CheckThrowsInvalidOperationExn (fun _ -> e.Current |> ignore)*)
             Assert.AreEqual(2, !i)
 
         
@@ -614,7 +624,7 @@ type SeqModule2() =
         let f _ x = i := !i + 1; x*x
         let e = ([1;2] |> Linq.mapi f).GetEnumerator()
         
-        CheckThrowsInvalidOperationExn  (fun _ -> e.Current|>ignore)
+        (*CISTERN[0]:CheckThrowsInvalidOperationExn  (fun _ -> e.Current|>ignore)*)
         Assert.AreEqual(0, !i)
         if not (e.MoveNext()) then Assert.Fail()
         Assert.AreEqual(1, !i)
@@ -632,7 +642,7 @@ type SeqModule2() =
         
         if e.MoveNext() then Assert.Fail()
         Assert.AreEqual(2, !i)
-        CheckThrowsInvalidOperationExn  (fun _ -> e.Current|>ignore)
+        (*CISTERN[0]:CheckThrowsInvalidOperationExn  (fun _ -> e.Current|>ignore)*)
         Assert.AreEqual(2, !i)
         
         i := 0
@@ -844,12 +854,10 @@ type SeqModule2() =
           
         // empty Seq
         CheckThrowsArgumentException(fun () -> Linq.max ( Linq.empty : seq<float>) |> ignore)
-       
-(* CISTERN TBD
+
         // null Seq
-        let nullSeq:seq<'a> = null 
+        let nullSeq:seq<(*CISTERN[1]:'a*)int> = null 
         CheckThrowsArgumentNullException (fun () -> Linq.max nullSeq |> ignore)
-*)             
         ()
         
     [<Test>]
@@ -911,11 +919,10 @@ type SeqModule2() =
         // empty Seq
         CheckThrowsArgumentException (fun () -> Linq.min (Linq.empty : seq<int>) |> ignore) 
         
-(* CISTERN TBD
         // null Seq
-        let nullSeq:seq<'a> = null 
+        let nullSeq:seq<(*CISTERN[1]:'a*)int> = null 
         CheckThrowsArgumentNullException (fun () -> Linq.min nullSeq |> ignore)
-*)        
+
         ()
 
     [<Test>]

@@ -7,7 +7,12 @@ open System
 open System.Runtime.CompilerServices
 
 module Linq =
-    let empty<'T> : seq<'T> = Seq.empty<'T>
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    let empty<'T> : seq<'T> = upcast Consumables.Empty<'T>.Instance
+
+    let head (e:seq<'a>) = try e.First () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+
+    let inline reduce (f:'a->'a->'a) (e:seq<'a>) = try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
 
 type Linq =
     [<MethodImpl(MethodImplOptions.NoInlining)>]
@@ -20,8 +25,6 @@ type Linq =
                                                               
     static member inline filter (f:'a->bool) (e:seq<'a>)      : seq<'a> = e.Where f
     static member inline where (predicate:'T->bool) (source:seq<'T>) : seq<'T> = source.Where predicate
-                                                              
-    static member inline reduce (f:'a->'a->'a) (e:seq<'a>)    = e.Aggregate (fun a c -> f a c)
 
     static member inline fold (f:'s->'a->'s) seed (e:seq<'a>) = e.Aggregate (seed, fun a c -> f a c)
 
@@ -31,7 +34,6 @@ type Linq =
 
     static member inline forall (f:'a->bool) (e:seq<'a>)      = e.All (fun x -> f x)
     static member inline exists (f:'a->bool) (e:seq<'a>)      = e.Any (fun x -> f x)
-    static member inline head (e:seq<'a>)                     = e.First ()
     static member inline isEmpty (e:seq<'a>)                  = not (e.Any ())
 
     static member collect (f:'T->#seq<'U>) (e:seq<'T>) : seq<'U> =
@@ -44,53 +46,70 @@ type Linq =
         let selectMany = ChainLinq.Utils.Select (e, fun x -> f x);
         ChainLinq.Consumables.SelectMany<_,_,_> (selectMany, ChainLinq.Links.Identity<_>.Instance) :> seq<'U>
 
-    static member inline length (e:seq<'a>)                   = e.Count ()
+    static member inline concat (sources:seq<#seq<'Collection>>) : seq<'Collection> =
+        let sources = sources |> Cistern.Linq.ChainLinq.Utils.AsConsumable 
+        upcast ChainLinq.Consumables.SelectMany<_,_,_> (sources, ChainLinq.Links.Identity<_>.Instance)
 
-    static member inline sum (e:seq<float>)                   = e.Sum ()
-    static member inline sum (e:seq<float32>)                 = e.Sum ()
-    static member inline sum (e:seq<decimal>)                 = e.Sum ()
-    static member inline sum (e:seq<int>)                     = e.Sum ()
-    static member inline sum (e:seq<int64>)                   = e.Sum ()
-    static member inline sum (e:seq<Nullable<float>>)         = e.Sum ()
-    static member inline sum (e:seq<Nullable<float32>>)       = e.Sum ()
-    static member inline sum (e:seq<Nullable<decimal>>)       = e.Sum ()
-    static member inline sum (e:seq<Nullable<int>>)           = e.Sum ()
-    static member inline sum (e:seq<Nullable<int64>>)         = e.Sum ()
+    static member inline length (e:seq<'a>) = e.Count ()
+
+    static member sum (e:seq<float>)                   = e.Sum ()
+    static member sum (e:seq<float32>)                 = e.Sum ()
+    static member sum (e:seq<decimal>)                 = e.Sum ()
+    static member sum (e:seq<int>)                     = e.Sum ()
+    static member sum (e:seq<int64>)                   = e.Sum ()
+    static member sum (e:seq<Nullable<float>>)         = e.Sum ()
+    static member sum (e:seq<Nullable<float32>>)       = e.Sum ()
+    static member sum (e:seq<Nullable<decimal>>)       = e.Sum ()
+    static member sum (e:seq<Nullable<int>>)           = e.Sum ()
+    static member sum (e:seq<Nullable<int64>>)         = e.Sum ()
+    static member inline sum (source:seq<(^T)>) = Seq.sum source
                                                               
-    static member inline min (e:seq<float>)                   = e.Min ()
-    static member inline min (e:seq<float32>)                 = e.Min ()
-    static member inline min (e:seq<decimal>)                 = e.Min ()
-    static member inline min (e:seq<int>)                     = e.Min ()
-    static member inline min (e:seq<int64>)                   = e.Min ()
-    static member inline min (e:seq<Nullable<float>>)         = e.Min ()
-    static member inline min (e:seq<Nullable<float32>>)       = e.Min ()
-    static member inline min (e:seq<Nullable<decimal>>)       = e.Min ()
-    static member inline min (e:seq<Nullable<int>>)           = e.Min ()
-    static member inline min (e:seq<Nullable<int64>>)         = e.Min ()
+    static member average (e:seq<float>)               = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<float32>)             = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<decimal>)             = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<int>)                 = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<int64>)               = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<float>>)     = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<float32>>)   = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<decimal>>)   = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<int>>)       = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<int64>>)     = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member inline average (source:seq<(^T)>) : 'T = Seq.average source 
                                                               
-    static member inline max (e:seq<float>)                   = e.Max ()
-    static member inline max (e:seq<float32>)                 = e.Max ()
-    static member inline max (e:seq<decimal>)                 = e.Max ()
-    static member inline max (e:seq<int>)                     = e.Max ()
-    static member inline max (e:seq<int64>)                   = e.Max ()
-    static member inline max (e:seq<Nullable<float>>)         = e.Max ()
-    static member inline max (e:seq<Nullable<float32>>)       = e.Max ()
-    static member inline max (e:seq<Nullable<decimal>>)       = e.Max ()
-    static member inline max (e:seq<Nullable<int>>)           = e.Max ()
-    static member inline max (e:seq<Nullable<int64>>)         = e.Max ()
+    static member min (e:seq<float>)                   = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<float32>)                 = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<decimal>)                 = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<int>)                     = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<int64>)                   = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<Nullable<float>>)         = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<Nullable<float32>>)       = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<Nullable<decimal>>)       = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<Nullable<int>>)           = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<Nullable<int64>>)         = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member inline min (e:seq<'T>) = Seq.min e
+                                                              
+    static member max (e:seq<float>)                   = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<decimal>)                 = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<int>)                     = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<int64>)                   = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<float32>)                 = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<Nullable<float>>)         = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<Nullable<float32>>)       = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<Nullable<decimal>>)       = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<Nullable<int>>)           = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<Nullable<int64>>)         = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member inline max (e:seq<'T>) = Seq.max e
 
     // polyfill
 
     static member inline allPairs (source1:seq<'T1>) (source2:seq<'T2>) : seq<'T1*'T2> = Seq.allPairs source1 source2
     static member inline append (source1:seq<'T>) (source2:seq<'T>) : seq<'T> = Seq.append source1 source2
-    static member inline average (source:seq<(^T)>) : 'T = Seq.average source 
     static member inline averageBy (projection:'T -> ^U) (source:seq<'T>) : 'U = Seq.averageBy projection source
     static member inline cache (source:seq<'T>) : seq<'T>= Seq.cache source
     static member inline cast (source:System.Collections.IEnumerable) : seq<'T> = Seq.cast source
     static member inline choose (chooser:'T -> 'U option) (source:seq<'T>) : seq<'U> = Seq.choose chooser source
     static member inline chunkBySize (chunkSize:int) (source:seq<'T>) : seq<array<'T>> = Seq.chunkBySize chunkSize source
     static member inline compareWith (comparer:'T->'T->int) (source1:seq<'T>) (source2:seq<'T>) : int = Seq.compareWith comparer source1 source2
-    static member inline concat (sources:seq<#seq<'Collection>>) : seq<'Collection> = Seq.concat sources
     static member inline contains (value:'T) (source:seq<'T>) : bool = Seq.contains value source
     static member inline countBy (projection:'T->'Key) (source:seq<'T>) : seq<'Key*int> = Seq.countBy projection source
     static member inline delay (generator:unit->seq<'T>) : seq<'T> = Seq.delay generator
@@ -127,9 +146,7 @@ type Linq =
     static member inline mapFoldBack (mapping:'T->'State->'Result*'State) (source:seq<'T>) (state:'State) : seq<'Result> * 'State = Seq.mapFoldBack mapping source state
     static member inline map3 (mapping:'T1->'T2->'T3->'U) (source1:seq<'T1>) (source2:seq<'T2>) (source3:seq<'T3>) : seq<'U> = Seq.map3 mapping source1 source2 source3
     static member inline mapi2 (mapping:int->'T1->'T2->'U) (source1:seq<'T1>) (source2:seq<'T2>) : seq<'U> = Seq.mapi2 mapping source1 source2
-    static member inline max   (source:seq<'T>) : 'T = Seq.max source
     static member inline maxBy (projection:'T->'U) (source:seq<'T>) : 'T = Seq.maxBy projection source
-    static member inline min   (source:seq<'T>) : 'T = Seq.min source
     static member inline minBy (projection:'T->'U) (source:seq<'T>) = Seq.minBy projection source
     static member inline ofArray (source:array<'T>) : seq<'T> = Seq.ofArray source
     static member inline ofList (source:list<'T>) : seq<'T> = Seq.ofList source
@@ -150,7 +167,6 @@ type Linq =
     static member inline sortBy (projection:'T->'Key) (source:seq<'T>) : seq<'T> = Seq.sortBy projection source
     static member inline sortDescending (source:seq<'T>) : seq<'T> = Seq.sortDescending source
     static member inline sortByDescending (projection:'T->'Key) (source:seq<'T>) : seq<'T> = Seq.sortByDescending projection source
-    static member inline sum (source:seq<(^T)>) = Seq.sum source
     static member inline sumBy (projection:'T -> ^U) (source:seq<'T>) : ^U = Seq.sumBy projection source
     static member inline tail (source:seq<'T>) : seq<'T> = Seq.tail source
     static member inline toArray (source:seq<'T>) : 'T[] = Seq.toArray source
