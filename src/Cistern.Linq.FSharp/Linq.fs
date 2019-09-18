@@ -7,6 +7,10 @@ open System
 open System.Runtime.CompilerServices
 
 module Linq =
+    let concat (sources:seq<#seq<'Collection>>) : seq<'Collection> =
+        let sources = sources |> Cistern.Linq.ChainLinq.Utils.AsConsumable 
+        upcast ChainLinq.Consumables.SelectMany<_,_,_> (sources, ChainLinq.Links.Identity<_>.Instance)
+
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let empty<'T> : seq<'T> = upcast Consumables.Empty<'T>.Instance
 
@@ -46,9 +50,6 @@ type Linq =
         let selectMany = ChainLinq.Utils.Select (e, fun x -> f x);
         ChainLinq.Consumables.SelectMany<_,_,_> (selectMany, ChainLinq.Links.Identity<_>.Instance) :> seq<'U>
 
-    static member inline concat (sources:seq<#seq<'Collection>>) : seq<'Collection> =
-        let sources = sources |> Cistern.Linq.ChainLinq.Utils.AsConsumable 
-        upcast ChainLinq.Consumables.SelectMany<_,_,_> (sources, ChainLinq.Links.Identity<_>.Instance)
 
     static member inline length (e:seq<'a>) = e.Count ()
 
