@@ -42,6 +42,12 @@ module Linq =
 
     let head (e:seq<'a>) = try e.First () with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (ArgumentException(e.Message, e))
 
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    let init (count:int) (initializer:int->'T) : seq<'T> =
+        if count < 0 then raise (ArgumentException ())
+        elif count = 0 then upcast Consumables.Empty<'T>.Instance
+        else upcast Consumables.Init (count, initializer, Links.Identity.Instance)
+
     let isEmpty (e:seq<'a>) = not (e.Any ())
 
     let last (source:seq<'T>) : 'T =  try source.Last () with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
@@ -199,7 +205,6 @@ type Linq =
     static member inline exactlyOne (source:seq<'T>) : 'T = Seq.exactlyOne source
     static member inline tryExactlyOne (source:seq<'T>) : option<'T> = Seq.tryExactlyOne source
     static member inline indexed (source:seq<'T>) : seq<int*'T> = Seq.indexed source
-    static member inline init (count:int) (initializer:int->'T) : seq<'T> = Seq.init count initializer
     static member inline initInfinite (initializer:int->'T) : seq<'T> = Seq.initInfinite initializer
     static member inline item (index:int) (source:seq<'T>) : 'T = Seq.item index source
     static member inline iter (action:'T->unit) (source:seq<'T>) : unit = Seq.iter action source

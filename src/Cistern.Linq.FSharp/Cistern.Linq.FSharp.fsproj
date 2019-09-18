@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="Consumables\unfoldV.fs" />
     <Compile Include="Consumables\unfold.fs" />
+    <Compile Include="Consumables\init.fs" />
     <Compile Include="TypedEnumerables.fs" />
     <Compile Include="Register.fs" />
     <Compile Include="Linq.fs" />
