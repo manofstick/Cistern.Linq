@@ -7,40 +7,7 @@ open System
 open System.Runtime.CompilerServices
 
 module Linq =
-    let concat (sources:seq<#seq<'Collection>>) : seq<'Collection> =
-        let sources = sources |> Cistern.Linq.ChainLinq.Utils.AsConsumable 
-        upcast ChainLinq.Consumables.SelectMany<_,_,_> (sources, ChainLinq.Links.Identity<_>.Instance)
-
-    [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let empty<'T> : seq<'T> = upcast Consumables.Empty<'T>.Instance
-
-    let head (e:seq<'a>) = try e.First () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-
-    let inline reduce (f:'a->'a->'a) (e:seq<'a>) = try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-
-type Linq =
-    [<MethodImpl(MethodImplOptions.NoInlining)>]
-    static member unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Unfold (f, seed, Links.Identity.Instance) :> seq<'T>
-    [<MethodImpl(MethodImplOptions.NoInlining)>]
-    static member unfoldV (f:'State->voption<'T*'State>) (seed:'State) : seq<'T> = Consumables.UnfoldV (f, seed, Links.Identity.Instance) :> seq<'T>
-
-    static member inline map (f:'a->'b) (e:seq<'a>)           = e.Select f
-    static member inline mapi (f:int->'a->'b) (e:seq<'a>)     = e.Select (fun a idx -> f idx a)
-                                                              
-    static member inline filter (f:'a->bool) (e:seq<'a>)      : seq<'a> = e.Where f
-    static member inline where (predicate:'T->bool) (source:seq<'T>) : seq<'T> = source.Where predicate
-
-    static member inline fold (f:'s->'a->'s) seed (e:seq<'a>) = e.Aggregate (seed, fun a c -> f a c)
-
-    static member inline take count (e:seq<'a>)               = e.Take count
-    static member inline takeWhile (f:'a->bool) (e:seq<'a>)   = e.TakeWhile f
-    static member inline takeWhilei (f:int->'a->bool) (e:seq<'a>) = e.TakeWhile (fun a idx -> f idx a)
-
-    static member inline forall (f:'a->bool) (e:seq<'a>)      = e.All (fun x -> f x)
-    static member inline exists (f:'a->bool) (e:seq<'a>)      = e.Any (fun x -> f x)
-    static member inline isEmpty (e:seq<'a>)                  = not (e.Any ())
-
-    static member collect (f:'T->#seq<'U>) (e:seq<'T>) : seq<'U> =
+    let collect (f:'T->#seq<'U>) (e:seq<'T>) : seq<'U> =
         if isNull e then
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
 
@@ -50,9 +17,51 @@ type Linq =
         let selectMany = ChainLinq.Utils.Select (e, fun x -> f x);
         ChainLinq.Consumables.SelectMany<_,_,_> (selectMany, ChainLinq.Links.Identity<_>.Instance) :> seq<'U>
 
+    let concat (sources:seq<#seq<'Collection>>) : seq<'Collection> =
+        if isNull sources then
+            ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
 
-    static member inline length (e:seq<'a>) = e.Count ()
+        let sources = sources |> Cistern.Linq.ChainLinq.Utils.AsConsumable 
+        upcast ChainLinq.Consumables.SelectMany<_,_,_> (sources, ChainLinq.Links.Identity<_>.Instance)
 
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    let empty<'T> : seq<'T> = upcast Consumables.Empty<'T>.Instance
+
+    let inline exists (f:'a->bool) (e:seq<'a>) = e.Any (fun x -> f x)
+
+    let inline filter (f:'a->bool) (e:seq<'a>) : seq<'a> = e.Where f
+
+    let inline fold (f:'s->'a->'s) seed (e:seq<'a>) = e.Aggregate (seed, fun a c -> f a c)
+
+    let inline forall (f:'a->bool) (e:seq<'a>) = e.All (fun x -> f x)
+
+    let head (e:seq<'a>) = try e.First () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+
+    let isEmpty (e:seq<'a>) = not (e.Any ())
+
+    let length (e:seq<'a>) = e.Count ()
+
+    let inline map (f:'a->'b) (e:seq<'a>) = e.Select f
+
+    let inline mapi (f:int->'a->'b) (e:seq<'a>) = e.Select (fun a idx -> f idx a)
+
+    let inline reduce (f:'a->'a->'a) (e:seq<'a>) = try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+
+    let take count (e:seq<'a>) = e.Take count
+
+    let inline takeWhile (f:'a->bool) (e:seq<'a>) = e.TakeWhile f
+
+    let inline takeWhilei (f:int->'a->bool) (e:seq<'a>) = e.TakeWhile (fun a idx -> f idx a)
+
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    let unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Unfold (f, seed, Links.Identity.Instance) :> seq<'T>
+
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    let unfoldV (f:'State->voption<'T*'State>) (seed:'State) : seq<'T> = Consumables.UnfoldV (f, seed, Links.Identity.Instance) :> seq<'T>
+
+    let inline where (predicate:'T->bool) (source:seq<'T>) : seq<'T> = source.Where predicate
+
+type Linq =
     static member sum (e:seq<float>)                   = e.Sum ()
     static member sum (e:seq<float32>)                 = e.Sum ()
     static member sum (e:seq<decimal>)                 = e.Sum ()
@@ -64,6 +73,24 @@ type Linq =
     static member sum (e:seq<Nullable<int>>)           = e.Sum ()
     static member sum (e:seq<Nullable<int64>>)         = e.Sum ()
     static member inline sum (source:seq<(^T)>) = Seq.sum source
+
+    static member tryLinqGenericSum (source:seq<('T)>) : ValueOption<'T> = 
+        if   obj.ReferenceEquals(typeof<'T>, typeof<float>)             then unbox<seq<float>> source               |> Linq.sum |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<float32>)           then unbox<seq<float32>> source             |> Linq.sum |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<decimal>)           then unbox<seq<decimal>> source             |> Linq.sum |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<int>)               then unbox<seq<int>> source                 |> Linq.sum |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<int64>)             then unbox<seq<int64>> source               |> Linq.sum |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<Nullable<float>>)   then unbox<seq<Nullable<float>>> source     |> Linq.sum |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<Nullable<float32>>) then unbox<seq<Nullable<float32>>> source   |> Linq.sum |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<Nullable<decimal>>) then unbox<seq<Nullable<decimal>>> source   |> Linq.sum |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<Nullable<int>>)     then unbox<seq<Nullable<int>>> source       |> Linq.sum |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<Nullable<int64>>)   then unbox<seq<Nullable<int64>>> source     |> Linq.sum |> unbox<'T> |> ValueSome
+        else ValueNone
+
+    static member inline sumBy (projection:'T -> ^U) (source:seq<'T>) : ^U =
+        match source |> Linq.map projection |> Linq.tryLinqGenericSum with
+        | ValueSome sum -> sum
+        | ValueNone -> Seq.sumBy projection source
                                                               
     static member average (e:seq<float>)               = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
     static member average (e:seq<float32>)             = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
@@ -75,7 +102,25 @@ type Linq =
     static member average (e:seq<Nullable<decimal>>)   = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
     static member average (e:seq<Nullable<int>>)       = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
     static member average (e:seq<Nullable<int64>>)     = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member inline average (source:seq<(^T)>) : 'T = Seq.average source 
+    static member inline average (source:seq<(^T)>) : 'T = Seq.average source
+    
+    static member tryLinqGenericAverage (source:seq<('T)>) : ValueOption<'T> = 
+        if   obj.ReferenceEquals(typeof<'T>, typeof<float>)             then unbox<seq<float>> source               |> Linq.average |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<float32>)           then unbox<seq<float32>> source             |> Linq.average |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<decimal>)           then unbox<seq<decimal>> source             |> Linq.average |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<int>)               then unbox<seq<int>> source                 |> Linq.average |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<int64>)             then unbox<seq<int64>> source               |> Linq.average |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<Nullable<float>>)   then unbox<seq<Nullable<float>>> source     |> Linq.average |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<Nullable<float32>>) then unbox<seq<Nullable<float32>>> source   |> Linq.average |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<Nullable<decimal>>) then unbox<seq<Nullable<decimal>>> source   |> Linq.average |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<Nullable<int>>)     then unbox<seq<Nullable<int>>> source       |> Linq.average |> unbox<'T> |> ValueSome
+        elif obj.ReferenceEquals(typeof<'T>, typeof<Nullable<int64>>)   then unbox<seq<Nullable<int64>>> source     |> Linq.average |> unbox<'T> |> ValueSome
+        else ValueNone
+
+    static member inline averageBy (projection:'T -> ^U) (source:seq<'T>) : 'U =
+        match source |> Linq.map projection |> Linq.tryLinqGenericAverage with
+        | ValueSome average -> average
+        | ValueNone -> Seq.averageBy projection source
                                                               
     static member min (e:seq<float>)                   = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
     static member min (e:seq<float32>)                 = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
@@ -88,7 +133,7 @@ type Linq =
     static member min (e:seq<Nullable<int>>)           = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
     static member min (e:seq<Nullable<int64>>)         = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
     static member inline min (e:seq<'T>) = Seq.min e
-                                                              
+            
     static member max (e:seq<float>)                   = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
     static member max (e:seq<decimal>)                 = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
     static member max (e:seq<int>)                     = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
@@ -102,10 +147,11 @@ type Linq =
     static member inline max (e:seq<'T>) = Seq.max e
 
     // polyfill
+    static member inline minBy (projection:'T->'U) (source:seq<'T>) = Seq.minBy projection source
+    static member inline maxBy (projection:'T->'U) (source:seq<'T>) : 'T = Seq.maxBy projection source
 
     static member inline allPairs (source1:seq<'T1>) (source2:seq<'T2>) : seq<'T1*'T2> = Seq.allPairs source1 source2
     static member inline append (source1:seq<'T>) (source2:seq<'T>) : seq<'T> = Seq.append source1 source2
-    static member inline averageBy (projection:'T -> ^U) (source:seq<'T>) : 'U = Seq.averageBy projection source
     static member inline cache (source:seq<'T>) : seq<'T>= Seq.cache source
     static member inline cast (source:System.Collections.IEnumerable) : seq<'T> = Seq.cast source
     static member inline choose (chooser:'T -> 'U option) (source:seq<'T>) : seq<'U> = Seq.choose chooser source
@@ -147,8 +193,6 @@ type Linq =
     static member inline mapFoldBack (mapping:'T->'State->'Result*'State) (source:seq<'T>) (state:'State) : seq<'Result> * 'State = Seq.mapFoldBack mapping source state
     static member inline map3 (mapping:'T1->'T2->'T3->'U) (source1:seq<'T1>) (source2:seq<'T2>) (source3:seq<'T3>) : seq<'U> = Seq.map3 mapping source1 source2 source3
     static member inline mapi2 (mapping:int->'T1->'T2->'U) (source1:seq<'T1>) (source2:seq<'T2>) : seq<'U> = Seq.mapi2 mapping source1 source2
-    static member inline maxBy (projection:'T->'U) (source:seq<'T>) : 'T = Seq.maxBy projection source
-    static member inline minBy (projection:'T->'U) (source:seq<'T>) = Seq.minBy projection source
     static member inline ofArray (source:array<'T>) : seq<'T> = Seq.ofArray source
     static member inline ofList (source:list<'T>) : seq<'T> = Seq.ofList source
     static member inline pairwise (source:seq<'T>) : seq<'T * 'T> = Seq.pairwise source
@@ -168,7 +212,6 @@ type Linq =
     static member inline sortBy (projection:'T->'Key) (source:seq<'T>) : seq<'T> = Seq.sortBy projection source
     static member inline sortDescending (source:seq<'T>) : seq<'T> = Seq.sortDescending source
     static member inline sortByDescending (projection:'T->'Key) (source:seq<'T>) : seq<'T> = Seq.sortByDescending projection source
-    static member inline sumBy (projection:'T -> ^U) (source:seq<'T>) : ^U = Seq.sumBy projection source
     static member inline tail (source:seq<'T>) : seq<'T> = Seq.tail source
     static member inline toArray (source:seq<'T>) : 'T[] = Seq.toArray source
     static member inline toList (source:seq<'T>) : 'T list = Seq.toList source
