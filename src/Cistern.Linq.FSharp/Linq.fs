@@ -7,6 +7,9 @@ open System
 open System.Runtime.CompilerServices
 
 module Linq =
+    [<Literal>]
+    let internal exceptionSource = "Cistern.Linq"
+
     let collect (f:'T->#seq<'U>) (e:seq<'T>) : seq<'U> =
         if isNull e then
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
@@ -31,13 +34,17 @@ module Linq =
 
     let inline filter (f:'a->bool) (e:seq<'a>) : seq<'a> = e.Where f
 
+    let inline find (predicate:'T->bool) (source:seq<'T>) = try source.First (fun x -> predicate x) with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (System.Collections.Generic.KeyNotFoundException("An index satisfying the predicate was not found in the collection.", e))
+
     let inline fold (f:'s->'a->'s) seed (e:seq<'a>) = e.Aggregate (seed, fun a c -> f a c)
 
     let inline forall (f:'a->bool) (e:seq<'a>) = e.All (fun x -> f x)
 
-    let head (e:seq<'a>) = try e.First () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    let head (e:seq<'a>) = try e.First () with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (ArgumentException(e.Message, e))
 
     let isEmpty (e:seq<'a>) = not (e.Any ())
+
+    let last (source:seq<'T>) : 'T =  try source.Last () with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
 
     let length (e:seq<'a>) = e.Count ()
 
@@ -45,13 +52,25 @@ module Linq =
 
     let inline mapi (f:int->'a->'b) (e:seq<'a>) = e.Select (fun a idx -> f idx a)
 
-    let inline reduce (f:'a->'a->'a) (e:seq<'a>) = try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    let ofArray (source:array<'T>) : seq<'T> = upcast Consumables.Array(source, 0, source.Length, Links.Identity.Instance)
+    
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    let ofList (source:list<'T>) : seq<'T> = upcast Consumables.Enumerable<_,_,_,_>(TypedEnumerables.FSharpListEnumerable<_> source, Links.Identity.Instance)
+
+    let inline reduce (f:'a->'a->'a) (e:seq<'a>) = try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
 
     let take count (e:seq<'a>) = e.Take count
 
     let inline takeWhile (f:'a->bool) (e:seq<'a>) = e.TakeWhile f
 
     let inline takeWhilei (f:int->'a->bool) (e:seq<'a>) = e.TakeWhile (fun a idx -> f idx a)
+
+    let toArray (source:seq<'T>) : 'T[] = source.ToArray ()
+
+    let toList (source:seq<'T>) : 'T list = List.ofSeq source
+
+    let truncate (count:int) (source:seq<'T>) : seq<'T> = source.Take count
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Unfold (f, seed, Links.Identity.Instance) :> seq<'T>
@@ -92,16 +111,16 @@ type Linq =
         | ValueSome sum -> sum
         | ValueNone -> Seq.sumBy projection source
                                                               
-    static member average (e:seq<float>)               = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<float32>)             = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<decimal>)             = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<int>)                 = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<int64>)               = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<Nullable<float>>)     = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<Nullable<float32>>)   = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<Nullable<decimal>>)   = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<Nullable<int>>)       = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<Nullable<int64>>)     = try e.Average () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<float>)               = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<float32>)             = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<decimal>)             = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<int>)                 = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<int64>)               = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<float>>)     = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<float32>>)   = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<decimal>>)   = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<int>>)       = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<int64>>)     = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
     static member inline average (source:seq<(^T)>) : 'T = Seq.average source
     
     static member tryLinqGenericAverage (source:seq<('T)>) : ValueOption<'T> = 
@@ -122,28 +141,28 @@ type Linq =
         | ValueSome average -> average
         | ValueNone -> Seq.averageBy projection source
                                                               
-    static member min (e:seq<float>)                   = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<float32>)                 = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<decimal>)                 = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<int>)                     = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<int64>)                   = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<Nullable<float>>)         = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<Nullable<float32>>)       = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<Nullable<decimal>>)       = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<Nullable<int>>)           = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<Nullable<int64>>)         = try e.Min () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<float>)                   = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<float32>)                 = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<decimal>)                 = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<int>)                     = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<int64>)                   = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<Nullable<float>>)         = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<Nullable<float32>>)       = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<Nullable<decimal>>)       = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<Nullable<int>>)           = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member min (e:seq<Nullable<int64>>)         = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
     static member inline min (e:seq<'T>) = Seq.min e
             
-    static member max (e:seq<float>)                   = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<decimal>)                 = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<int>)                     = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<int64>)                   = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<float32>)                 = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<Nullable<float>>)         = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<Nullable<float32>>)       = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<Nullable<decimal>>)       = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<Nullable<int>>)           = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<Nullable<int64>>)         = try e.Max () with :? InvalidOperationException as e -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<float>)                   = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<decimal>)                 = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<int>)                     = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<int64>)                   = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<float32>)                 = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<Nullable<float>>)         = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<Nullable<float32>>)       = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<Nullable<decimal>>)       = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<Nullable<int>>)           = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member max (e:seq<Nullable<int64>>)         = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
     static member inline max (e:seq<'T>) = Seq.max e
 
     // polyfill
@@ -166,7 +185,7 @@ type Linq =
     //static member inline empty () : seq<'T> = Seq.empty<'T>
     static member inline except (itemsToExclude:seq<'T>) (source:seq<'T>) : seq<'T> = Seq.except itemsToExclude source
     static member inline exists2 (predicate:'T1->'T2->bool) (source1:seq<'T1>) (source2:seq<'T2>) : bool = Seq.exists2 predicate source1 source2
-    static member inline find (predicate:'T->bool) (source:seq<'T>) = Seq.find predicate source
+    
     static member inline findBack (predicate:'T->bool) (source:seq<'T>) = Seq.findBack predicate source
     static member inline findIndex (predicate:'T->bool) (source:seq<'T>) = Seq.findIndex predicate source
     static member inline findIndexBack (predicate:'T->bool) (source:seq<'T>) = Seq.findIndexBack predicate source
@@ -176,7 +195,6 @@ type Linq =
     static member inline forall2 (predicate:'T1->'T2->bool) (source1:seq<'T1>) (source2:seq<'T2>) = Seq.forall2 predicate source1 source2
     static member inline groupBy (projection:'T->'Key) (source:seq<'T>) = Seq.groupBy projection source
     static member inline tryHead (source:seq<'T>) : option<'T> = Seq.tryHead source
-    static member inline last (source:seq<'T>) : 'T = Seq.last source
     static member inline tryLast (source:seq<'T>) : option<'T> = Seq.tryLast source
     static member inline exactlyOne (source:seq<'T>) : 'T = Seq.exactlyOne source
     static member inline tryExactlyOne (source:seq<'T>) : option<'T> = Seq.tryExactlyOne source
@@ -193,8 +211,6 @@ type Linq =
     static member inline mapFoldBack (mapping:'T->'State->'Result*'State) (source:seq<'T>) (state:'State) : seq<'Result> * 'State = Seq.mapFoldBack mapping source state
     static member inline map3 (mapping:'T1->'T2->'T3->'U) (source1:seq<'T1>) (source2:seq<'T2>) (source3:seq<'T3>) : seq<'U> = Seq.map3 mapping source1 source2 source3
     static member inline mapi2 (mapping:int->'T1->'T2->'U) (source1:seq<'T1>) (source2:seq<'T2>) : seq<'U> = Seq.mapi2 mapping source1 source2
-    static member inline ofArray (source:array<'T>) : seq<'T> = Seq.ofArray source
-    static member inline ofList (source:list<'T>) : seq<'T> = Seq.ofList source
     static member inline pairwise (source:seq<'T>) : seq<'T * 'T> = Seq.pairwise source
     static member inline permute (indexMap:int->int) (source:seq<'T>) : seq<'T> = Seq.permute indexMap source
     static member inline pick (chooser:'T->'U option) (source:seq<'T>) : 'U = Seq.pick chooser source
@@ -213,8 +229,6 @@ type Linq =
     static member inline sortDescending (source:seq<'T>) : seq<'T> = Seq.sortDescending source
     static member inline sortByDescending (projection:'T->'Key) (source:seq<'T>) : seq<'T> = Seq.sortByDescending projection source
     static member inline tail (source:seq<'T>) : seq<'T> = Seq.tail source
-    static member inline toArray (source:seq<'T>) : 'T[] = Seq.toArray source
-    static member inline toList (source:seq<'T>) : 'T list = Seq.toList source
     static member inline tryFind (predicate:'T->bool) (source:seq<'T>) : 'T option = Seq.tryFind predicate source
     static member inline tryFindBack (predicate:'T->bool) (source:seq<'T>) : 'T option = Seq.tryFindBack predicate source
     static member inline tryFindIndex  (predicate:'T->bool) (source:seq<'T>) : int option = Seq.tryFindIndex predicate source
@@ -222,7 +236,6 @@ type Linq =
     static member inline tryFindIndexBack  (predicate:'T->bool) (source:seq<'T>) : int option = Seq.tryFindIndexBack predicate source
     static member inline tryPick (chooser:'T -> 'U option) (source:seq<'T>) : 'U option = Seq.tryPick chooser source
     static member inline transpose (source:seq<'Collection>) : seq<seq<'T>> = Seq.transpose source
-    static member inline truncate (count:int) (source:seq<'T>) : seq<'T> = Seq.truncate count source
     static member inline windowed (windowSize:int) (source:seq<'T>) : seq<'T[]> = Seq.windowed windowSize source
     static member inline zip (source1:seq<'T1>) (source2:seq<'T2>) : seq<'T1*'T2> = Seq.zip source1 source2
     static member inline zip3 (source1:seq<'T1>) (source2:seq<'T2>) (source3:seq<'T3>) : seq<'T1 * 'T2 * 'T3> = Seq.zip3 source1 source2 source3
