@@ -46,7 +46,7 @@ module Linq =
     let init (count:int) (initializer:int->'T) : seq<'T> =
         if count < 0 then raise (ArgumentException ())
         elif count = 0 then upcast Consumables.Empty<'T>.Instance
-        else upcast Consumables.Init (count, initializer, Links.Identity.Instance)
+        else upcast Consumables.Enumerable (Consumables.InitEnumerable(count, initializer), Links.Identity.Instance)
 
     let isEmpty (e:seq<'a>) = not (e.Any ())
 
@@ -79,10 +79,10 @@ module Linq =
     let truncate (count:int) (source:seq<'T>) : seq<'T> = source.Take count
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Unfold (f, seed, Links.Identity.Instance) :> seq<'T>
+    let unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Enumerable (Consumables.UnfoldEnumerable(f, seed), Links.Identity.Instance) :> seq<'T>
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let unfoldV (f:'State->voption<'T*'State>) (seed:'State) : seq<'T> = Consumables.UnfoldV (f, seed, Links.Identity.Instance) :> seq<'T>
+    let unfoldV (f:'State->voption<'T*'State>) (seed:'State) : seq<'T> = Consumables.Enumerable (Consumables.UnfoldVEnumerable(f, seed), Links.Identity.Instance) :> seq<'T>
 
     let inline where (predicate:'T->bool) (source:seq<'T>) : seq<'T> = source.Where predicate
 
