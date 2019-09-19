@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Consumables\pairwise.fs" />
     <Compile Include="Consumables\unfoldV.fs" />
     <Compile Include="Consumables\unfold.fs" />
     <Compile Include="Consumables\init.fs" />

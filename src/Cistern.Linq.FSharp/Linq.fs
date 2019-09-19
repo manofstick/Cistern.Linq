@@ -66,7 +66,10 @@ module Linq =
     let ofArray (source:array<'T>) : seq<'T> = upcast Consumables.Array(source, 0, source.Length, Links.Identity.Instance)
     
     [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let ofList (source:list<'T>) : seq<'T> = upcast Consumables.Enumerable<_,_,_,_>(TypedEnumerables.FSharpListEnumerable<_> source, Links.Identity.Instance)
+    let ofList (source:list<'T>) : seq<'T> = upcast Consumables.Enumerable(TypedEnumerables.FSharpListEnumerable<_> source, Links.Identity.Instance)
+
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    let pairwise (source:seq<'T>) : seq<'T * 'T> = upcast Consumables.Enumerable(Consumables.PairwiseEnumerable source, Links.Identity.Instance)
 
     let inline reduce (f:'a->'a->'a) (e:seq<'a>) = try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
 
@@ -219,7 +222,6 @@ type Linq =
     static member inline mapFoldBack (mapping:'T->'State->'Result*'State) (source:seq<'T>) (state:'State) : seq<'Result> * 'State = Seq.mapFoldBack mapping source state
     static member inline map3 (mapping:'T1->'T2->'T3->'U) (source1:seq<'T1>) (source2:seq<'T2>) (source3:seq<'T3>) : seq<'U> = Seq.map3 mapping source1 source2 source3
     static member inline mapi2 (mapping:int->'T1->'T2->'U) (source1:seq<'T1>) (source2:seq<'T2>) : seq<'U> = Seq.mapi2 mapping source1 source2
-    static member inline pairwise (source:seq<'T>) : seq<'T * 'T> = Seq.pairwise source
     static member inline permute (indexMap:int->int) (source:seq<'T>) : seq<'T> = Seq.permute indexMap source
     static member inline pick (chooser:'T->'U option) (source:seq<'T>) : 'U = Seq.pick chooser source
     static member inline readonly (source:seq<'T>) : seq<'T> = Seq.readonly source
