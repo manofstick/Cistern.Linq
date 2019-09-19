@@ -11,9 +11,9 @@ type InitEnumerator<'State, 'T> =
     val mutable current : 'T
 
     new (count:int, initializer:int->'T) = {
-         count = count
+         count = count-1
          initializer = initializer
-         index = 0
+         index = -1
          current = Unchecked.defaultof<_>
     }
 
@@ -23,8 +23,8 @@ type InitEnumerator<'State, 'T> =
         member this.MoveNext (): bool = 
             if this.index >= this.count then false
             else
-                this.current <- this.initializer this.index
                 this.index <- this.index + 1
+                this.current <- this.initializer this.index
                 true
 
         member __.Reset () = () 

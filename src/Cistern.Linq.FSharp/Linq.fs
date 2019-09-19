@@ -48,6 +48,10 @@ module Linq =
         elif count = 0 then upcast Consumables.Empty<'T>.Instance
         else upcast Consumables.Enumerable (Consumables.InitEnumerable(count, initializer), Links.Identity.Instance)
 
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    let initInfinite (initializer:int->'T) : seq<'T> =
+        upcast Consumables.Enumerable (Consumables.InitEnumerable(Int32.MaxValue, initializer), Links.Identity.Instance)
+
     let isEmpty (e:seq<'a>) = not (e.Any ())
 
     let last (source:seq<'T>) : 'T =  try source.Last () with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
@@ -87,6 +91,8 @@ module Linq =
     let inline where (predicate:'T->bool) (source:seq<'T>) : seq<'T> = source.Where predicate
 
 type Linq =
+    static member distinct (source:seq<'T>) : seq<'T> = source.Distinct HashIdentity.Structural
+
     static member sum (e:seq<float>)                   = e.Sum ()
     static member sum (e:seq<float32>)                 = e.Sum ()
     static member sum (e:seq<decimal>)                 = e.Sum ()
@@ -185,10 +191,8 @@ type Linq =
     static member inline contains (value:'T) (source:seq<'T>) : bool = Seq.contains value source
     static member inline countBy (projection:'T->'Key) (source:seq<'T>) : seq<'Key*int> = Seq.countBy projection source
     static member inline delay (generator:unit->seq<'T>) : seq<'T> = Seq.delay generator
-    static member inline distinct (source:seq<'T>) : seq<'T> = Seq.distinct source
     static member inline distinctBy (projection:'T->'Key) (source:seq<'T>) : seq<'T> = Seq.distinctBy projection source
     static member inline splitInto (count:int) (source:seq<'T>) : seq<array<'T>> = Seq.splitInto count source
-    //static member inline empty () : seq<'T> = Seq.empty<'T>
     static member inline except (itemsToExclude:seq<'T>) (source:seq<'T>) : seq<'T> = Seq.except itemsToExclude source
     static member inline exists2 (predicate:'T1->'T2->bool) (source1:seq<'T1>) (source2:seq<'T2>) : bool = Seq.exists2 predicate source1 source2
     
@@ -205,7 +209,6 @@ type Linq =
     static member inline exactlyOne (source:seq<'T>) : 'T = Seq.exactlyOne source
     static member inline tryExactlyOne (source:seq<'T>) : option<'T> = Seq.tryExactlyOne source
     static member inline indexed (source:seq<'T>) : seq<int*'T> = Seq.indexed source
-    static member inline initInfinite (initializer:int->'T) : seq<'T> = Seq.initInfinite initializer
     static member inline item (index:int) (source:seq<'T>) : 'T = Seq.item index source
     static member inline iter (action:'T->unit) (source:seq<'T>) : unit = Seq.iter action source
     static member inline iteri (action:int->'T->unit) (source:seq<'T>) : unit = Seq.iteri action source
