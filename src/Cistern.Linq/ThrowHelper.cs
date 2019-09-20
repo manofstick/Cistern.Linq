@@ -46,6 +46,8 @@ namespace Cistern.Linq
                 case ExceptionArgument.second: return nameof(ExceptionArgument.second);
                 case ExceptionArgument.selector: return nameof(ExceptionArgument.selector);
                 case ExceptionArgument.source: return nameof(ExceptionArgument.source);
+                case ExceptionArgument.source1: return nameof(ExceptionArgument.source1);
+                case ExceptionArgument.source2: return nameof(ExceptionArgument.source2);
                 default:
                     Debug.Fail("The ExceptionArgument value is not defined.");
                     return string.Empty;
@@ -72,5 +74,7 @@ namespace Cistern.Linq
         second,
         selector,
         source,
+        source1,
+        source2,
     }
 }
