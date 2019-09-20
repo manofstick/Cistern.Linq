@@ -36,10 +36,12 @@ type ChunkBySizeEnumerator<'T> =
                         if this.enumerator.MoveNext () then
                             this.current.[idx] <- this.enumerator.Current
                             idx <- idx + 1
+                        elif idx = 0 then
+                            this.current <- System.Array.Empty ()
+                            this.running <- false
                         else
                             System.Array.Resize (&this.current, idx)
                             this.complete <- true
-                            this.running <- idx > 0
             this.running
 
         member this.Reset () = this.enumerator.Reset ()
