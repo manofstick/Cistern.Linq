@@ -12,20 +12,21 @@ module Linq =
 
     let allPairs (source1:seq<'T1>) (source2:seq<'T2>) : seq<'T1*'T2> =
         if isNull source1 then
-            ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source1);
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source1
         if isNull source2 then
-            ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source2);
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source2
 
         upcast Consumables.Enumerable(Consumables.AllPairsEnumerable (source1, source2), Links.Identity.Instance)
 
-    [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let zip (source1:seq<'T1>) (source2:seq<'T2>) : seq<'T1*'T2> =
-        if isNull source1 then
-            ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source1);
-        if isNull source2 then
-            ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source2);
+    let append (source1:seq<'T>) (source2:seq<'T>) : seq<'T> = source1.Concat source2
 
-        upcast Consumables.Enumerable(Consumables.ZipEnumerable (source1, source2), Links.Identity.Instance)
+    let chunkBySize (chunkSize:int) (source:seq<'T>) : seq<array<'T>> = 
+        if chunkSize <= 0 then
+            ThrowHelper.ThrowArgumentOutOfRangeException ExceptionArgument.chunkSize
+        if isNull source then
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
+
+        upcast Consumables.Enumerable(Consumables.ChunkBySizeEnumerable (source, chunkSize), Links.Identity.Instance)
 
     let collect (f:'T->#seq<'U>) (e:seq<'T>) : seq<'U> =
         if isNull e then
@@ -106,6 +107,15 @@ module Linq =
     let unfoldV (f:'State->voption<'T*'State>) (seed:'State) : seq<'T> = Consumables.Enumerable (Consumables.UnfoldVEnumerable(f, seed), Links.Identity.Instance) :> seq<'T>
 
     let inline where (predicate:'T->bool) (source:seq<'T>) : seq<'T> = source.Where predicate
+
+    [<MethodImpl(MethodImplOptions.NoInlining)>]
+    let zip (source1:seq<'T1>) (source2:seq<'T2>) : seq<'T1*'T2> =
+        if isNull source1 then
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source1
+        if isNull source2 then
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source2
+
+        upcast Consumables.Enumerable(Consumables.ZipEnumerable (source1, source2), Links.Identity.Instance)
 
 type Linq =
     static member distinct (source:seq<'T>) : seq<'T> = source.Distinct HashIdentity.Structural
@@ -198,11 +208,9 @@ type Linq =
     static member inline minBy (projection:'T->'U) (source:seq<'T>) = Seq.minBy projection source
     static member inline maxBy (projection:'T->'U) (source:seq<'T>) : 'T = Seq.maxBy projection source
 
-    static member inline append (source1:seq<'T>) (source2:seq<'T>) : seq<'T> = Seq.append source1 source2
     static member inline cache (source:seq<'T>) : seq<'T>= Seq.cache source
     static member inline cast (source:System.Collections.IEnumerable) : seq<'T> = Seq.cast source
     static member inline choose (chooser:'T -> 'U option) (source:seq<'T>) : seq<'U> = Seq.choose chooser source
-    static member inline chunkBySize (chunkSize:int) (source:seq<'T>) : seq<array<'T>> = Seq.chunkBySize chunkSize source
     static member inline compareWith (comparer:'T->'T->int) (source1:seq<'T>) (source2:seq<'T>) : int = Seq.compareWith comparer source1 source2
     static member inline contains (value:'T) (source:seq<'T>) : bool = Seq.contains value source
     static member inline countBy (projection:'T->'Key) (source:seq<'T>) : seq<'Key*int> = Seq.countBy projection source

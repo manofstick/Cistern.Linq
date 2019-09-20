@@ -76,5 +76,6 @@ namespace Cistern.Linq
         source,
         source1,
         source2,
+        chunkSize,
     }
 }
