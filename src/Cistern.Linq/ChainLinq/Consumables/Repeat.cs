@@ -48,10 +48,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         public override object TailLink => IsIdentity ? this : base.TailLink;
 
-        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(ConsumableCons<U> consumable, Func<U, V> selector) =>
+        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(ConsumableCons<U> _, Func<U, V> selector) =>
             (Consumable<V>)(object)new SelectEnumerable<Consume.Repeat.RepeatEnumerable<T>, Consume.Repeat.RepeatEnumerator<T>, T, V>(new Consume.Repeat.RepeatEnumerable<T>(_element, _count), (Func<T, V>)(object)selector);
 
-        public Consumable<U> MergeWhere(ConsumableCons<U> consumable, Func<U, bool> predicate) =>
+        public Consumable<U> MergeWhere(ConsumableCons<U> _, Func<U, bool> predicate) =>
             (Consumable<U>)(object)new WhereEnumerable<Consume.Repeat.RepeatEnumerable<T>, Consume.Repeat.RepeatEnumerator<T>, T>(new Consume.Repeat.RepeatEnumerable<T>(_element, _count), (Func<T, bool>)(object)predicate);
     }
 }
