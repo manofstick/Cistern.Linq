@@ -63,6 +63,12 @@ module Linq =
 
     let head (e:seq<'a>) = try e.First () with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (ArgumentException(e.Message, e))
 
+    let indexed (source:seq<'T>) : seq<int*'T> =
+        if isNull source then
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
+
+        upcast Utils.PushTUTransform (source, Cistern.Linq.FSharp.Links.Indexed.Instance)
+
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let init (count:int) (initializer:int->'T) : seq<'T> =
         if count < 0 then raise (ArgumentException ())
@@ -237,7 +243,6 @@ type Linq =
     static member inline tryLast (source:seq<'T>) : option<'T> = Seq.tryLast source
     static member inline exactlyOne (source:seq<'T>) : 'T = Seq.exactlyOne source
     static member inline tryExactlyOne (source:seq<'T>) : option<'T> = Seq.tryExactlyOne source
-    static member inline indexed (source:seq<'T>) : seq<int*'T> = Seq.indexed source
     static member inline item (index:int) (source:seq<'T>) : 'T = Seq.item index source
     static member inline iter (action:'T->unit) (source:seq<'T>) : unit = Seq.iter action source
     static member inline iteri (action:int->'T->unit) (source:seq<'T>) : unit = Seq.iteri action source
