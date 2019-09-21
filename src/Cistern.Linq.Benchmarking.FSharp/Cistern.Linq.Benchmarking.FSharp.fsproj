@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="Vanilla.fs" />
     <Compile Include="ChunkBySize.fs" />
+    <Compile Include="Pairwise.fs" />
     <Compile Include="Unfold.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
