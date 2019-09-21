@@ -17,13 +17,15 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         public AverageGeneric() : base(default) { }
 
-        public override void ChainComplete()
+        public override ChainStatus ChainComplete(ChainStatus status)
         {
             if (counter == 0)
             {
                 ThrowHelper.ThrowNoElementsException();
             }
             Result = default(Maths).DivLong(accumulator, counter);
+
+            return ChainStatus.Stop;
         }
 
         ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
@@ -204,12 +206,14 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         public AverageGenericNullable() : base(default) { }
 
-        public override void ChainComplete()
+        public override ChainStatus ChainComplete(ChainStatus status)
         {
             if (counter > 0)
             {
                 Result = default(Maths).DivLong(accumulator, counter);
             }
+
+            return ChainStatus.Stop;
         }
 
         ChainStatus Optimizations.IHeadStart<T?>.Execute(ReadOnlySpan<T?> source)

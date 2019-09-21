@@ -354,7 +354,7 @@ namespace Cistern.Linq.ChainLinq
             {
                 if (array.Length == 0)
                 {
-                    try { consumer.ChainComplete(); }
+                    try { consumer.ChainComplete(ChainStatus.Filter); }
                     finally { consumer.ChainDispose(); }
                 }
                 else
@@ -366,7 +366,7 @@ namespace Cistern.Linq.ChainLinq
             {
                 if (list.Count == 0)
                 {
-                    try { consumer.ChainComplete(); }
+                    try { consumer.ChainComplete(ChainStatus.Filter); }
                     finally { consumer.ChainDispose(); }
                 }
                 else

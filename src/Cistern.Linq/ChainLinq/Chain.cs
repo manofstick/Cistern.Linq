@@ -6,7 +6,7 @@ namespace Cistern.Linq.ChainLinq
 {
     abstract class Chain
     {
-        public abstract void ChainComplete();
+        public abstract ChainStatus ChainComplete(ChainStatus status);
         public abstract void ChainDispose();
     }
 
@@ -28,6 +28,9 @@ namespace Cistern.Linq.ChainLinq
 
         public static bool IsFlowing(this ChainStatus result) =>
             (result & ChainStatus.Flow) == ChainStatus.Flow;
+
+        public static bool NotStoppedAndFlowing(this ChainStatus result) =>
+            result.IsFlowing() && !result.IsStopped();
     }
 
     abstract class Chain<T> : Chain
@@ -50,7 +53,7 @@ namespace Cistern.Linq.ChainLinq
         protected ChainStatus Next(U u) =>
             next.ProcessNext(u);
 
-        public override void ChainComplete() => next.ChainComplete();
+        public override ChainStatus ChainComplete(ChainStatus status) => next.ChainComplete(status);
         public override void ChainDispose() => next.ChainDispose();
     }
 
@@ -58,7 +61,7 @@ namespace Cistern.Linq.ChainLinq
 
     abstract class Consumer<T> : Chain<T>
     {
-        public override void ChainComplete() { }
+        public override ChainStatus ChainComplete(ChainStatus status) => ChainStatus.Stop;
         public override void ChainDispose() { }
     }
 

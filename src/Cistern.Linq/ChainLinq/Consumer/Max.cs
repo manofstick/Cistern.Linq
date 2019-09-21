@@ -40,12 +40,14 @@ namespace Cistern.Linq.ChainLinq.Consumer
         public MaxGeneric() : base(default(Maths).MaxInit) =>
             _noData = true;
 
-        public override void ChainComplete()
+        public override ChainStatus ChainComplete(ChainStatus status)
         {
             if (_noData)
             {
                 ThrowHelper.ThrowNoElementsException();
             }
+
+            return ChainStatus.Stop;
         }
 
         ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
@@ -401,12 +403,14 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
-        public override void ChainComplete()
+        public override ChainStatus ChainComplete(ChainStatus status)
         {
             if (_first)
             {
                 ThrowHelper.ThrowNoElementsException();
             }
+
+            return ChainStatus.Stop;
         }
     }
 

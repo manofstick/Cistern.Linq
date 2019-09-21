@@ -6,7 +6,7 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
     {
         private readonly int _end;
         private Chain<int> _chain = null;
-
+        bool _completed;
         int _current;
 
         internal override Chain StartOfChain => _chain;
@@ -15,6 +15,7 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
         {
             Debug.Assert(count > 0);
 
+            _completed = false;
             _current = start;
             _end = unchecked(start + count);
 
@@ -23,7 +24,7 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 
         public override void ChainDispose()
         {
-            base.ChainComplete();
+            base.ChainDispose();
             _chain = null;
         }
 
@@ -32,8 +33,12 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
         tryAgain:
             if (_current == _end || status.IsStopped())
             {
+                if (!_completed && _chain.ChainComplete(status & ~ChainStatus.Flow).NotStoppedAndFlowing())
+                {
+                    _completed = true;
+                    return true;
+                }
                 Result = default;
-                _chain.ChainComplete();
                 return false;
             }
 

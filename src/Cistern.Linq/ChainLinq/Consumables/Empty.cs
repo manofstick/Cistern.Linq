@@ -24,7 +24,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         {
             try
             {
-                consumer.ChainComplete();
+                consumer.ChainComplete(ChainStatus.Filter);
             }
             finally
             {

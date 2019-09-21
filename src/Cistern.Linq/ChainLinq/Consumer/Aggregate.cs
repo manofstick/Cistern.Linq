@@ -20,13 +20,15 @@ namespace Cistern.Linq.ChainLinq.Consumer
         public override ChainStatus ProcessNext(T input)
         {
             _accumulate = _func(_accumulate, input);
+
             return ChainStatus.Flow;
         }
 
-        public override void ChainComplete()
+        public override ChainStatus ChainComplete(ChainStatus status)
         {
             Result = _resultSelector(_accumulate);
-            base.ChainComplete();
+
+            return ChainStatus.Stop;
         }
 
         ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)

@@ -26,13 +26,17 @@ namespace Cistern.Linq.ChainLinq.Consumables
         {
             try
             {
+                var status = ChainStatus.Flow;
                 var next = this;
                 do
                 {
-                    consumer.ProcessNext(next._element);
+                    status = consumer.ProcessNext(next._element);
+                    if (status.IsStopped())
+                        break;
                     next = next._previous;
                 } while (next != null);
-                consumer.ChainComplete();
+
+                consumer.ChainComplete(status & ~ChainStatus.Flow);
             }
             finally
             {

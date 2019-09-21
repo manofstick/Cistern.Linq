@@ -27,8 +27,9 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 
         const int Initialization = 0;
         const int ProcessGrouping = 1;
-        const int Finished = 2;
-        const int PostFinished = 3;
+        const int Completing = 2;
+        const int Finished = 3;
+        const int PostFinished = 4;
 
         public override bool MoveNext()
         {
@@ -40,8 +41,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 
                     if (_lastGrouping == null)
                     {
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
                     _g = _lastGrouping;
 
@@ -53,8 +54,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     {
                         _lastGrouping = null;
                         _g = null;
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
 
                     _g = _g._next;
@@ -71,9 +72,16 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     Debug.Assert(_state == ProcessGrouping);
                     goto case ProcessGrouping;
 
+                case Completing:
+                    if (_chain.ChainComplete(status & ~ChainStatus.Flow).NotStoppedAndFlowing())
+                    {
+                        _state = Finished;
+                        return true;
+                    }
+                    goto case Finished;
+
                 case Finished:
-                    Result = default(TResult);
-                    _chain.ChainComplete();
+                    Result = default;
                     _state = PostFinished;
                     return false;
 
@@ -107,8 +115,9 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 
         const int Initialization = 0;
         const int ProcessGrouping = 1;
-        const int Finished = 2;
-        const int PostFinished = 3;
+        const int Completing = 2;
+        const int Finished = 3;
+        const int PostFinished = 4;
 
         public override bool MoveNext()
         {
@@ -120,8 +129,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 
                     if (_lastGrouping == null)
                     {
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
                     _g = _lastGrouping;
 
@@ -133,8 +142,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     {
                         _lastGrouping = null;
                         _g = null;
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
 
                     _g = _g._next;
@@ -151,9 +160,16 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     Debug.Assert(_state == ProcessGrouping);
                     goto case ProcessGrouping;
 
+                case Completing:
+                    if (_chain.ChainComplete(status & ~ChainStatus.Flow).NotStoppedAndFlowing())
+                    {
+                        _state = Finished;
+                        return true;
+                    }
+                    goto case Finished;
+
                 case Finished:
-                    base.Result = default(Result);
-                    _chain.ChainComplete();
+                    base.Result = default;
                     _state = PostFinished;
                     return false;
 

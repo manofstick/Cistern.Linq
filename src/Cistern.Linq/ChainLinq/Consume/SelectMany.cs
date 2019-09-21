@@ -58,6 +58,8 @@ namespace Cistern.Linq.ChainLinq.Consume
             private readonly Chain<T> _chainT;
             private UnknownEnumerable.ChainConsumer<T> _inner;
 
+            public ChainStatus Status { get; private set; } = ChainStatus.Flow;
+
             public SelectManyOuterConsumer(Chain<T> chainT) : base(default) =>
                 _chainT = chainT;
 
@@ -65,36 +67,36 @@ namespace Cistern.Linq.ChainLinq.Consume
             {
                 foreach (var s in source)
                 {
-                    var status = UnknownEnumerable.Consume(s, _chainT, ref _inner);
-                    if (status.IsStopped())
-                        return status;
+                    Status = UnknownEnumerable.Consume(s, _chainT, ref _inner);
+                    if (Status.IsStopped())
+                        break;
                 }
-                return ChainStatus.Flow;
+                return Status;
             }
 
             public override ChainStatus ProcessNext(Enumerable input) =>
-                UnknownEnumerable.Consume(input, _chainT, ref _inner);
+                Status = UnknownEnumerable.Consume(input, _chainT, ref _inner);
 
             ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.Select<S>(ReadOnlySpan<S> source, Func<S, IEnumerable<T>> selector)
             {
                 foreach (var s in source)
                 {
-                    var status = UnknownEnumerable.Consume(selector(s), _chainT, ref _inner);
-                    if (status.IsStopped())
-                        return status;
+                    Status = UnknownEnumerable.Consume(selector(s), _chainT, ref _inner);
+                    if (Status.IsStopped())
+                        break;
                 }
-                return ChainStatus.Flow;
+                return Status;
             }
 
             ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.Select<WEnumerable, Enumerator, S>(WEnumerable source, Func<S, IEnumerable<T>> selector)
             {
                 foreach (var s in source)
                 {
-                    var status = UnknownEnumerable.Consume(selector(s), _chainT, ref _inner);
-                    if (status.IsStopped())
-                        return status;
+                    Status = UnknownEnumerable.Consume(selector(s), _chainT, ref _inner);
+                    if (Status.IsStopped())
+                        break;
                 }
-                return ChainStatus.Flow;
+                return Status;
             }
 
             // Only Concat, Select and SelectIndexed are use for the outer part of SelectMany to collect the IEnumerable
@@ -113,6 +115,7 @@ namespace Cistern.Linq.ChainLinq.Consume
             readonly Chain<T> _chainT;
 
             SelectManyInnerConsumer<TSource, TCollection, T> _inner;
+            public ChainStatus Status { get; private set; }
 
             private SelectManyInnerConsumer<TSource, TCollection, T> GetInnerConsumer()
             {
@@ -126,26 +129,25 @@ namespace Cistern.Linq.ChainLinq.Consume
 
             public override ChainStatus ProcessNext((TSource, IEnumerable<TCollection>) input)
             {
-                var state = ChainStatus.Flow;
                 if (input.Item2 is Consumable<TCollection> consumable)
                 {
                     var consumer = GetInnerConsumer();
                     consumer.Source = input.Item1;
                     consumable.Consume(consumer);
-                    state = consumer.Result;
+                    Status = consumer.Result;
                 }
                 else if (input.Item2 is TCollection[] array)
                 {
                     if (_chainT is Optimizations.ITailEnd<T> optimized)
                     {
-                        state = optimized.SelectMany(input.Item1, array, _resultSelector);
+                        Status = optimized.SelectMany(input.Item1, array, _resultSelector);
                     }
                     else
                     {
                         foreach (var item in array)
                         {
-                            state = _chainT.ProcessNext(_resultSelector(input.Item1, item));
-                            if (state.IsStopped())
+                            Status = _chainT.ProcessNext(_resultSelector(input.Item1, item));
+                            if (Status.IsStopped())
                                 break;
                         }
                     }
@@ -154,8 +156,8 @@ namespace Cistern.Linq.ChainLinq.Consume
                 {
                     foreach (var item in list)
                     {
-                        state = _chainT.ProcessNext(_resultSelector(input.Item1, item));
-                        if (state.IsStopped())
+                        Status = _chainT.ProcessNext(_resultSelector(input.Item1, item));
+                        if (Status.IsStopped())
                             break;
                     }
                 }
@@ -163,12 +165,12 @@ namespace Cistern.Linq.ChainLinq.Consume
                 {
                     foreach (var item in input.Item2)
                     {
-                        state = _chainT.ProcessNext(_resultSelector(input.Item1, item));
-                        if (state.IsStopped())
+                        Status = _chainT.ProcessNext(_resultSelector(input.Item1, item));
+                        if (Status.IsStopped())
                             break;
                     }
                 }
-                return state;
+                return Status;
             }
         }
 
@@ -177,8 +179,11 @@ namespace Cistern.Linq.ChainLinq.Consume
         {
             try
             {
-                e.Consume(new SelectManyOuterConsumer<Enumerable, T>(chain));
-                chain.ChainComplete();
+                var outer = new SelectManyOuterConsumer<Enumerable, T>(chain);
+
+                e.Consume(outer);
+
+                chain.ChainComplete(outer.Status & ~ChainStatus.Flow);
             }
             finally
             {
@@ -190,8 +195,11 @@ namespace Cistern.Linq.ChainLinq.Consume
         {
             try
             {
-                e.Consume(new SelectManyOuterConsumer<TSource, TCollection, T>(resultSelector, chain));
-                chain.ChainComplete();
+                var outer = new SelectManyOuterConsumer<TSource, TCollection, T>(resultSelector, chain);
+
+                e.Consume(outer);
+
+                chain.ChainComplete(outer.Status & ~ChainStatus.Flow);
             }
             finally
             {

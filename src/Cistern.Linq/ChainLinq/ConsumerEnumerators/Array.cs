@@ -5,12 +5,14 @@
         private T[] _array;
         private readonly int _endIdx;
         private int _idx;
+        private bool _completed;
         private Chain<T> _chain = null;
 
         internal override Chain StartOfChain => _chain;
 
         public Array(T[] array, int start, int length, ILink<T, TResult> factory)
         {
+            _completed = false;
             _idx = start;
             checked { _endIdx = start + length; }
 
@@ -29,8 +31,13 @@
         tryAgain:
             if (_idx >= _endIdx || status.IsStopped())
             {
-                Result = default(TResult);
-                _chain.ChainComplete();
+                if (!_completed && _chain.ChainComplete(status & ~ChainStatus.Flow).NotStoppedAndFlowing())
+                {
+                    _completed = true;
+                    return true;
+                }
+
+                Result = default;
                 return false;
             }
 

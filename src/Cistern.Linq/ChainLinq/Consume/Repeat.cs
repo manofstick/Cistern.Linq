@@ -79,15 +79,18 @@ namespace Cistern.Linq.ChainLinq.Consume
         {
             try
             {
+                var status = ChainStatus.Flow;
+
                 if (count > MinSizeToCoverExecuteCosts && chain is Optimizations.IHeadStart<T> optimized)
                 {
-                    optimized.Execute<RepeatEnumerable<T>, RepeatEnumerator<T>>(new RepeatEnumerable<T>(element, count));
+                    status = optimized.Execute<RepeatEnumerable<T>, RepeatEnumerator<T>>(new RepeatEnumerable<T>(element, count));
                 }
                 else
                 {
-                    Pipeline(element, count, chain);
+                    status = Pipeline(element, count, chain);
                 }
-                chain.ChainComplete();
+
+                chain.ChainComplete(status & ~ChainStatus.Flow);
             }
             finally
             {
@@ -98,14 +101,16 @@ namespace Cistern.Linq.ChainLinq.Consume
         public static void Invoke<T, V>(T element, int count, ILink<T, V> composition, Chain<V> consumer) =>
             Invoke(element, count, composition.Compose(consumer));
 
-        private static void Pipeline<T>(T element, int count, Chain<T> chain)
+        private static ChainStatus Pipeline<T>(T element, int count, Chain<T> chain)
         {
+            var state = ChainStatus.Flow;
             for(var i=0; i < count; ++i)
             {
-                var state = chain.ProcessNext(element);
+                state = chain.ProcessNext(element);
                 if (state.IsStopped())
                     break;
             }
+            return state;
         }
 
     }

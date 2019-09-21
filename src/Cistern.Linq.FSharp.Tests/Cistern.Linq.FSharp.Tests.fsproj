@@ -20,6 +20,7 @@
     <Compile Include="LinqModule.fs" />
     <Compile Include="LinqModule2.fs" />
     <Compile Include="CollectionModulesConsistency.fs" />
+    <Compile Include="LinqInternalConsistency.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

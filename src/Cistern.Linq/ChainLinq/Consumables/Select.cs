@@ -22,8 +22,9 @@ namespace Cistern.Linq.ChainLinq.Consumables
             {
                 try
                 {
-                    optimized.Select(Underlying, Selector);
-                    consumer.ChainComplete();
+                    var status = optimized.Select(Underlying, Selector);
+
+                    consumer.ChainComplete(status & ~ChainStatus.Flow);
                 }
                 finally
                 {
@@ -90,12 +91,13 @@ namespace Cistern.Linq.ChainLinq.Consumables
             {
                 try
                 {
+                    var status = ChainStatus.Flow;
                     if (Underlying.TryGetSourceAsSpan(out var span))
-                        optimized.Select(span, Selector);
+                        status = optimized.Select(span, Selector);
                     else
-                        optimized.Select<TEnumerable, TEnumerator, T>(Underlying, Selector);
+                        status = optimized.Select<TEnumerable, TEnumerator, T>(Underlying, Selector);
 
-                    consumer.ChainComplete();
+                    consumer.ChainComplete(status & ~ChainStatus.Flow);
                 }
                 finally
                 {

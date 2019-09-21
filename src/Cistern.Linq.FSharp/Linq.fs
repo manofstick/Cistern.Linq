@@ -26,7 +26,8 @@ module Linq =
         if isNull source then
             ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
 
-        upcast Consumables.Enumerable(Consumables.ChunkBySizeEnumerable (source, chunkSize), Links.Identity.Instance)
+        upcast Utils.PushTUTransform (source, Cistern.Linq.FSharp.Links.ChunkBySize chunkSize)
+        //upcast Consumables.Enumerable(Consumables.ChunkBySizeEnumerable (source, chunkSize), Links.Identity.Instance)
 
     let collect (f:'T->#seq<'U>) (e:seq<'T>) : seq<'U> =
         if isNull e then

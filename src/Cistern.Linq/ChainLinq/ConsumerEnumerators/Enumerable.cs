@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
@@ -32,9 +33,10 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 
         const int ReadEnumerator = 0;
         const int ReadEnumeratorOnSelf = 1; // optimization for when chain is Identity
-        const int Finished = 2;
-        const int PostFinished = 3;
-        const int Initialization = 4;
+        const int Completing = 2;
+        const int Finished = 3;
+        const int PostFinished = 4;
+        const int Initialization = 5;
 
         public override bool MoveNext()
         {
@@ -47,8 +49,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     {
                         _enumerator.Dispose();
                         _enumerator = default;
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
 
                     status = _chain.ProcessNext(_enumerator.Current);
@@ -65,12 +67,14 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     {
                         _enumerator.Dispose();
                         _enumerator = default;
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
 
                     Result = (TResult)(object)_enumerator.Current; // should be no-op as TResult should equal T
                     return true;
+
+                case Completing: return MoveNext_Completing();
 
                 case Finished: return MoveNext_Finished();
 
@@ -78,10 +82,19 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
             }
         }
 
+        private bool MoveNext_Completing()
+        {
+            if (_chain.ChainComplete(status & ~ChainStatus.Flow).NotStoppedAndFlowing())
+            {
+                _state = Finished;
+                return true;
+            }
+            return MoveNext_Finished();
+        }
+
         private bool MoveNext_Finished()
         {
             Result = default;
-            _chain.ChainComplete();
             _state = PostFinished;
             return false;
         }

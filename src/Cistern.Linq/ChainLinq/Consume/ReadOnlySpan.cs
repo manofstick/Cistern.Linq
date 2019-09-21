@@ -10,15 +10,18 @@ namespace Cistern.Linq.ChainLinq.Consume
         {
             try
             {
+                var status = ChainStatus.Flow;
+
                 if (array.Length > MinSizeToCoverExecuteCosts && chain is Optimizations.IHeadStart<T> optimized)
                 {
-                    optimized.Execute(array);
+                    status = optimized.Execute(array);
                 }
                 else
                 {
-                    Pipeline(array, chain);
+                    status = Pipeline(array, chain);
                 }
-                chain.ChainComplete();
+
+                chain.ChainComplete(status & ~ChainStatus.Flow);
             }
             finally
             {
@@ -29,14 +32,16 @@ namespace Cistern.Linq.ChainLinq.Consume
         public static void Invoke<T, V>(ReadOnlySpan<T> array, ILink<T, V> composition, Chain<V> consumer) =>
             Invoke(array, composition.Compose(consumer));
 
-        internal static void Pipeline<T>(ReadOnlySpan<T> memory, Chain<T> chain)
+        internal static ChainStatus Pipeline<T>(ReadOnlySpan<T> memory, Chain<T> chain)
         {
+            var state = ChainStatus.Flow;
             foreach (var item in memory)
             {
-                var state = chain.ProcessNext(item);
+                state = chain.ProcessNext(item);
                 if (state.IsStopped())
                     break;
             }
+            return state;
         }
 
     }

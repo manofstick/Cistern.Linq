@@ -16,7 +16,12 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         public SumGeneric() : base(default) { }
 
-        public override void ChainComplete() => Result = default(Maths).Cast(accumulator);
+        public override ChainStatus ChainComplete(ChainStatus status)
+        {
+            Result = default(Maths).Cast(accumulator);
+
+            return ChainStatus.Stop;
+        }
 
         ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
         {
@@ -167,7 +172,12 @@ namespace Cistern.Linq.ChainLinq.Consumer
 
         public SumGenericNullable() : base(default) { }
 
-        public override void ChainComplete() => Result = default(Maths).Cast(accumulator);
+        public override ChainStatus ChainComplete(ChainStatus status)
+        {
+            Result = default(Maths).Cast(accumulator);
+
+            return ChainStatus.Stop;
+        }
 
         ChainStatus Optimizations.IHeadStart<T?>.Execute(ReadOnlySpan<T?> source)
         {

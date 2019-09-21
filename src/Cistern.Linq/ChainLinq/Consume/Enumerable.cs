@@ -10,15 +10,18 @@ namespace Cistern.Linq.ChainLinq.Consume
         {
             try
             {
+                ChainStatus status;
+
                 if (chain is Optimizations.IHeadStart<T> optimized)
                 {
-                    optimized.Execute<TEnumerable, TEnumerator>(source);
+                    status = optimized.Execute<TEnumerable, TEnumerator>(source);
                 }
                 else
                 {
-                    Pipeline<TEnumerable, TEnumerator, T>(source, chain);
+                    status = Pipeline<TEnumerable, TEnumerator, T>(source, chain);
                 }
-                chain.ChainComplete();
+
+                chain.ChainComplete(status & ~ChainStatus.Flow);
             }
             finally
             {
@@ -31,16 +34,18 @@ namespace Cistern.Linq.ChainLinq.Consume
             where TEnumerator : IEnumerator<T>
             => Invoke<TEnumerable, TEnumerator, T>(source, composition.Compose(consumer));
 
-        private static void Pipeline<TEnumerable, TEnumerator, T>(TEnumerable source, Chain<T> chain)
+        private static ChainStatus Pipeline<TEnumerable, TEnumerator, T>(TEnumerable source, Chain<T> chain)
             where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
             where TEnumerator : IEnumerator<T>
         {
+            var state = ChainStatus.Flow;
             foreach (var item in source)
             {
-                var state = chain.ProcessNext(item);
+                state = chain.ProcessNext(item);
                 if (state.IsStopped())
                     break;
             }
+            return state;
         }
 
     }

@@ -8,11 +8,13 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
         private readonly int _finalIdx;
         private int _idx;
         private Chain<T> _chain = null;
+        private bool _completed;
 
         internal override Chain StartOfChain => _chain;
 
         public IList(IList<T> list, int start, int count, ILink<T, TResult> factory)
         {
+            _completed = false;
             _list = list;
             _idx = start;
             checked { _finalIdx = start + count; }
@@ -30,8 +32,12 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
         tryAgain:
             if (_idx >= _finalIdx || status.IsStopped())
             {
+                if (!_completed && _chain.ChainComplete(status & ~ChainStatus.Flow).NotStoppedAndFlowing())
+                {
+                    _completed = true;
+                    return true;
+                }
                 Result = default;
-                _chain.ChainComplete();
                 return false;
             }
 

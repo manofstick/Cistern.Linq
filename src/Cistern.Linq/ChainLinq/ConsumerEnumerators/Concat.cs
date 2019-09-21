@@ -28,7 +28,7 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 
         public override void ChainDispose()
         {
-            base.ChainComplete();
+            base.ChainDispose();
 
             if (_enumerator != null)
             {
@@ -45,8 +45,9 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
         const int ReadFirstEnumerator = 1;
         const int ReadSecondEnumerator = 2;
         const int ReadThirdEnumerator = 3;
-        const int Finished = 4;
-        const int PostFinished = 5;
+        const int Completing = 4;
+        const int Finished = 5;
+        const int PostFinished = 6;
 
         public override bool MoveNext()
         {
@@ -74,8 +75,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     {
                         _enumerator.Dispose();
                         _enumerator = null;
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
 
                     if (!_enumerator.MoveNext())
@@ -101,8 +102,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     {
                         _enumerator.Dispose();
                         _enumerator = null;
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
 
                     if (!_enumerator.MoveNext())
@@ -111,8 +112,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                         if (_thirdOrNull == null)
                         {
                             _enumerator = null;
-                            _state = Finished;
-                            goto case Finished;
+                            _state = Completing;
+                            goto case Completing;
                         }
                         _enumerator = _thirdOrNull.GetEnumerator();
                         _thirdOrNull = null;
@@ -134,8 +135,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     {
                         _enumerator.Dispose();
                         _enumerator = null;
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
 
                     status = _chain.ProcessNext(_enumerator.Current);
@@ -147,9 +148,16 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     Debug.Assert(_state == ReadThirdEnumerator);
                     goto case ReadThirdEnumerator;
 
+                case Completing:
+                    if (_chain.ChainComplete(status & ~ChainStatus.Flow).NotStoppedAndFlowing())
+                    {
+                        _state = Finished;
+                        return true;
+                    }
+                    goto case Finished;
+
                 case Finished:
                     Result = default;
-                    _chain.ChainComplete();
                     _state = PostFinished;
                     return false;
 

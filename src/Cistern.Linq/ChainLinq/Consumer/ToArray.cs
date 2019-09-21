@@ -142,9 +142,11 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
-        public override void ChainComplete()
+        public override ChainStatus ChainComplete(ChainStatus status)
         {
             Result = builder.ToArray();
+
+            return ChainStatus.Stop;
         }
 
         ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)

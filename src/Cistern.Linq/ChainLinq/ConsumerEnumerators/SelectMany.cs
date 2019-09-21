@@ -35,8 +35,9 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
         const int OuterEnumeratorMoveNext = 1;
         const int InnerEnumeratorMoveNext = 2;
         const int CheckStopped = 3;
-        const int Finished = 4;
-        const int PostFinished = 5;
+        const int Completing = 4;
+        const int Finished = 5;
+        const int PostFinished = 6;
 
         int _state;
 
@@ -103,8 +104,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                         goto case InnerEnumeratorMoveNext;
                     }
 
-                    _state = Finished;
-                    goto case Finished;
+                    _state = Completing;
+                    goto case Completing;
 
                 case InnerEnumeratorMoveNext:
                     if (_inner.MoveNext())
@@ -132,12 +133,20 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                         _inner.Dispose();
                         _inner = null;
 
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
 
                     _state = InnerEnumeratorMoveNext;
                     goto case InnerEnumeratorMoveNext;
+
+                case Completing:
+                    if (_chain.ChainComplete(status & ~ChainStatus.Flow).NotStoppedAndFlowing())
+                    {
+                        _state = Finished;
+                        return true;
+                    }
+                    goto case Finished;
 
                 case Finished:
                     Result = default;
@@ -145,7 +154,6 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     _outer.Dispose();
                     _outer = null;
 
-                    _chain.ChainComplete();
                     _chain.ChainDispose();
                     _chain = null;
 
@@ -189,8 +197,9 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
         const int OuterEnumeratorMoveNext = 1;
         const int InnerEnumeratorMoveNext = 2;
         const int CheckStopped = 3;
-        const int Finished = 4;
-        const int PostFinished = 5;
+        const int Completing = 4;
+        const int Finished = 5;
+        const int PostFinished = 6;
 
         int _state;
 
@@ -264,8 +273,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                         goto case InnerEnumeratorMoveNext;
                     }
 
-                    _state = Finished;
-                    goto case Finished;
+                    _state = Completing;
+                    goto case Completing;
 
                 case InnerEnumeratorMoveNext:
                     if (_inner.MoveNext())
@@ -293,12 +302,20 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                         _inner.Dispose();
                         _inner = null;
 
-                        _state = Finished;
-                        goto case Finished;
+                        _state = Completing;
+                        goto case Completing;
                     }
 
                     _state = InnerEnumeratorMoveNext;
                     goto case InnerEnumeratorMoveNext;
+
+                case Completing:
+                    if (_chain.ChainComplete(status & ~ChainStatus.Flow).NotStoppedAndFlowing())
+                    {
+                        _state = Finished;
+                        return true;
+                    }
+                    goto case Finished;
 
                 case Finished:
                     _source = default;
@@ -307,7 +324,6 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     _outer.Dispose();
                     _outer = null;
 
-                    _chain.ChainComplete();
                     _chain.ChainDispose();
                     _chain = null;
 

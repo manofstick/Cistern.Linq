@@ -25,12 +25,12 @@ namespace Cistern.Linq.ChainLinq.Consumer
             return ChainStatus.Flow;
         }
 
-        public override void ChainComplete()
+        public override ChainStatus ChainComplete(ChainStatus status)
         {
             if (_first)
                 ThrowHelper.ThrowNoElementsException();
 
-            base.ChainComplete();
+            return ChainStatus.Stop;
         }
     }
 }

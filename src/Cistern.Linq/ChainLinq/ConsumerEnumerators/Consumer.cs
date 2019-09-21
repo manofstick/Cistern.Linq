@@ -18,6 +18,8 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
             return ChainStatus.Flow;
         }
 
+        public override ChainStatus ChainComplete(ChainStatus status) => status;
+
         public virtual T Current => Result;
         object IEnumerator.Current => Result;
         public virtual void Dispose()
