@@ -12,6 +12,7 @@
     <Compile Include="Consumables\unfold.fs" />
     <Compile Include="Consumables\zip.fs" />
     <Compile Include="Links\chunkBySize.fs" />
+    <Compile Include="Links\choose.fs" />
     <Compile Include="TypedEnumerables.fs" />
     <Compile Include="Register.fs" />
     <Compile Include="Linq.fs" />

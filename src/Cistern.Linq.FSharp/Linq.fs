@@ -20,6 +20,12 @@ module Linq =
 
     let append (source1:seq<'T>) (source2:seq<'T>) : seq<'T> = source1.Concat source2
 
+    let choose (chooser:'T -> 'U option) (source:seq<'T>) : seq<'U> =
+        if isNull source then
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
+
+        upcast Utils.PushTUTransform (source, Cistern.Linq.FSharp.Links.Choose chooser)
+
     let chunkBySize (chunkSize:int) (source:seq<'T>) : seq<array<'T>> = 
         if chunkSize <= 0 then
             ThrowHelper.ThrowArgumentOutOfRangeException ExceptionArgument.chunkSize
@@ -210,7 +216,6 @@ type Linq =
 
     static member inline cache (source:seq<'T>) : seq<'T>= Seq.cache source
     static member inline cast (source:System.Collections.IEnumerable) : seq<'T> = Seq.cast source
-    static member inline choose (chooser:'T -> 'U option) (source:seq<'T>) : seq<'U> = Seq.choose chooser source
     static member inline compareWith (comparer:'T->'T->int) (source1:seq<'T>) (source2:seq<'T>) : int = Seq.compareWith comparer source1 source2
     static member inline contains (value:'T) (source:seq<'T>) : bool = Seq.contains value source
     static member inline countBy (projection:'T->'Key) (source:seq<'T>) : seq<'Key*int> = Seq.countBy projection source
