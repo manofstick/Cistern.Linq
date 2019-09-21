@@ -51,6 +51,8 @@ module Linq =
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let empty<'T> : seq<'T> = upcast Consumables.Empty<'T>.Instance
 
+    let except (itemsToExclude:seq<'T>) (source:seq<'T>) : seq<'T> = source.Except(itemsToExclude, HashIdentity.Structural)
+
     let inline exists (f:'a->bool) (e:seq<'a>) = e.Any (fun x -> f x)
 
     let inline filter (f:'a->bool) (e:seq<'a>) : seq<'a> = e.Where f
@@ -105,6 +107,8 @@ module Linq =
         ChainLinq.Utils.Consume (source, Consumers.Pick chooser)
 
     let inline reduce (f:'a->'a->'a) (e:seq<'a>) = try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
+
+    let inline skipWhile (predicate:'T->bool) (source:seq<'T>) : seq<'T> = source.SkipWhile predicate 
 
     let take count (e:seq<'a>) = e.Take count
 
@@ -234,7 +238,6 @@ type Linq =
     static member inline delay (generator:unit->seq<'T>) : seq<'T> = Seq.delay generator
     static member inline distinctBy (projection:'T->'Key) (source:seq<'T>) : seq<'T> = Seq.distinctBy projection source
     static member inline splitInto (count:int) (source:seq<'T>) : seq<array<'T>> = Seq.splitInto count source
-    static member inline except (itemsToExclude:seq<'T>) (source:seq<'T>) : seq<'T> = Seq.except itemsToExclude source
     static member inline exists2 (predicate:'T1->'T2->bool) (source1:seq<'T1>) (source2:seq<'T2>) : bool = Seq.exists2 predicate source1 source2
     
     static member inline findBack (predicate:'T->bool) (source:seq<'T>) = Seq.findBack predicate source
@@ -268,7 +271,6 @@ type Linq =
     static member inline scanBack<'T,'State> (folder:'T->'State->'State) (source:seq<'T>) (state:'State) : seq<'State> = Seq.scanBack folder source state
     static member inline singleton (value:'T) : seq<'T> = Seq.singleton value
     static member inline skip (count:int) (source:seq<'T>) : seq<'T> = Seq.skip count source
-    static member inline skipWhile (predicate:'T->bool) (source:seq<'T>) : seq<'T> = Seq.skipWhile predicate source
     static member inline sort (source:seq<'T>) : seq<'T>  = Seq.sort source
     static member inline sortWith (comparer:'T->'T->int) (source:seq<'T>) : seq<'T> = Seq.sortWith comparer source
     static member inline sortBy (projection:'T->'Key) (source:seq<'T>) : seq<'T> = Seq.sortBy projection source
