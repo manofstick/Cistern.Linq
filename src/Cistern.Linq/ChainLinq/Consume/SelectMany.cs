@@ -74,6 +74,17 @@ namespace Cistern.Linq.ChainLinq.Consume
                 return Status;
             }
 
+            ChainStatus Optimizations.IHeadStart<IEnumerable<T>>.Execute<Enumerable1, Enumerator>(Enumerable1 source)
+            {
+                foreach (var s in source)
+                {
+                    Status = UnknownEnumerable.Consume(s, _chainT, ref _inner);
+                    if (Status.IsStopped())
+                        break;
+                }
+                return Status;
+            }
+
             public override ChainStatus ProcessNext(Enumerable input) =>
                 Status = UnknownEnumerable.Consume(input, _chainT, ref _inner);
 
@@ -100,7 +111,6 @@ namespace Cistern.Linq.ChainLinq.Consume
             }
 
             // Only Concat, Select and SelectIndexed are use for the outer part of SelectMany to collect the IEnumerable
-            ChainStatus Optimizations.IHeadStart<IEnumerable<T>>.Execute<Enumerable1, Enumerator>(Enumerable1 source) => throw new NotSupportedException();
             ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, IEnumerable<T>> resultSelector) => throw new NotSupportedException();
             ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.Where(ReadOnlySpan<IEnumerable<T>> source, Func<IEnumerable<T>, bool> predicate) => throw new NotSupportedException();
             ChainStatus Optimizations.ITailEnd<IEnumerable<T>>.Where<WEnumerable, Enumerator>(WEnumerable source, Func<IEnumerable<T>, bool> predicate) => throw new NotSupportedException();
