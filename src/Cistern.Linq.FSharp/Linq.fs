@@ -98,6 +98,12 @@ module Linq =
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let pairwise (source:seq<'T>) : seq<'T * 'T> = upcast Consumables.Enumerable(Consumables.PairwiseEnumerable source, Links.Identity.Instance)
 
+    let pick (chooser:'T->'U option) (source:seq<'T>) : 'U =
+        if isNull source then
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
+    
+        ChainLinq.Utils.Consume (source, Consumers.Pick chooser)
+
     let inline reduce (f:'a->'a->'a) (e:seq<'a>) = try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
 
     let take count (e:seq<'a>) = e.Take count
@@ -254,7 +260,6 @@ type Linq =
     static member inline map3 (mapping:'T1->'T2->'T3->'U) (source1:seq<'T1>) (source2:seq<'T2>) (source3:seq<'T3>) : seq<'U> = Seq.map3 mapping source1 source2 source3
     static member inline mapi2 (mapping:int->'T1->'T2->'U) (source1:seq<'T1>) (source2:seq<'T2>) : seq<'U> = Seq.mapi2 mapping source1 source2
     static member inline permute (indexMap:int->int) (source:seq<'T>) : seq<'T> = Seq.permute indexMap source
-    static member inline pick (chooser:'T->'U option) (source:seq<'T>) : 'U = Seq.pick chooser source
     static member inline readonly (source:seq<'T>) : seq<'T> = Seq.readonly source
     static member inline replicate (count:int) (initial:'T) : seq<'T> = Seq.replicate count initial
     static member inline reduceBack (reduction:'T->'T->'T) (source:seq<'T>) : 'T = Seq.reduceBack reduction source

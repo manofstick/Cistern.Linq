@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Consumers\pick.fs" />
     <Compile Include="Consumables\allPairs.fs" />
     <Compile Include="Consumables\init.fs" />
     <Compile Include="Consumables\pairwise.fs" />
