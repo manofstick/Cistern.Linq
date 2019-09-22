@@ -10,7 +10,7 @@ type ChooseActivity<'T,'U>(chooser:'T->option<'U>, next) =
         | None -> ChainStatus.Filter
         | Some item -> base.Next item
 
-type Choose<'T,'U>(chooser:'T -> 'U option) =
+type Choose<'T,'U>(chooser:'T->option<'U>) =
     interface Cistern.Linq.ChainLinq.ILink<'T, 'U> with
         member __.Compose activity = 
             upcast ChooseActivity(chooser, activity)

@@ -20,11 +20,17 @@ module Linq =
 
     let append (source1:seq<'T>) (source2:seq<'T>) : seq<'T> = source1.Concat source2
 
-    let choose (chooser:'T -> 'U option) (source:seq<'T>) : seq<'U> =
+    let choose (chooser:'T ->option<'U>) (source:seq<'T>) : seq<'U> =
         if isNull source then
             ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
 
         upcast Utils.PushTUTransform (source, Cistern.Linq.FSharp.Links.Choose chooser)
+
+    let chooseV (chooser:'T->ValueOption<'U>) (source:seq<'T>) : seq<'U> =
+        if isNull source then
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
+
+        upcast Utils.PushTUTransform (source, Cistern.Linq.FSharp.Links.ChooseV chooser)
 
     let chunkBySize (chunkSize:int) (source:seq<'T>) : seq<array<'T>> = 
         if chunkSize <= 0 then
