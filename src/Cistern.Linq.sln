@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cistern.Linq.System", "Cist
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Cistern.Linq.Benchmarking.FSharp", "Cistern.Linq.Benchmarking.FSharp\Cistern.Linq.Benchmarking.FSharp.fsproj", "{ACA25AA3-76B7-4BE5-A8F7-4D4A544F9026}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Cistern.Linq.FSharp.Tests", "Cistern.Linq.FSharp.Tests\Cistern.Linq.FSharp.Tests.fsproj", "{9BCA29CE-5B52-4878-818A-BFD773F379C6}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Cistern.Linq.FSharp.Tests", "Cistern.Linq.FSharp.Tests\Cistern.Linq.FSharp.Tests.fsproj", "{9BCA29CE-5B52-4878-818A-BFD773F379C6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cistern.Linq.FSharp.Impl", "Cistern.Linq.FSharp.Impl\Cistern.Linq.FSharp.Impl.csproj", "{281932C5-062A-4831-81D5-50B22C61664C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{9BCA29CE-5B52-4878-818A-BFD773F379C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BCA29CE-5B52-4878-818A-BFD773F379C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BCA29CE-5B52-4878-818A-BFD773F379C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{281932C5-062A-4831-81D5-50B22C61664C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{281932C5-062A-4831-81D5-50B22C61664C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{281932C5-062A-4831-81D5-50B22C61664C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{281932C5-062A-4831-81D5-50B22C61664C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

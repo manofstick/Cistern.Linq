@@ -14,7 +14,6 @@
     <Compile Include="Consumables\zip.fs" />
     <Compile Include="Links\chunkBySize.fs" />
     <Compile Include="Links\choose.fs" />
-    <Compile Include="Links\chooseV.fs" />
     <Compile Include="Links\indexed.fs" />
     <Compile Include="TypedEnumerables.fs" />
     <Compile Include="Register.fs" />
@@ -22,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cistern.Linq.FSharp.Impl\Cistern.Linq.FSharp.Impl.csproj" />
     <ProjectReference Include="..\Cistern.Linq\Cistern.Linq.csproj" />
   </ItemGroup>
 

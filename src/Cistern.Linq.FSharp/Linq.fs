@@ -124,7 +124,14 @@ module Linq =
 
     let toArray (source:seq<'T>) : 'T[] = source.ToArray ()
 
-    let toList (source:seq<'T>) : 'T list = List.ofSeq source
+    let toList (source:seq<'T>) : 'T list =
+        if isNull source then
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
+
+        match source with
+        | :? list<'T> as l -> l
+        | :? Consumable<'T> as c -> ChainLinq.Utils.Consume (c, Consumer.ToFSharpList ())
+        | _ -> Seq.toList source
 
     let truncate (count:int) (source:seq<'T>) : seq<'T> = source.Take count
 
