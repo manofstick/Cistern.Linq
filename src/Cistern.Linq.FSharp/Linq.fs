@@ -10,6 +10,9 @@ module Linq =
     [<Literal>]
     let internal exceptionSource = "Cistern.Linq"
 
+    let private listToConsumable (source:list<'T>) : Consumable<'T> =
+        upcast Consumables.Enumerable(TypedEnumerables.FSharpListEnumerable<_> source, Links.Identity.Instance)
+
     let allPairs (source1:seq<'T1>) (source2:seq<'T2>) : seq<'T1*'T2> =
         if isNull source1 then
             ThrowHelper.ThrowArgumentNullException ExceptionArgument.source1
@@ -24,13 +27,24 @@ module Linq =
         if isNull source then
             ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
 
-        upcast Utils.PushTUTransform (source, Cistern.Linq.FSharp.Links.Choose chooser)
+        let link = Cistern.Linq.FSharp.Links.Choose chooser
+
+        match source with
+        | :? list<'T> as l ->
+               upcast Utils.PushTUTransform (listToConsumable l, link)
+        | _ -> upcast Utils.PushTUTransform (source, link)
 
     let chooseV (chooser:'T->ValueOption<'U>) (source:seq<'T>) : seq<'U> =
         if isNull source then
             ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
 
-        upcast Utils.PushTUTransform (source, Cistern.Linq.FSharp.Links.ChooseV chooser)
+        let link = Cistern.Linq.FSharp.Links.ChooseV chooser
+
+        match source with
+        | :? list<'T> as l ->
+               upcast Utils.PushTUTransform (listToConsumable l, link)
+        | _ -> upcast Utils.PushTUTransform (source,             link)
+        
 
     let chunkBySize (chunkSize:int) (source:seq<'T>) : seq<array<'T>> = 
         if chunkSize <= 0 then
@@ -101,7 +115,7 @@ module Linq =
     let ofArray (source:array<'T>) : seq<'T> = upcast Consumables.Array(source, 0, source.Length, Links.Identity.Instance)
     
     [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let ofList (source:list<'T>) : seq<'T> = upcast Consumables.Enumerable(TypedEnumerables.FSharpListEnumerable<_> source, Links.Identity.Instance)
+    let ofList (source:list<'T>) : seq<'T> = upcast (listToConsumable source)
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let pairwise (source:seq<'T>) : seq<'T * 'T> = upcast Consumables.Enumerable(Consumables.PairwiseEnumerable source, Links.Identity.Instance)
