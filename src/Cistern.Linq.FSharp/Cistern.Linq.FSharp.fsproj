@@ -8,7 +8,6 @@
     <Compile Include="Consumers\pick.fs" />
     <Compile Include="Consumables\allPairs.fs" />
     <Compile Include="Consumables\init.fs" />
-    <Compile Include="Consumables\pairwise.fs" />
     <Compile Include="Consumables\unfoldV.fs" />
     <Compile Include="Consumables\unfold.fs" />
     <Compile Include="Consumables\zip.fs" />

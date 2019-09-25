@@ -117,8 +117,16 @@ module Linq =
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let ofList (source:list<'T>) : seq<'T> = upcast (listToConsumable source)
 
-    [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let pairwise (source:seq<'T>) : seq<'T * 'T> = upcast Consumables.Enumerable(Consumables.PairwiseEnumerable source, Links.Identity.Instance)
+    let pairwise (source:seq<'T>) : seq<'T * 'T> =
+        if isNull source then
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
+
+        let link = Cistern.Linq.FSharp.Links.Pairwise.Instance
+
+        match source with
+        | :? list<'T> as l ->
+               upcast Utils.PushTUTransform (listToConsumable l, link)
+        | _ -> upcast Utils.PushTUTransform (source,             link)
 
     let pick (chooser:'T->'U option) (source:seq<'T>) : 'U =
         if isNull source then
