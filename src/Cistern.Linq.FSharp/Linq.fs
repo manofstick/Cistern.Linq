@@ -10,8 +10,18 @@ module Linq =
     [<Literal>]
     let internal exceptionSource = "Cistern.Linq"
 
-    let private listToConsumable (source:list<'T>) : Consumable<'T> =
-        upcast Consumables.Enumerable(TypedEnumerables.FSharpListEnumerable<_> source, Links.Identity.Instance)
+    let private addLinkToList (source:list<'T>) (link:ILink<'T,'U>) : seq<'U> =
+        match source with
+        | [] -> upcast Consumables.Empty.Instance
+        | _ -> upcast Consumables.Enumerable (TypedEnumerables.FSharpListEnumerable source, link)
+
+    let private addLink (source:seq<'T>) (link:ILink<'T,'U>) : seq<'U> =
+        if isNull source then
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
+
+        match source with
+        | :? list<'T> as l -> link |> addLinkToList l
+        | _ -> upcast Utils.PushTUTransform (source, link)
 
     let allPairs (source1:seq<'T1>) (source2:seq<'T2>) : seq<'T1*'T2> =
         if isNull source1 then
@@ -21,38 +31,20 @@ module Linq =
 
         upcast Consumables.Enumerable(Consumables.AllPairsEnumerable (source1, source2), Links.Identity.Instance)
 
-    let append (source1:seq<'T>) (source2:seq<'T>) : seq<'T> = source1.Concat source2
+    let append (source1:seq<'T>) (source2:seq<'T>) : seq<'T> =
+        source1.Concat source2
 
     let choose (chooser:'T ->option<'U>) (source:seq<'T>) : seq<'U> =
-        if isNull source then
-            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
-
-        let link = Cistern.Linq.FSharp.Links.Choose chooser
-
-        match source with
-        | :? list<'T> as l ->
-               upcast Utils.PushTUTransform (listToConsumable l, link)
-        | _ -> upcast Utils.PushTUTransform (source, link)
+        Cistern.Linq.FSharp.Links.Choose chooser |> addLink source
 
     let chooseV (chooser:'T->ValueOption<'U>) (source:seq<'T>) : seq<'U> =
-        if isNull source then
-            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
-
-        let link = Cistern.Linq.FSharp.Links.ChooseV chooser
-
-        match source with
-        | :? list<'T> as l ->
-               upcast Utils.PushTUTransform (listToConsumable l, link)
-        | _ -> upcast Utils.PushTUTransform (source,             link)
-        
+        Cistern.Linq.FSharp.Links.ChooseV chooser |> addLink source
 
     let chunkBySize (chunkSize:int) (source:seq<'T>) : seq<array<'T>> = 
         if chunkSize <= 0 then
             ThrowHelper.ThrowArgumentOutOfRangeException ExceptionArgument.chunkSize
-        if isNull source then
-            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
 
-        upcast Utils.PushTUTransform (source, Cistern.Linq.FSharp.Links.ChunkBySize chunkSize)
+        Cistern.Linq.FSharp.Links.ChunkBySize chunkSize |> addLink source
 
     let collect (f:'T->#seq<'U>) (e:seq<'T>) : seq<'U> =
         if isNull e then
@@ -69,27 +61,32 @@ module Linq =
         upcast ChainLinq.Consumables.SelectMany<_,_,_> (sources, ChainLinq.Links.Identity<_>.Instance)
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let empty<'T> : seq<'T> = upcast Consumables.Empty<'T>.Instance
+    let empty<'T> : seq<'T> =
+        upcast Consumables.Empty<'T>.Instance
 
-    let except (itemsToExclude:seq<'T>) (source:seq<'T>) : seq<'T> = source.Except(itemsToExclude, HashIdentity.Structural)
+    let except (itemsToExclude:seq<'T>) (source:seq<'T>) : seq<'T> =
+        source.Except (itemsToExclude, HashIdentity.Structural)
 
-    let inline exists (f:'a->bool) (e:seq<'a>) = e.Any (fun x -> f x)
+    let inline exists (f:'a->bool) (e:seq<'a>) =
+        e.Any (fun x -> f x)
 
-    let inline filter (f:'a->bool) (e:seq<'a>) : seq<'a> = e.Where f
+    let inline filter (f:'a->bool) (e:seq<'a>) : seq<'a> =
+        e.Where f
 
-    let inline find (predicate:'T->bool) (source:seq<'T>) = try source.First (fun x -> predicate x) with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (System.Collections.Generic.KeyNotFoundException("An index satisfying the predicate was not found in the collection.", e))
+    let inline find (predicate:'T->bool) (source:seq<'T>) =
+        try source.First (fun x -> predicate x) with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (System.Collections.Generic.KeyNotFoundException("An index satisfying the predicate was not found in the collection.", e))
 
-    let inline fold (f:'s->'a->'s) seed (e:seq<'a>) = e.Aggregate (seed, fun a c -> f a c)
+    let inline fold (f:'s->'a->'s) seed (e:seq<'a>) =
+        e.Aggregate (seed, fun a c -> f a c)
 
-    let inline forall (f:'a->bool) (e:seq<'a>) = e.All (fun x -> f x)
+    let inline forall (f:'a->bool) (e:seq<'a>) =
+        e.All (fun x -> f x)
 
-    let head (e:seq<'a>) = try e.First () with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (ArgumentException(e.Message, e))
+    let head (e:seq<'a>) =
+        try e.First () with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (ArgumentException(e.Message, e))
 
     let indexed (source:seq<'T>) : seq<int*'T> =
-        if isNull source then
-            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
-
-        upcast Utils.PushTUTransform (source, Cistern.Linq.FSharp.Links.Indexed.Instance)
+        Cistern.Linq.FSharp.Links.Indexed.Instance |> addLink source
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let init (count:int) (initializer:int->'T) : seq<'T> =
@@ -101,32 +98,31 @@ module Linq =
     let initInfinite (initializer:int->'T) : seq<'T> =
         upcast Consumables.Enumerable (Consumables.InitEnumerable(Int32.MaxValue, initializer), Links.Identity.Instance)
 
-    let isEmpty (e:seq<'a>) = not (e.Any ())
+    let isEmpty (e:seq<'a>) =
+        not (e.Any ())
 
-    let last (source:seq<'T>) : 'T =  try source.Last () with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
+    let last (source:seq<'T>) : 'T =
+        try source.Last () with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
 
-    let length (e:seq<'a>) = e.Count ()
+    let length (e:seq<'a>) =
+        e.Count ()
 
-    let inline map (f:'a->'b) (e:seq<'a>) = e.Select f
+    let inline map (f:'a->'b) (e:seq<'a>) =
+        e.Select f
 
-    let inline mapi (f:int->'a->'b) (e:seq<'a>) = e.Select (fun a idx -> f idx a)
+    let inline mapi (f:int->'a->'b) (e:seq<'a>) =
+        e.Select (fun a idx -> f idx a)
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let ofArray (source:array<'T>) : seq<'T> = upcast Consumables.Array(source, 0, source.Length, Links.Identity.Instance)
+    let ofArray (source:array<'T>) : seq<'T> =
+        upcast Consumables.Array(source, 0, source.Length, Links.Identity.Instance)
     
     [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let ofList (source:list<'T>) : seq<'T> = upcast (listToConsumable source)
+    let ofList (source:list<'T>) : seq<'T> =
+        Links.Identity.Instance |> addLinkToList source
 
     let pairwise (source:seq<'T>) : seq<'T * 'T> =
-        if isNull source then
-            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
-
-        let link = Cistern.Linq.FSharp.Links.Pairwise.Instance
-
-        match source with
-        | :? list<'T> as l ->
-               upcast Utils.PushTUTransform (listToConsumable l, link)
-        | _ -> upcast Utils.PushTUTransform (source,             link)
+        Cistern.Linq.FSharp.Links.Pairwise.Instance |> addLink source
 
     let pick (chooser:'T->'U option) (source:seq<'T>) : 'U =
         if isNull source then
@@ -134,17 +130,23 @@ module Linq =
     
         ChainLinq.Utils.Consume (source, Consumers.Pick chooser)
 
-    let inline reduce (f:'a->'a->'a) (e:seq<'a>) = try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
+    let inline reduce (f:'a->'a->'a) (e:seq<'a>) =
+        try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
 
-    let inline skipWhile (predicate:'T->bool) (source:seq<'T>) : seq<'T> = source.SkipWhile predicate 
+    let inline skipWhile (predicate:'T->bool) (source:seq<'T>) : seq<'T> =
+        source.SkipWhile predicate 
 
-    let take count (e:seq<'a>) = e.Take count
+    let take count (e:seq<'a>) =
+        e.Take count
 
-    let inline takeWhile (f:'a->bool) (e:seq<'a>) = e.TakeWhile f
+    let inline takeWhile (f:'a->bool) (e:seq<'a>) =
+        e.TakeWhile f
 
-    let inline takeWhilei (f:int->'a->bool) (e:seq<'a>) = e.TakeWhile (fun a idx -> f idx a)
+    let inline takeWhilei (f:int->'a->bool) (e:seq<'a>) =
+        e.TakeWhile (fun a idx -> f idx a)
 
-    let toArray (source:seq<'T>) : 'T[] = source.ToArray ()
+    let toArray (source:seq<'T>) : 'T[] =
+        source.ToArray ()
 
     let toList (source:seq<'T>) : 'T list =
         if isNull source then
@@ -155,15 +157,19 @@ module Linq =
         | :? Consumable<'T> as c -> ChainLinq.Utils.Consume (c, Consumer.ToFSharpList ())
         | _ -> Seq.toList source
 
-    let truncate (count:int) (source:seq<'T>) : seq<'T> = source.Take count
+    let truncate (count:int) (source:seq<'T>) : seq<'T> =
+        source.Take count
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> = Consumables.Enumerable (Consumables.UnfoldEnumerable(f, seed), Links.Identity.Instance) :> seq<'T>
+    let unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> =
+        Consumables.Enumerable (Consumables.UnfoldEnumerable(f, seed), Links.Identity.Instance) :> seq<'T>
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
-    let unfoldV (f:'State->voption<'T*'State>) (seed:'State) : seq<'T> = Consumables.Enumerable (Consumables.UnfoldVEnumerable(f, seed), Links.Identity.Instance) :> seq<'T>
+    let unfoldV (f:'State->voption<'T*'State>) (seed:'State) : seq<'T> =
+        Consumables.Enumerable (Consumables.UnfoldVEnumerable(f, seed), Links.Identity.Instance) :> seq<'T>
 
-    let inline where (predicate:'T->bool) (source:seq<'T>) : seq<'T> = source.Where predicate
+    let inline where (predicate:'T->bool) (source:seq<'T>) : seq<'T> =
+        source.Where predicate
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let zip (source1:seq<'T1>) (source2:seq<'T2>) : seq<'T1*'T2> =
