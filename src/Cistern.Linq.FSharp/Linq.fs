@@ -10,10 +10,15 @@ module Linq =
     [<Literal>]
     let internal exceptionSource = "Cistern.Linq"
 
-    let private addLinkToList (source:list<'T>) (link:ILink<'T,'U>) : seq<'U> =
+    let internal addLinkToList (source:list<'T>) (link:ILink<'T,'U>) : seq<'U> =
         match source with
         | [] -> upcast Consumables.Empty.Instance
         | _ -> upcast Consumables.Enumerable (TypedEnumerables.FSharpListEnumerable source, link)
+
+    let tryListConsumable (source:seq<'a>) : seq<'a> =
+        match source with
+        | :? list<'a> as l -> Links.Identity.Instance |> addLinkToList l
+        | _ -> source
 
     let private addLink (source:seq<'T>) (link:ILink<'T,'U>) : seq<'U> =
         if isNull source then
@@ -32,7 +37,7 @@ module Linq =
         upcast Consumables.Enumerable(Consumables.AllPairsEnumerable (source1, source2), Links.Identity.Instance)
 
     let append (source1:seq<'T>) (source2:seq<'T>) : seq<'T> =
-        source1.Concat source2
+        (tryListConsumable source1).Concat source2
 
     let choose (chooser:'T ->option<'U>) (source:seq<'T>) : seq<'U> =
         Cistern.Linq.FSharp.Links.Choose chooser |> addLink source
@@ -50,40 +55,43 @@ module Linq =
         if isNull e then
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
 
-        let selectMany = ChainLinq.Utils.Select (e, fun x -> f x);
+        let selectMany = ChainLinq.Utils.Select (tryListConsumable e, fun x -> f x);
         ChainLinq.Consumables.SelectMany<_,_,_> (selectMany, ChainLinq.Links.Identity<_>.Instance) :> seq<'U>
 
     let concat (sources:seq<#seq<'Collection>>) : seq<'Collection> =
         if isNull sources then
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
 
-        let sources = sources |> Cistern.Linq.ChainLinq.Utils.AsConsumable 
+        let sources = (tryListConsumable sources) |> Cistern.Linq.ChainLinq.Utils.AsConsumable 
         upcast ChainLinq.Consumables.SelectMany<_,_,_> (sources, ChainLinq.Links.Identity<_>.Instance)
+
+    let distinct (source:seq<'T>) : seq<'T> =
+        (tryListConsumable source).Distinct HashIdentity.Structural
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let empty<'T> : seq<'T> =
         upcast Consumables.Empty<'T>.Instance
 
     let except (itemsToExclude:seq<'T>) (source:seq<'T>) : seq<'T> =
-        source.Except (itemsToExclude, HashIdentity.Structural)
+        (tryListConsumable source).Except (itemsToExclude, HashIdentity.Structural)
 
     let inline exists (f:'a->bool) (e:seq<'a>) =
-        e.Any (fun x -> f x)
+        (tryListConsumable e).Any (fun x -> f x)
 
     let inline filter (f:'a->bool) (e:seq<'a>) : seq<'a> =
-        e.Where f
+        (tryListConsumable e).Where f
 
     let inline find (predicate:'T->bool) (source:seq<'T>) =
-        try source.First (fun x -> predicate x) with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (System.Collections.Generic.KeyNotFoundException("An index satisfying the predicate was not found in the collection.", e))
+        try (tryListConsumable source).First (fun x -> predicate x) with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (System.Collections.Generic.KeyNotFoundException("An index satisfying the predicate was not found in the collection.", e))
 
     let inline fold (f:'s->'a->'s) seed (e:seq<'a>) =
-        e.Aggregate (seed, fun a c -> f a c)
+        (tryListConsumable e).Aggregate (seed, fun a c -> f a c)
 
     let inline forall (f:'a->bool) (e:seq<'a>) =
-        e.All (fun x -> f x)
+        (tryListConsumable e).All (fun x -> f x)
 
     let head (e:seq<'a>) =
-        try e.First () with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (ArgumentException(e.Message, e))
+        try (tryListConsumable e).First () with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (ArgumentException(e.Message, e))
 
     let indexed (source:seq<'T>) : seq<int*'T> =
         Cistern.Linq.FSharp.Links.Indexed.Instance |> addLink source
@@ -99,19 +107,19 @@ module Linq =
         upcast Consumables.Enumerable (Consumables.InitEnumerable(Int32.MaxValue, initializer), Links.Identity.Instance)
 
     let isEmpty (e:seq<'a>) =
-        not (e.Any ())
+        not ((tryListConsumable e).Any ())
 
     let last (source:seq<'T>) : 'T =
-        try source.Last () with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
+        try (tryListConsumable source).Last () with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
 
     let length (e:seq<'a>) =
-        e.Count ()
+        (tryListConsumable e).Count ()
 
     let inline map (f:'a->'b) (e:seq<'a>) =
-        e.Select f
+        (tryListConsumable e).Select f
 
     let inline mapi (f:int->'a->'b) (e:seq<'a>) =
-        e.Select (fun a idx -> f idx a)
+        (tryListConsumable e).Select (fun a idx -> f idx a)
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let ofArray (source:array<'T>) : seq<'T> =
@@ -128,25 +136,27 @@ module Linq =
         if isNull source then
             ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
     
-        ChainLinq.Utils.Consume (source, Consumers.Pick chooser)
+        ChainLinq.Utils.Consume (tryListConsumable source, Consumers.Pick chooser)
 
     let inline reduce (f:'a->'a->'a) (e:seq<'a>) =
-        try e.Aggregate (fun a c -> f a c) with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
+        try (tryListConsumable e).Aggregate (fun a c -> f a c) with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
 
     let inline skipWhile (predicate:'T->bool) (source:seq<'T>) : seq<'T> =
-        source.SkipWhile predicate 
+        (tryListConsumable source).SkipWhile predicate 
 
     let take count (e:seq<'a>) =
-        e.Take count
+        (tryListConsumable e).Take count
 
     let inline takeWhile (f:'a->bool) (e:seq<'a>) =
-        e.TakeWhile f
+        (tryListConsumable e).TakeWhile f
 
     let inline takeWhilei (f:int->'a->bool) (e:seq<'a>) =
-        e.TakeWhile (fun a idx -> f idx a)
+        (tryListConsumable e).TakeWhile (fun a idx -> f idx a)
 
     let toArray (source:seq<'T>) : 'T[] =
-        source.ToArray ()
+        match source with
+        | :? list<'T> as l -> List.toArray l
+        | _ -> source.ToArray ()
 
     let toList (source:seq<'T>) : 'T list =
         if isNull source then
@@ -158,7 +168,7 @@ module Linq =
         | _ -> Seq.toList source
 
     let truncate (count:int) (source:seq<'T>) : seq<'T> =
-        source.Take count
+        (tryListConsumable source).Take count
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> =
@@ -169,7 +179,7 @@ module Linq =
         Consumables.Enumerable (Consumables.UnfoldVEnumerable(f, seed), Links.Identity.Instance) :> seq<'T>
 
     let inline where (predicate:'T->bool) (source:seq<'T>) : seq<'T> =
-        source.Where predicate
+        (tryListConsumable source).Where predicate
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let zip (source1:seq<'T1>) (source2:seq<'T2>) : seq<'T1*'T2> =
@@ -181,18 +191,16 @@ module Linq =
         upcast Consumables.Enumerable(Consumables.ZipEnumerable (source1, source2), Links.Identity.Instance)
 
 type Linq =
-    static member distinct (source:seq<'T>) : seq<'T> = source.Distinct HashIdentity.Structural
-
-    static member sum (e:seq<float>)                   = e.Sum ()
-    static member sum (e:seq<float32>)                 = e.Sum ()
-    static member sum (e:seq<decimal>)                 = e.Sum ()
-    static member sum (e:seq<int>)                     = e.Sum ()
-    static member sum (e:seq<int64>)                   = e.Sum ()
-    static member sum (e:seq<Nullable<float>>)         = e.Sum ()
-    static member sum (e:seq<Nullable<float32>>)       = e.Sum ()
-    static member sum (e:seq<Nullable<decimal>>)       = e.Sum ()
-    static member sum (e:seq<Nullable<int>>)           = e.Sum ()
-    static member sum (e:seq<Nullable<int64>>)         = e.Sum ()
+    static member sum (e:seq<float>)                   = (Linq.tryListConsumable e).Sum ()
+    static member sum (e:seq<float32>)                 = (Linq.tryListConsumable e).Sum ()
+    static member sum (e:seq<decimal>)                 = (Linq.tryListConsumable e).Sum ()
+    static member sum (e:seq<int>)                     = (Linq.tryListConsumable e).Sum ()
+    static member sum (e:seq<int64>)                   = (Linq.tryListConsumable e).Sum ()
+    static member sum (e:seq<Nullable<float>>)         = (Linq.tryListConsumable e).Sum ()
+    static member sum (e:seq<Nullable<float32>>)       = (Linq.tryListConsumable e).Sum ()
+    static member sum (e:seq<Nullable<decimal>>)       = (Linq.tryListConsumable e).Sum ()
+    static member sum (e:seq<Nullable<int>>)           = (Linq.tryListConsumable e).Sum ()
+    static member sum (e:seq<Nullable<int64>>)         = (Linq.tryListConsumable e).Sum ()
     static member inline sum (source:seq<(^T)>) = Seq.sum source
 
     static member tryLinqGenericSum (source:seq<('T)>) : ValueOption<'T> = 
@@ -212,17 +220,17 @@ type Linq =
         match source |> Linq.map projection |> Linq.tryLinqGenericSum with
         | ValueSome sum -> sum
         | ValueNone -> Seq.sumBy projection source
-                                                              
-    static member average (e:seq<float>)               = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<float32>)             = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<decimal>)             = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<int>)                 = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<int64>)               = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<Nullable<float>>)     = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<Nullable<float32>>)   = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<Nullable<decimal>>)   = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<Nullable<int>>)       = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member average (e:seq<Nullable<int64>>)     = try e.Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+                                                   
+    static member average (e:seq<float>)               = try (Linq.tryListConsumable e).Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<float32>)             = try (Linq.tryListConsumable e).Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<decimal>)             = try (Linq.tryListConsumable e).Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<int>)                 = try (Linq.tryListConsumable e).Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<int64>)               = try (Linq.tryListConsumable e).Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<float>>)     = try (Linq.tryListConsumable e).Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<float32>>)   = try (Linq.tryListConsumable e).Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<decimal>>)   = try (Linq.tryListConsumable e).Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<int>>)       = try (Linq.tryListConsumable e).Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+    static member average (e:seq<Nullable<int64>>)     = try (Linq.tryListConsumable e).Average () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
     static member inline average (source:seq<(^T)>) : 'T = Seq.average source
     
     static member tryLinqGenericAverage (source:seq<('T)>) : ValueOption<'T> = 
@@ -242,29 +250,49 @@ type Linq =
         match source |> Linq.map projection |> Linq.tryLinqGenericAverage with
         | ValueSome average -> average
         | ValueNone -> Seq.averageBy projection source
-                                                              
-    static member min (e:seq<float>)                   = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<float32>)                 = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<decimal>)                 = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<int>)                     = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<int64>)                   = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<Nullable<float>>)         = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<Nullable<float32>>)       = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<Nullable<decimal>>)       = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<Nullable<int>>)           = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member min (e:seq<Nullable<int64>>)         = try e.Min () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+        
+    static member inline private minImpl (source:seq<'a>) =
+        let src = 
+            match source with
+            | :? list<'a> as l -> Links.Identity.Instance |> Linq.addLinkToList l
+            | _ -> source
+        try
+            src.Min ()
+        with :? InvalidOperationException as e when e.Source = Linq.exceptionSource ->
+            raise (ArgumentException(e.Message, e))
+        
+    static member min (e:seq<float>)                   = Linq.minImpl e
+    static member min (e:seq<float32>)                 = Linq.minImpl e
+    static member min (e:seq<decimal>)                 = Linq.minImpl e
+    static member min (e:seq<int>)                     = Linq.minImpl e
+    static member min (e:seq<int64>)                   = Linq.minImpl e
+    static member min (e:seq<Nullable<float>>)         = Linq.minImpl e
+    static member min (e:seq<Nullable<float32>>)       = Linq.minImpl e
+    static member min (e:seq<Nullable<decimal>>)       = Linq.minImpl e
+    static member min (e:seq<Nullable<int>>)           = Linq.minImpl e
+    static member min (e:seq<Nullable<int64>>)         = Linq.minImpl e
     static member inline min (e:seq<'T>) = Seq.min e
-            
-    static member max (e:seq<float>)                   = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<decimal>)                 = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<int>)                     = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<int64>)                   = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<float32>)                 = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<Nullable<float>>)         = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<Nullable<float32>>)       = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<Nullable<decimal>>)       = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<Nullable<int>>)           = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
-    static member max (e:seq<Nullable<int64>>)         = try e.Max () with :? InvalidOperationException as e when e.Source = Linq.exceptionSource -> raise (ArgumentException(e.Message, e))
+        
+    static member inline private maxImpl (source:seq<'a>) =
+        let src = 
+            match source with
+            | :? list<'a> as l -> Links.Identity.Instance |> Linq.addLinkToList l
+            | _ -> source
+        try
+            src.Max ()
+        with :? InvalidOperationException as e when e.Source = Linq.exceptionSource ->
+            raise (ArgumentException(e.Message, e))
+
+    static member max (e:seq<float>)                   = Linq.maxImpl e
+    static member max (e:seq<decimal>)                 = Linq.maxImpl e
+    static member max (e:seq<int>)                     = Linq.maxImpl e
+    static member max (e:seq<int64>)                   = Linq.maxImpl e
+    static member max (e:seq<float32>)                 = Linq.maxImpl e
+    static member max (e:seq<Nullable<float>>)         = Linq.maxImpl e
+    static member max (e:seq<Nullable<float32>>)       = Linq.maxImpl e
+    static member max (e:seq<Nullable<decimal>>)       = Linq.maxImpl e
+    static member max (e:seq<Nullable<int>>)           = Linq.maxImpl e
+    static member max (e:seq<Nullable<int64>>)         = Linq.maxImpl e
     static member inline max (e:seq<'T>) = Seq.max e
 
     // polyfill
