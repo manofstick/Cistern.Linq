@@ -252,12 +252,8 @@ type Linq =
         | ValueNone -> Seq.averageBy projection source
         
     static member inline private minImpl (source:seq<'a>) =
-        let src = 
-            match source with
-            | :? list<'a> as l -> Links.Identity.Instance |> Linq.addLinkToList l
-            | _ -> source
         try
-            src.Min ()
+            (Linq.tryListConsumable source).Min ()
         with :? InvalidOperationException as e when e.Source = Linq.exceptionSource ->
             raise (ArgumentException(e.Message, e))
         
@@ -274,12 +270,8 @@ type Linq =
     static member inline min (e:seq<'T>) = Seq.min e
         
     static member inline private maxImpl (source:seq<'a>) =
-        let src = 
-            match source with
-            | :? list<'a> as l -> Links.Identity.Instance |> Linq.addLinkToList l
-            | _ -> source
         try
-            src.Max ()
+            (Linq.tryListConsumable source).Max ()
         with :? InvalidOperationException as e when e.Source = Linq.exceptionSource ->
             raise (ArgumentException(e.Message, e))
 
