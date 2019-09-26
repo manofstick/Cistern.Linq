@@ -57,7 +57,7 @@ namespace Cistern.Linq.ChainLinq
             {
                 var ty = e.GetType();
 
-                var enumerableNamespace = ty.Namespace;
+                var enumerableNamespace = ty.Namespace ?? String.Empty; // Namespace can be null - https://docs.microsoft.com/en-us/dotnet/api/system.type.namespace
                 var enumerableName = ty.Name;
 
                 foreach (var search in finders)
