@@ -8,7 +8,7 @@ open System.Runtime.CompilerServices
 
 module LinqImpl =
     let groupBy (projection:Func<'T,'Key>) (source:seq<'T>) : seq<'Key * seq<'T>> =
-        Cistern.Linq.Enumerable.GroupByDelaySourceException(source, projection, HashIdentity.Structural)
+        Cistern.Linq.Enumerable.GroupByDelaySourceException(source, projection, Comparison.FastGenericEqualityComparerFromTable)
         |> fun grouped -> grouped.Select (fun g -> g.Key, g :> seq<'T>)
 
 module Linq =
@@ -71,14 +71,14 @@ module Linq =
         upcast ChainLinq.Consumables.SelectMany<_,_,_> (sources, ChainLinq.Links.Identity<_>.Instance)
 
     let distinct (source:seq<'T>) : seq<'T> =
-        (tryListConsumable source).Distinct HashIdentity.Structural
+        (tryListConsumable source).Distinct Comparison.FastGenericEqualityComparerFromTable
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let empty<'T> : seq<'T> =
         upcast Consumables.Empty<'T>.Instance
 
     let except (itemsToExclude:seq<'T>) (source:seq<'T>) : seq<'T> =
-        (tryListConsumable source).Except (itemsToExclude, HashIdentity.Structural)
+        (tryListConsumable source).Except (itemsToExclude, Comparison.FastGenericEqualityComparerFromTable)
 
     let inline exists (f:'a->bool) (e:seq<'a>) =
         (tryListConsumable e).Any (fun x -> f x)

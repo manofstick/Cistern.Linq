@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Comparison.fsi" />
+    <Compile Include="Comparison.fs" />
     <Compile Include="Consumers\pick.fs" />
     <Compile Include="Consumables\allPairs.fs" />
     <Compile Include="Consumables\init.fs" />
