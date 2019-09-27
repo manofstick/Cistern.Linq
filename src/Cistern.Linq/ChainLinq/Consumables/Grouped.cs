@@ -10,9 +10,9 @@ namespace Cistern.Linq.ChainLinq.Consumables
         private readonly Func<TSource, TKey> _keySelector;
         private readonly IEqualityComparer<TKey> _comparer;
 
-        public GroupedEnumerable(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer)
+        public GroupedEnumerable(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer, bool delaySourceException)
         {
-            if (source == null)
+            if (!delaySourceException && source == null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
@@ -37,8 +37,12 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override Consumable<U> AddTail<U>(ILink<IGrouping<TKey, TSource>, U> transform) =>
             new GroupedEnumerableWithLinks<TSource, TKey, U>(_source, _keySelector, _comparer, transform);
 
-        private Lookup<TKey, TSource> ToLookup() =>
-            Consumer.Lookup.Consume(_source, _keySelector, _comparer);
+        private Lookup<TKey, TSource> ToLookup()
+        {
+            if (_source == null)
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
+            return Consumer.Lookup.Consume(_source, _keySelector, _comparer);
+        }
 
         public override void Consume(Consumer<IGrouping<TKey, TSource>> consumer) =>
             ToLookup().Consume(consumer);
@@ -63,6 +67,8 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         private Consumable<V> ToConsumable()
         {
+            if (_source == null)
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             Lookup<TKey, TSource> lookup = Consumer.Lookup.Consume(_source, _keySelector, _comparer);
             return lookup.AddTail(Link);
         }

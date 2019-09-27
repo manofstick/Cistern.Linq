@@ -6,6 +6,11 @@ open Cistern.Linq.FSharp
 open System
 open System.Runtime.CompilerServices
 
+module LinqImpl =
+    let groupBy (projection:Func<'T,'Key>) (source:seq<'T>) : seq<'Key * seq<'T>> =
+        Cistern.Linq.Enumerable.GroupByDelaySourceException(source, projection, HashIdentity.Structural)
+        |> fun grouped -> grouped.Select (fun g -> g.Key, g :> seq<'T>)
+
 module Linq =
     [<Literal>]
     let internal exceptionSource = "Cistern.Linq"
@@ -89,6 +94,10 @@ module Linq =
 
     let inline forall (f:'a->bool) (e:seq<'a>) =
         (tryListConsumable e).All (fun x -> f x)
+
+    let inline groupBy (projection:'T->'Key) (source:seq<'T>) : seq<'Key * seq<'T>> =
+        tryListConsumable source
+        |> LinqImpl.groupBy (Func<_,_> projection)
 
     let head (e:seq<'a>) =
         try (tryListConsumable e).First () with :? InvalidOperationException as e when e.Source = exceptionSource -> raise (ArgumentException(e.Message, e))
@@ -257,16 +266,16 @@ type Linq =
         with :? InvalidOperationException as e when e.Source = Linq.exceptionSource ->
             raise (ArgumentException(e.Message, e))
         
-    static member min (e:seq<float>)                   = Linq.minImpl e
-    static member min (e:seq<float32>)                 = Linq.minImpl e
-    static member min (e:seq<decimal>)                 = Linq.minImpl e
-    static member min (e:seq<int>)                     = Linq.minImpl e
-    static member min (e:seq<int64>)                   = Linq.minImpl e
-    static member min (e:seq<Nullable<float>>)         = Linq.minImpl e
-    static member min (e:seq<Nullable<float32>>)       = Linq.minImpl e
-    static member min (e:seq<Nullable<decimal>>)       = Linq.minImpl e
-    static member min (e:seq<Nullable<int>>)           = Linq.minImpl e
-    static member min (e:seq<Nullable<int64>>)         = Linq.minImpl e
+    static member min (e:seq<float>)             = Linq.minImpl e
+    static member min (e:seq<float32>)           = Linq.minImpl e
+    static member min (e:seq<decimal>)           = Linq.minImpl e
+    static member min (e:seq<int>)               = Linq.minImpl e
+    static member min (e:seq<int64>)             = Linq.minImpl e
+    static member min (e:seq<Nullable<float>>)   = Linq.minImpl e
+    static member min (e:seq<Nullable<float32>>) = Linq.minImpl e
+    static member min (e:seq<Nullable<decimal>>) = Linq.minImpl e
+    static member min (e:seq<Nullable<int>>)     = Linq.minImpl e
+    static member min (e:seq<Nullable<int64>>)   = Linq.minImpl e
     static member inline min (e:seq<'T>) = Seq.min e
         
     static member inline private maxImpl (source:seq<'a>) =
@@ -275,16 +284,16 @@ type Linq =
         with :? InvalidOperationException as e when e.Source = Linq.exceptionSource ->
             raise (ArgumentException(e.Message, e))
 
-    static member max (e:seq<float>)                   = Linq.maxImpl e
-    static member max (e:seq<decimal>)                 = Linq.maxImpl e
-    static member max (e:seq<int>)                     = Linq.maxImpl e
-    static member max (e:seq<int64>)                   = Linq.maxImpl e
-    static member max (e:seq<float32>)                 = Linq.maxImpl e
-    static member max (e:seq<Nullable<float>>)         = Linq.maxImpl e
-    static member max (e:seq<Nullable<float32>>)       = Linq.maxImpl e
-    static member max (e:seq<Nullable<decimal>>)       = Linq.maxImpl e
-    static member max (e:seq<Nullable<int>>)           = Linq.maxImpl e
-    static member max (e:seq<Nullable<int64>>)         = Linq.maxImpl e
+    static member max (e:seq<float>)             = Linq.maxImpl e
+    static member max (e:seq<decimal>)           = Linq.maxImpl e
+    static member max (e:seq<int>)               = Linq.maxImpl e
+    static member max (e:seq<int64>)             = Linq.maxImpl e
+    static member max (e:seq<float32>)           = Linq.maxImpl e
+    static member max (e:seq<Nullable<float>>)   = Linq.maxImpl e
+    static member max (e:seq<Nullable<float32>>) = Linq.maxImpl e
+    static member max (e:seq<Nullable<decimal>>) = Linq.maxImpl e
+    static member max (e:seq<Nullable<int>>)     = Linq.maxImpl e
+    static member max (e:seq<Nullable<int64>>)   = Linq.maxImpl e
     static member inline max (e:seq<'T>) = Seq.max e
 
     // polyfill
@@ -308,7 +317,6 @@ type Linq =
     static member inline foldBack<'T,'State> (folder:'T->'State->'State) (source:seq<'T>) (state:'State) = Seq.foldBack folder source state
     static member inline foldBack2<'T1,'T2,'State> (folder:'T1->'T2->'State->'State) (source1:seq<'T1>) (source2:seq<'T2>) (state:'State) = Seq.foldBack2 folder source1 source2 state
     static member inline forall2 (predicate:'T1->'T2->bool) (source1:seq<'T1>) (source2:seq<'T2>) = Seq.forall2 predicate source1 source2
-    static member inline groupBy (projection:'T->'Key) (source:seq<'T>) = Seq.groupBy projection source
     static member inline tryHead (source:seq<'T>) : option<'T> = Seq.tryHead source
     static member inline tryLast (source:seq<'T>) : option<'T> = Seq.tryLast source
     static member inline exactlyOne (source:seq<'T>) : 'T = Seq.exactlyOne source
