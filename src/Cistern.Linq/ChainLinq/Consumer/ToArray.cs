@@ -3,6 +3,25 @@ using System;
 
 namespace Cistern.Linq.ChainLinq.Consumer
 {
+    static class ToArrayHelper
+    {
+        public static void Select<S, T>(ReadOnlySpan<S> source, Func<S, T> selector, T[] result)
+        {
+            for (int idx = 0; idx < source.Length && idx < result.Length; ++idx)
+            {
+                result[idx] = selector(source[idx]);
+            }
+        }
+
+        public static void SelectNonZeroIndex<S, T>(ReadOnlySpan<S> source, Func<S, T> selector, T[] result, int rIdx)
+        {
+            for (int sIdx = 0; sIdx < source.Length && rIdx < result.Length; ++sIdx, ++rIdx)
+            {
+                result[rIdx] = selector(source[sIdx]);
+            }
+        }
+    }
+
     sealed class ToArrayKnownSize<T>
         : Consumer<T, T[]>
         , Optimizations.IHeadStart<T>
@@ -16,6 +35,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         public override ChainStatus ProcessNext(T input)
         {
             Result[_index++] = input;
+
             return ChainStatus.Flow;
         }
 
@@ -23,6 +43,7 @@ namespace Cistern.Linq.ChainLinq.Consumer
         {
             source.CopyTo(new Span<T>(Result, _index, Result.Length-_index));
             _index += source.Length;
+
             return ChainStatus.Flow;
         }
 
@@ -42,61 +63,79 @@ namespace Cistern.Linq.ChainLinq.Consumer
                     throw new Exception("Logic error, enumerable contains more data that expected");
                 _index = i;
             }
+
             return ChainStatus.Flow;
         }
 
         ChainStatus Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)
         {
-            foreach (var item in source)
+            if (_index + source.Length > Result.Length)
+                throw new Exception("Logic error, enumerable contains more data that expected");
+
+            if (_index == 0)
             {
-                Result[_index++] = selector(item);
+                ToArrayHelper.Select(source, selector, Result);
             }
+            else
+            {
+                ToArrayHelper.SelectNonZeroIndex(source, selector, Result, _index);
+            }
+            _index += source.Length;
 
             return ChainStatus.Flow;
         }
 
         ChainStatus Optimizations.ITailEnd<T>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, T> selector)
         {
+            var index = _index;
             foreach (var item in source)
             {
-                Result[_index++] = selector(item);
+                Result[index++] = selector(item);
             }
+            _index = index;
 
             return ChainStatus.Flow;
         }
 
         ChainStatus Optimizations.ITailEnd<T>.Where(ReadOnlySpan<T> source, Func<T, bool> predicate)
         {
+            var index = _index;
             foreach (var item in source)
             {
                 if (predicate(item))
                 {
-                    Result[_index++] = item;
+                    Result[index++] = item;
                 }
             }
+            _index = index;
 
             return ChainStatus.Flow;
         }
 
         ChainStatus Optimizations.ITailEnd<T>.Where<Enumerable, Enumerator>(Enumerable source, Func<T, bool> predicate)
         {
+            var index = _index;
             foreach (var item in source)
             {
                 if (predicate(item))
                 {
-                    Result[_index++] = item;
+                    Result[index++] = item;
                 }
             }
+            _index = index;
 
             return ChainStatus.Flow;
         }
 
         ChainStatus Optimizations.ITailEnd<T>.SelectMany<TSource, TCollection>(TSource source, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector)
         {
+            var index = _index;
             foreach (var item in span)
             {
-                Result[_index++] = resultSelector(source, item);
+                Result[index++] = resultSelector(source, item);
             }
+            _index = index;
+
             return ChainStatus.Flow;
         }
 
