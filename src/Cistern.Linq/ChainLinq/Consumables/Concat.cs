@@ -96,7 +96,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
             public override void Consume(Consumer<V> consumer) =>
                 ChainLinq.Consume.SelectMany.Invoke(GetEnumerableAsConsumable(), Link, consumer);
 
-            int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer)
+            int? Optimizations.IConsumableFastCount.TryRawCount(bool asCountConsumer)
             {
                 checked
                 {
@@ -106,7 +106,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
                         var tryCount = _enumerables.Enumerables[i] switch
                         {
                             ICollection<T>                      x => x.Count,
-                            Optimizations.IConsumableFastCount  x => x.TryFastCount(asConsumer),
+                            Optimizations.IConsumableFastCount  x => x.TryFastCount(asCountConsumer),
                             System.Collections.ICollection      x => x.Count,
                             _                                     => null,
                         };
@@ -118,8 +118,8 @@ namespace Cistern.Linq.ChainLinq.Consumables
                     return count;
                 }
             }
-            int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) =>
-                Optimizations.Count.TryGetCount(this, Link, asConsumer);
+            int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
+                Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
         }
 
     }

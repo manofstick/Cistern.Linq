@@ -22,17 +22,17 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override void Consume(Consumer<V> consumer) =>
             ChainLinq.Consume.SelectMany.Invoke(_selectMany, Link, consumer);
 
-        public int? TryFastCount(bool asConsumer)
+        public int? TryFastCount(bool asCountConsumer)
         {
-            // we don't care about the count in _selectMany, but we do care if we can do it as a consumer, 
-            // because that is how we 
-            if (_selectMany is Optimizations.IConsumableFastCount fast && fast.TryFastCount(true).HasValue)
-                return Optimizations.Count.TryGetCount(this, Link, asConsumer);
+            // we don't care about the count in _selectMany, but if asCountConsumer is false, then we need to ensure
+            // that we can Consume it without causing side effects
+            if (asCountConsumer || (_selectMany is Optimizations.IConsumableFastCount fast && fast.TryFastCount(true).HasValue))
+                return Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
             return null;
         }
 
-        public int? TryRawCount(bool asConsumer) =>
-            Utils.Consume(_selectMany, new Consumer.CountSelectMany<Enumerable, T>(asConsumer));
+        public int? TryRawCount(bool asCountConsumer) =>
+            Utils.Consume(_selectMany, new Consumer.CountSelectMany<Enumerable, T>(asCountConsumer));
     }
 
     sealed partial class SelectMany<TSource, TCollection, T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>

@@ -24,10 +24,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override void Consume(Consumer<U> consumer) =>
             ChainLinq.Consume.Repeat.Invoke(_element, _count, Link, consumer);
 
-        public int? TryFastCount(bool asConsumer) =>
-            Optimizations.Count.TryGetCount(this, Link, asConsumer);
+        public int? TryFastCount(bool asCountConsumer) =>
+            Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
 
-        public int? TryRawCount(bool asConsumer) => _count;
+        public int? TryRawCount(bool asCountConsumer) => _count;
 
         public override object TailLink => IsIdentity ? this : base.TailLink;
 

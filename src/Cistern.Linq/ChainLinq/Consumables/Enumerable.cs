@@ -37,10 +37,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public Consumable<U> MergeWhere(ConsumableCons<U> _, Func<U, bool> predicate) =>
             (Consumable<U>)(object)new WhereEnumerable<TEnumerable, TEnumerator, T>(Underlying, (Func<T, bool>)(object)predicate);
 
-        int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) =>
-            Optimizations.Count.TryGetCount(this, Link, asConsumer);
+        int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
+            Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
 
-        int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer) =>
+        int? Optimizations.IConsumableFastCount.TryRawCount(bool asCountConsumer) =>
             Underlying.TryLength;
     }
 }

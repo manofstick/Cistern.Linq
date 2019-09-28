@@ -2,8 +2,8 @@
 {
     interface IConsumableFastCount
     {
-        int? TryFastCount(bool asConsumer);
-        int? TryRawCount(bool asConsumer);
+        int? TryFastCount(bool asCountConsumer);
+        int? TryRawCount(bool asCountConsumer);
     }
 
     interface ILinkFastCount

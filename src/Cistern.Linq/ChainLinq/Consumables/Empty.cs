@@ -43,7 +43,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override object TailLink => null;
         public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new InvalidOperationException();
 
-        int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) => 0;
-        int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer) => 0;
+        int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) => 0;
+        int? Optimizations.IConsumableFastCount.TryRawCount(bool asCountConsumer) => 0;
     }
 }
