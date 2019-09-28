@@ -5,7 +5,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed partial class Repeat<T, U> 
         : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<U, T>
-        , Optimizations.ICountOnConsumable
+        , Optimizations.IConsumableFastCount
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
     {
@@ -24,27 +24,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override void Consume(Consumer<U> consumer) =>
             ChainLinq.Consume.Repeat.Invoke(_element, _count, Link, consumer);
 
-        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap)
-        {
-            if (Link is Optimizations.ICountOnConsumableLink countLink)
-            {
-                return countLink.GetCount(_count);
-            }
+        public int? TryFastCount(bool asConsumer) =>
+            Optimizations.Count.TryGetCount(this, Link, asConsumer);
 
-            if (onlyIfCheap)
-            {
-                return -1;
-            }
-
-            return FullCount();
-        }
-
-        private int FullCount()
-        {
-            var counter = new Consumer.Count<U, int, int, double, Maths.OpsInt>();
-            Consume(counter);
-            return counter.Result;
-        }
+        public int? TryRawCount(bool asConsumer) => _count;
 
         public override object TailLink => IsIdentity ? this : base.TailLink;
 

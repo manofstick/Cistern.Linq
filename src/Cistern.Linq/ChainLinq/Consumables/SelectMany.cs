@@ -5,7 +5,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed partial class SelectMany<Enumerable, T, V>
         : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
-        , Optimizations.ICountOnConsumable
+        , Optimizations.IConsumableFastCount
         where Enumerable : IEnumerable<T>
     {
         private readonly Consumable<Enumerable> _selectMany;
@@ -22,28 +22,17 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override void Consume(Consumer<V> consumer) =>
             ChainLinq.Consume.SelectMany.Invoke(_selectMany, Link, consumer);
 
-        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap)
+        public int? TryFastCount(bool asConsumer)
         {
-            if (onlyIfCheap)
-            {
-                return -1;
-            }
-
-            if (Link is Optimizations.ICountOnConsumableLink countLink)
-            {
-                var selectManyCount = new Consumer.CountSelectMany<Enumerable, T>();
-                _selectMany.Consume(selectManyCount);
-                var underlyingCount = selectManyCount.Result;
-
-                var c = countLink.GetCount(underlyingCount);
-                if (underlyingCount >= 0)
-                    return underlyingCount;
-            }
-
-            var counter = new Consumer.Count<V, int, int, double, Maths.OpsInt>();
-            Consume(counter);
-            return counter.Result;
+            // we don't care about the count in _selectMany, but we do care if we can do it as a consumer, 
+            // because that is how we 
+            if (_selectMany is Optimizations.IConsumableFastCount fast && fast.TryFastCount(true).HasValue)
+                return Optimizations.Count.TryGetCount(this, Link, asConsumer);
+            return null;
         }
+
+        public int? TryRawCount(bool asConsumer) =>
+            Utils.Consume(_selectMany, new Consumer.CountSelectMany<Enumerable, T>(asConsumer));
     }
 
     sealed partial class SelectMany<TSource, TCollection, T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>

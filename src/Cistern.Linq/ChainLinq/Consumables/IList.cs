@@ -4,7 +4,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed partial class IList<T, V>
         : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
-        , Optimizations.ICountOnConsumable
+        , Optimizations.IConsumableFastCount
     {
         private readonly IList<T> _list;
         private readonly int _start;
@@ -22,7 +22,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override void Consume(Consumer<V> consumer) =>
             ChainLinq.Consume.IList.Invoke(_list, _start, _count, Link, consumer);
 
-        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap) =>
-            Optimizations.Count.GetCount(this, Link, _count, onlyIfCheap);
+        int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) =>
+            Optimizations.Count.TryGetCount(this, Link, asConsumer);
+
+        int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer) =>
+            _count;
     }
 }

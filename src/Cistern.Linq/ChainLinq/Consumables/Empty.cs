@@ -7,7 +7,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
     sealed class Empty<T> 
         : ConsumableCons<T>
         , IEnumerator<T>
-        , Optimizations.ICountOnConsumable
+        , Optimizations.IConsumableFastCount
     {
         public static Consumable<T> Instance = new Empty<T>();
 
@@ -43,6 +43,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override object TailLink => null;
         public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new InvalidOperationException();
 
-        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap) => 0;
+        int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) => 0;
+        int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer) => 0;
     }
 }

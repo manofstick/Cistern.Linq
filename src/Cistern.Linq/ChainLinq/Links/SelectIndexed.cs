@@ -5,6 +5,7 @@ namespace Cistern.Linq.ChainLinq.Links
     sealed class SelectIndexed<T, U>
         : ILink<T, U>
         , Optimizations.IMergeWhere<U>
+        , Optimizations.ILinkFastCount
     {
         readonly int _startIndex;
         readonly Func<T, int, U> _selector;
@@ -19,6 +20,9 @@ namespace Cistern.Linq.ChainLinq.Links
 
         Chain<T> ILink<T,U>.Compose(Chain<U> activity) =>
             new Activity(_selector, _startIndex, activity);
+
+        bool Optimizations.ILinkFastCount.SupportedAsConsumer => false; // maybe; .net core does? Implications for SelectMany?
+        int? Optimizations.ILinkFastCount.FastCountAdjustment(int count) => count;
 
         sealed class Activity
             : Activity<T, U>

@@ -20,3 +20,6 @@ type Indexed<'T> private () =
         member __.Compose activity = 
             upcast IndexedActivity(activity)
 
+    interface Cistern.Linq.ChainLinq.Optimizations.ILinkFastCount with
+        member __.SupportedAsConsumer = true
+        member __.FastCountAdjustment count = System.Nullable count

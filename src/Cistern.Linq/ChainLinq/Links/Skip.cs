@@ -5,23 +5,25 @@ namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class Skip<T>
         : ILink<T, T>
-        , Optimizations.ICountOnConsumableLink
+        , Optimizations.ILinkFastCount
     {
         private int _toSkip;
 
         public Skip(int toSkip) =>
             _toSkip = toSkip;
 
-        Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
-            new Activity(_toSkip, activity);
+        bool Optimizations.ILinkFastCount.SupportedAsConsumer => true;
 
-        int Optimizations.ICountOnConsumableLink.GetCount(int count)
+        int? Optimizations.ILinkFastCount.FastCountAdjustment(int count)
         {
             checked
             {
                 return Math.Max(0, count - _toSkip);
             }
         }
+
+        Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
+            new Activity(_toSkip, activity);
 
         sealed class Activity
             : Activity<T, T>

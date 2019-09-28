@@ -6,6 +6,7 @@ namespace Cistern.Linq.ChainLinq.Links
         : ILink<T, U>
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
+        , Optimizations.ILinkFastCount
     {
         public Select(Func<T, U> selector) =>
             Selector = selector;
@@ -20,6 +21,9 @@ namespace Cistern.Linq.ChainLinq.Links
 
         Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> consumable, Func<U, bool> predicate) =>
             consumable.ReplaceTailLink(new SelectWhere<T, U>(Selector, predicate));
+
+        bool Optimizations.ILinkFastCount.SupportedAsConsumer => false;
+        int? Optimizations.ILinkFastCount.FastCountAdjustment(int count) => count;
 
         sealed partial class Activity
             : Activity<T, U>

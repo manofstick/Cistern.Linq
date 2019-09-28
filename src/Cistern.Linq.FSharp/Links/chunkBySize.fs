@@ -36,3 +36,12 @@ type ChunkBySize<'T>(chunkBySize:int) =
     interface Cistern.Linq.ChainLinq.ILink<'T, array<'T>> with
         member __.Compose activity = 
             upcast ChunkBySizeActivity(chunkBySize, activity)
+
+    interface Cistern.Linq.ChainLinq.Optimizations.ILinkFastCount with
+        member __.SupportedAsConsumer = true
+        member __.FastCountAdjustment count =
+            let count = 
+                if count = 0
+                then 0
+                else ((count-1) / chunkBySize) + 1
+            System.Nullable count

@@ -5,7 +5,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed partial class Range<T>
         : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<T, int>
-        , Optimizations.ICountOnConsumable
+        , Optimizations.IConsumableFastCount
         , Optimizations.IMergeSelect<T>
         , Optimizations.IMergeWhere<T>
         , Optimizations.IMergeSkipTake<T>
@@ -25,24 +25,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override void Consume(Consumer<T> consumer) =>
             ChainLinq.Consume.Range.Invoke(_start, _count, Link, consumer);
 
-        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap)
-        {
-            if (Link is Optimizations.ICountOnConsumableLink countLink)
-            {
-                var count = countLink.GetCount(_count);
-                if (count >= 0)
-                    return count;
-            }
+        public int? TryFastCount(bool asConsumer) =>
+            Optimizations.Count.TryGetCount(this, Link, asConsumer);
 
-            if (onlyIfCheap)
-            {
-                return -1;
-            }
-
-            var counter = new Consumer.Count<T, int, int, double, Maths.OpsInt>();
-            Consume(counter);
-            return counter.Result;
-        }
+        public int? TryRawCount(bool asConsumer) => _count;
 
         public override object TailLink => IsIdentity ? this : base.TailLink;
 

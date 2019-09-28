@@ -68,8 +68,12 @@ namespace Cistern.Linq.FSharp.Links
 
     internal sealed class Pairwise<T>
         : ILink<T, Tuple<T, T>>
+        , ChainLinq.Optimizations.ILinkFastCount
     {
         static internal ILink<T, Tuple<T, T>> Instance { get; } = new Pairwise<T>();
+
+        bool ChainLinq.Optimizations.ILinkFastCount.SupportedAsConsumer => true;
+        int? ChainLinq.Optimizations.ILinkFastCount.FastCountAdjustment(int count) => Math.Max(0, count - 1);
 
         private Pairwise() {}
 

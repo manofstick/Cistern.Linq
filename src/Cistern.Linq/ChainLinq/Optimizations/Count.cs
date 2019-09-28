@@ -1,14 +1,28 @@
 ﻿namespace Cistern.Linq.ChainLinq.Optimizations
 {
-    interface ICountOnConsumable
+    interface IConsumableFastCount
     {
-        int GetCount(bool onlyIfCheap);
+        int? TryFastCount(bool asConsumer);
+        int? TryRawCount(bool asConsumer);
     }
 
-    // TODO: to support compose, this should be a two phase get count to ensure that the underlying links
-    // both support counting. *Possibly upgrade this to just being part of the link.*
-    interface ICountOnConsumableLink
+    interface ILinkFastCount
     {
-        int GetCount(int count);
+        bool SupportedAsConsumer { get; }
+        int? FastCountAdjustment(int count);
+    }
+
+    internal static class Count
+    {
+        public static int? TryGetCount(IConsumableFastCount c, object link, bool asConsumer)
+        {
+            if (link is ILinkFastCount fast && (!asConsumer || fast.SupportedAsConsumer))
+            {
+                var rawCount = c.TryRawCount(asConsumer);
+                if (rawCount.HasValue)
+                    return fast.FastCountAdjustment(rawCount.Value);
+            }
+            return null;
+        }
     }
 }

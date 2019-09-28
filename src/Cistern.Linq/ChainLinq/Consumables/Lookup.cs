@@ -6,12 +6,12 @@ using System.Runtime.CompilerServices;
 
 namespace Cistern.Linq.ChainLinq.Consumables
 {
-
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(SystemLinq_ConsumablesLookupDebugView<,>))]
     internal abstract partial class Lookup<TKey, TElement> 
         : ConsumableCons<IGrouping<TKey, TElement>>
         , ILookup<TKey, TElement>
+        , Optimizations.IConsumableFastCount
     {
         GroupingArrayPool<TElement> _pool;
 
@@ -25,6 +25,12 @@ namespace Cistern.Linq.ChainLinq.Consumables
         }
 
         public int Count { get; protected set; }
+
+        int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) =>
+            Optimizations.Count.TryGetCount(this, Links.Identity<object>.Instance, asConsumer);
+
+        int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer) =>
+            Count;
 
         public IEnumerable<TElement> this[TKey key]
         {
@@ -43,7 +49,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public bool Contains(TKey key) => GetGrouping(key, create: false) != null;
 
         internal ConsumableCons<TResult> ApplyResultSelector<TResult>(Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
-            new LookupResultsSelector<TKey, TElement, TResult>(_lastGrouping, resultSelector);
+            new LookupResultsSelector<TKey, TElement, TResult>(_lastGrouping, Count, resultSelector);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -52,10 +58,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
         public override Consumable<IGrouping<TKey, TElement>> AddTail(ILink<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>> transform) =>
-            new Lookup<TKey, TElement, IGrouping<TKey, TElement>>(_lastGrouping, transform);
+            new Lookup<TKey, TElement, IGrouping<TKey, TElement>>(_lastGrouping, Count, transform);
 
         public override Consumable<U> AddTail<U>(ILink<IGrouping<TKey, TElement>, U> transform) =>
-            new Lookup<TKey, TElement, U>(_lastGrouping, transform);
+            new Lookup<TKey, TElement, U>(_lastGrouping, Count, transform);
 
         public override IEnumerator<IGrouping<TKey, TElement>> GetEnumerator() =>
             ChainLinq.GetEnumerator.Lookup.Get(_lastGrouping, Links.Identity<IGrouping<TKey, TElement>>.Instance);
@@ -168,70 +174,93 @@ namespace Cistern.Linq.ChainLinq.Consumables
         }
     }
 
-    sealed partial class Lookup<TKey, TValue, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, IGrouping<TKey, TValue>>
+    sealed partial class Lookup<TKey, TValue, V>
+        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, IGrouping<TKey, TValue>>
+        , Optimizations.IConsumableFastCount
     {
         private readonly Grouping<TKey, TValue> _lastGrouping;
+        private readonly int _count;
 
-        public Lookup(Grouping<TKey, TValue> lastGrouping, ILink<IGrouping<TKey, TValue>, V> first) : base(first) =>
-            _lastGrouping = lastGrouping;
+        public Lookup(Grouping<TKey, TValue> lastGrouping, int count, ILink<IGrouping<TKey, TValue>, V> first) : base(first) =>
+            (_lastGrouping, _count) = (lastGrouping, count);
 
         public override Consumable<V> Create(ILink<IGrouping<TKey, TValue>, V> first) =>
-            new Lookup<TKey, TValue, V>(_lastGrouping, first);
+            new Lookup<TKey, TValue, V>(_lastGrouping, _count, first);
         public override Consumable<W> Create<W>(ILink<IGrouping<TKey, TValue>, W> first) =>
-            new Lookup<TKey, TValue, W>(_lastGrouping, first);
+            new Lookup<TKey, TValue, W>(_lastGrouping, _count, first);
 
         public override IEnumerator<V> GetEnumerator() =>
             ChainLinq.GetEnumerator.Lookup.Get(_lastGrouping, Link);
 
         public override void Consume(Consumer<V> consumer) =>
             ChainLinq.Consume.Lookup.Invoke(_lastGrouping, Link, consumer);
+
+        int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) =>
+            Optimizations.Count.TryGetCount(this, Link, asConsumer);
+
+        int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer) =>
+            _count;
     }
 
     class LookupResultsSelector<TKey, TElement, TResult>
         : ConsumableCons<TResult>
+        , Optimizations.IConsumableFastCount
     {
         private readonly Grouping<TKey, TElement> _lastGrouping;
         private readonly Func<TKey, IEnumerable<TElement>, TResult> _resultSelector;
+        private readonly int _count;
 
-        public LookupResultsSelector(Grouping<TKey, TElement> lastGrouping, Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
-            (_lastGrouping, _resultSelector) = (lastGrouping, resultSelector);
+        public LookupResultsSelector(Grouping<TKey, TElement> lastGrouping, int count, Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
+            (_lastGrouping, _count, _resultSelector) = (lastGrouping, count, resultSelector);
 
         public override object TailLink => null;
 
         public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
         public override Consumable<TResult> AddTail(ILink<TResult, TResult> first) =>
-            new LookupResultsSelector<TKey, TElement, TResult, TResult>(_lastGrouping, _resultSelector, first);
+            new LookupResultsSelector<TKey, TElement, TResult, TResult>(_lastGrouping, _count, _resultSelector, first);
 
         public override Consumable<W> AddTail<W>(ILink<TResult, W> first) =>
-            new LookupResultsSelector<TKey, TElement, TResult, W>(_lastGrouping, _resultSelector, first);
+            new LookupResultsSelector<TKey, TElement, TResult, W>(_lastGrouping, _count, _resultSelector, first);
 
         public override IEnumerator<TResult> GetEnumerator() =>
             ChainLinq.GetEnumerator.Lookup.Get(_lastGrouping, _resultSelector, Links.Identity<TResult>.Instance);
 
         public override void Consume(Consumer<TResult> consumer) =>
             ChainLinq.Consume.Lookup.Invoke(_lastGrouping, _resultSelector, Links.Identity<TResult>.Instance, consumer);
+
+        int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) =>
+            Optimizations.Count.TryGetCount(this, Links.Identity<object>.Instance, asConsumer);
+
+        int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer) =>
+            _count;
     }
 
-    sealed partial class LookupResultsSelector<TKey, TElement, TResult, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, TResult>
+    sealed partial class LookupResultsSelector<TKey, TElement, TResult, V>
+        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, TResult>
+        , Optimizations.IConsumableFastCount
     {
         private readonly Grouping<TKey, TElement> _lastGrouping;
+        private readonly int _count;
         private readonly Func<TKey, IEnumerable<TElement>, TResult> _resultSelector;
 
-        public LookupResultsSelector(Grouping<TKey, TElement> lastGrouping, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, ILink<TResult, V> first) : base(first) =>
-            (_lastGrouping, _resultSelector) = (lastGrouping, resultSelector);
+        public LookupResultsSelector(Grouping<TKey, TElement> lastGrouping, int count, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, ILink<TResult, V> first) : base(first) =>
+            (_lastGrouping, _count, _resultSelector) = (lastGrouping, count, resultSelector);
 
         public override Consumable<V> Create(ILink<TResult, V> first) =>
-            new LookupResultsSelector<TKey, TElement, TResult, V>(_lastGrouping, _resultSelector, first);
+            new LookupResultsSelector<TKey, TElement, TResult, V>(_lastGrouping, _count, _resultSelector, first);
         public override Consumable<W> Create<W>(ILink<TResult, W> first) =>
-            new LookupResultsSelector<TKey, TElement, TResult, W>(_lastGrouping, _resultSelector, first);
+            new LookupResultsSelector<TKey, TElement, TResult, W>(_lastGrouping, _count, _resultSelector, first);
 
         public override IEnumerator<V> GetEnumerator() =>
             ChainLinq.GetEnumerator.Lookup.Get(_lastGrouping, _resultSelector, Link);
 
         public override void Consume(Consumer<V> consumer) =>
             ChainLinq.Consume.Lookup.Invoke(_lastGrouping, _resultSelector, Link, consumer);
+
+        int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) =>
+            Optimizations.Count.TryGetCount(this, Link, asConsumer);
+        int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer) =>
+            _count;
     }
-
-
 }

@@ -28,10 +28,11 @@ namespace Cistern.Linq
             }
 
             var consumable = ChainLinq.Utils.AsConsumable(source);
-
-            if (consumable is ChainLinq.Optimizations.ICountOnConsumable opt)
+            if (consumable is ChainLinq.Optimizations.IConsumableFastCount opt)
             {
-                return opt.GetCount(false);
+                var tryCount = opt.TryFastCount(true);
+                if (tryCount.HasValue)
+                    return tryCount.Value;
             }
 
             return ChainLinq.Utils.Consume(consumable, new ChainLinq.Consumer.Count<TSource, int, int, double, Maths.OpsInt>());

@@ -7,6 +7,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
         : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<U, T>
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
+        , Optimizations.IConsumableFastCount
         where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
         where TEnumerator : IEnumerator<T>
     {
@@ -36,5 +37,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public Consumable<U> MergeWhere(ConsumableCons<U> _, Func<U, bool> predicate) =>
             (Consumable<U>)(object)new WhereEnumerable<TEnumerable, TEnumerator, T>(Underlying, (Func<T, bool>)(object)predicate);
 
+        int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) =>
+            Optimizations.Count.TryGetCount(this, Link, asConsumer);
+
+        int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer) =>
+            Underlying.TryLength;
     }
 }

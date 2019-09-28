@@ -122,7 +122,7 @@ namespace Cistern.Linq.ChainLinq
             }
             else if (e is List<T> list)
             {
-                return new Consumables.List<T, U>(list, transform);
+                return new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, U>(new Optimizations.ListEnumerable<T>(list), transform);
             }
             else if (e is Consumables.IConsumableProvider<T> provider)
             {

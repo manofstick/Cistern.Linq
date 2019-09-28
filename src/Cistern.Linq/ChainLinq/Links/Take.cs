@@ -4,13 +4,17 @@ namespace Cistern.Linq.ChainLinq.Links
 {
     sealed class Take<T>
         : ILink<T, T>
-        , Optimizations.ICountOnConsumableLink
+        , Optimizations.ILinkFastCount
         , Optimizations.IMergeSkipTake<T>
     {
         private int _count;
 
         public Take(int count) =>
             _count = count;
+
+        bool Optimizations.ILinkFastCount.SupportedAsConsumer => true;
+
+        int? Optimizations.ILinkFastCount.FastCountAdjustment(int count) => Math.Min(_count, count);
 
         public Consumable<T> MergeSkip(ConsumableCons<T> consumable, int skip)
         {
@@ -30,14 +34,6 @@ namespace Cistern.Linq.ChainLinq.Links
 
         Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
             new Activity(_count, activity);
-
-        int Optimizations.ICountOnConsumableLink.GetCount(int count)
-        {
-            checked
-            {
-                return Math.Min(_count, count);
-            }
-        }
 
         sealed class Activity
             : Activity<T, T>

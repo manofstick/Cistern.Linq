@@ -16,25 +16,29 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            int count;
             switch (source)
             {
                 case ChainLinq.Consumable<TSource> consumable:
-                    if (consumable is ChainLinq.Optimizations.ICountOnConsumable counter)
+                    ChainLinq.Consumer<TSource, TSource[]> toArray = null;
+
+                    if (consumable is ChainLinq.Optimizations.IConsumableFastCount counter)
                     {
-                        count = counter.GetCount(true);
-                        if (count == 0)
-                            return Array.Empty<TSource>();
-                        else if (count > 0)
+                        var tryCount = counter.TryFastCount(false);
+                        if (tryCount.HasValue)
                         {
-                            return ChainLinq.Utils.Consume(consumable, new ChainLinq.Consumer.ToArrayKnownSize<TSource>(count));
+                            if (tryCount.Value == 0)
+                                return Array.Empty<TSource>();
+                            else
+                                toArray = new ChainLinq.Consumer.ToArrayKnownSize<TSource>(tryCount.Value);
                         }
                     }
 
-                    return ChainLinq.Utils.Consume(consumable, new ChainLinq.Consumer.ToArrayViaBuilder<TSource>());
+                    toArray ??= new ChainLinq.Consumer.ToArrayViaBuilder<TSource>();
+
+                    return ChainLinq.Utils.Consume(consumable, toArray);
 
                 case ICollection<TSource> collection:
-                    count = collection.Count;
+                    var count = collection.Count;
                     if (count == 0)
                         return Array.Empty<TSource>();
                     else
@@ -58,18 +62,18 @@ namespace Cistern.Linq
 
             if (source is ChainLinq.Consumable<TSource> consumable)
             {
-                if (source is ChainLinq.Optimizations.ICountOnConsumable counter)
+                ChainLinq.Consumer<TSource, List<TSource>> toList = null;
+
+                if (source is ChainLinq.Optimizations.IConsumableFastCount counter)
                 {
-                    var count = counter.GetCount(true);
-                    if (count >= 0)
-                    {
-                        return ChainLinq.Utils.Consume(source, new ChainLinq.Consumer.ToList<TSource>(count));
-                    }
+                    var tryCount = counter.TryFastCount(false);
+                    if (tryCount.HasValue)
+                        toList = new ChainLinq.Consumer.ToList<TSource>(tryCount.Value);
                 }
 
-                var builder = new ChainLinq.Consumer.ToList<TSource>();
-                consumable.Consume(builder);
-                return builder.Result;
+                toList ??= new ChainLinq.Consumer.ToList<TSource>();
+
+                return ChainLinq.Utils.Consume(source, toList);
             }
 
             return new List<TSource>(source);
@@ -90,22 +94,19 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.keySelector);
             }
 
-            var consumable = ChainLinq.Utils.AsConsumable(source);
+            ChainLinq.Consumer<TSource, Dictionary<TKey, TSource>> toDictionary = null;
 
-            if (consumable is ChainLinq.Optimizations.ICountOnConsumable counter)
+            var consumable = ChainLinq.Utils.AsConsumable(source);
+            if (consumable is ChainLinq.Optimizations.IConsumableFastCount counter)
             {
-                var count = counter.GetCount(true);
-                if (count >= 0)
-                {
-                    var builder = new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeySourceSelector<TSource, TKey>, TSource, TKey, TSource>(new ChainLinq.Consumer.KeySourceSelector<TSource, TKey>(keySelector), count, comparer);
-                    consumable.Consume(builder);
-                    return builder.Result;
-                }
+                var tryCount = counter.TryFastCount(false);
+                if (tryCount.HasValue)
+                    toDictionary = new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeySourceSelector<TSource, TKey>, TSource, TKey, TSource>(new ChainLinq.Consumer.KeySourceSelector<TSource, TKey>(keySelector), tryCount.Value, comparer);
             }
 
-            var builder2 = new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeySourceSelector<TSource, TKey>, TSource, TKey, TSource>(new ChainLinq.Consumer.KeySourceSelector<TSource, TKey>(keySelector), comparer);
-            consumable.Consume(builder2);
-            return builder2.Result;
+            toDictionary ??= new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeySourceSelector<TSource, TKey>, TSource, TKey, TSource>(new ChainLinq.Consumer.KeySourceSelector<TSource, TKey>(keySelector), comparer);
+
+            return ChainLinq.Utils.Consume(source, toDictionary);
         }
 
         public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) =>
@@ -128,22 +129,19 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.elementSelector);
             }
 
-            var consumable = ChainLinq.Utils.AsConsumable(source);
+            ChainLinq.Consumer<TSource, Dictionary<TKey, TElement>> toDictionary = null;
 
-            if (consumable is ChainLinq.Optimizations.ICountOnConsumable counter)
+            var consumable = ChainLinq.Utils.AsConsumable(source);
+            if (consumable is ChainLinq.Optimizations.IConsumableFastCount counter)
             {
-                var count = counter.GetCount(true);
-                if (count >= 0)
-                {
-                    var builder = new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>, TSource, TKey, TElement>(new ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>(keySelector, elementSelector), count, comparer);
-                    consumable.Consume(builder);
-                    return builder.Result;
-                }
+                var tryCount = counter.TryFastCount(false);
+                if (tryCount.HasValue)
+                    toDictionary = new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>, TSource, TKey, TElement>(new ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>(keySelector, elementSelector), tryCount.Value, comparer);
             }
 
-            var builder2 = new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>, TSource, TKey, TElement>(new ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>(keySelector, elementSelector), comparer);
-            consumable.Consume(builder2);
-            return builder2.Result;
+            toDictionary ??= new ChainLinq.Consumer.ToDictionary<ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>, TSource, TKey, TElement>(new ChainLinq.Consumer.KeyElementSelector<TSource, TKey, TElement>(keySelector, elementSelector), comparer);
+
+            return ChainLinq.Utils.Consume(source, toDictionary);
         }
 
         public static HashSet<TSource> ToHashSet<TSource>(this IEnumerable<TSource> source) => source.ToHashSet(comparer: null);

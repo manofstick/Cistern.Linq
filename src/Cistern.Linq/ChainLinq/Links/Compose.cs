@@ -15,7 +15,7 @@ namespace Cistern.Linq.ChainLinq.Links
 
     sealed class Composition<T, U, V>
         : Composition<T, V>
-        , Optimizations.ICountOnConsumableLink
+        , Optimizations.ILinkFastCount
     {
         private readonly ILink<T, U> _first;
         private readonly ILink<U, V> _second;
@@ -28,21 +28,28 @@ namespace Cistern.Linq.ChainLinq.Links
 
         public override object TailLink => _second;
 
+
         public override ILink<T, W> ReplaceTail<Unknown, W>(ILink<Unknown, W> newLink)
         {
             Debug.Assert(typeof(Unknown) == typeof(U));
 
             return new Composition<T, U, W>(_first, (ILink<U,W>)(object)newLink);
         }
-
-        int Optimizations.ICountOnConsumableLink.GetCount(int count)
+        bool Optimizations.ILinkFastCount.SupportedAsConsumer => (_first, _second) switch
         {
-            if (_first is Optimizations.ICountOnConsumableLink first && _second is Optimizations.ICountOnConsumableLink second)
+            (Optimizations.ILinkFastCount first, Optimizations.ILinkFastCount second) => first.SupportedAsConsumer && second.SupportedAsConsumer,
+            _ => false
+        };
+
+        int? Optimizations.ILinkFastCount.FastCountAdjustment(int count)
+        {
+            if (_first is Optimizations.ILinkFastCount first && _second is Optimizations.ILinkFastCount second)
             {
-                count = first.GetCount(count);
-                return count < 0 ? count : second.GetCount(count);
+                var tryCount = first.FastCountAdjustment(count);
+                if (tryCount.HasValue)
+                    return second.FastCountAdjustment(tryCount.Value);
             }
-            return -1;
+            return null;
         }
     }
 

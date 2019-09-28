@@ -60,7 +60,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         sealed partial class ConcatConsumable<V>
             : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
-            , Optimizations.ICountOnConsumable
+            , Optimizations.IConsumableFastCount
         {
             Cell _enumerables;
             int _length;
@@ -96,68 +96,30 @@ namespace Cistern.Linq.ChainLinq.Consumables
             public override void Consume(Consumer<V> consumer) =>
                 ChainLinq.Consume.SelectMany.Invoke(GetEnumerableAsConsumable(), Link, consumer);
 
-            int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap)
+            int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer)
             {
                 checked
                 {
-                    if (Link is Optimizations.ICountOnConsumableLink countLink)
+                    var count = 0;
+                    for (var i = 0; i < _length; ++i)
                     {
-                        var count = 0;
-
-                        for (var i = 0; i < _length; ++i)
+                        var tryCount = _enumerables.Enumerables[i] switch
                         {
-                            var e = _enumerables.Enumerables[i];
+                            ICollection<T>                      x => x.Count,
+                            Optimizations.IConsumableFastCount  x => x.TryFastCount(asConsumer),
+                            System.Collections.ICollection      x => x.Count,
+                            _                                     => null,
+                        };
+                        if (!tryCount.HasValue)
+                            return null;
 
-                            var tryCount = TryCount(e, onlyIfCheap);
-                            if (tryCount < 0)
-                            {
-                                if (onlyIfCheap)
-                                    return -1;
-
-                                return FullCount();
-                            }
-
-                            count += tryCount;
-
-                        }
-                        return countLink.GetCount(count);
+                        count += tryCount.Value;
                     }
-
-                    if (onlyIfCheap)
-                    {
-                        return -1;
-                    }
-
-                    return FullCount();
+                    return count;
                 }
             }
-
-            private int FullCount()
-            {
-                var counter = new Consumer.Count<V, int, int, double, Maths.OpsInt>();
-                Consume(counter);
-                return counter.Result;
-            }
-
-            private static int TryCount(IEnumerable<T> e, bool onlyIfCheap)
-            {
-                if (e is ICollection<T> ct)
-                {
-                    return ct.Count;
-                }
-                else if (e is Optimizations.ICountOnConsumable cc)
-                {
-                    return cc.GetCount(onlyIfCheap);
-                }
-                else if (e is System.Collections.ICollection c)
-                {
-                    return c.Count;
-                }
-                else
-                {
-                    return -1;
-                }
-            }
+            int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) =>
+                Optimizations.Count.TryGetCount(this, Link, asConsumer);
         }
 
     }

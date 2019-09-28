@@ -5,6 +5,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed partial class SelectArray<T, U>
         : ConsumableEnumerator<U>
+        , Optimizations.IConsumableFastCount
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
     {
@@ -68,12 +69,18 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> _, Func<U, bool> predicate) =>
             new SelectWhereArray<T, U>(Underlying, Selector, predicate);
+
+        public int? TryFastCount(bool asConsumer) =>
+            asConsumer ? null : Optimizations.Count.TryGetCount(this, Links.Identity<object>.Instance, asConsumer);
+
+        public int? TryRawCount(bool asConsumer) => Underlying.Length;
     }
 
     sealed partial class SelectEnumerable<TEnumerable, TEnumerator, T, U>
         : ConsumableEnumerator<U>
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
+        , Optimizations.IConsumableFastCount
         where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
         where TEnumerator : IEnumerator<T>
     {
@@ -171,5 +178,10 @@ namespace Cistern.Linq.ChainLinq.Consumables
 
         Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> _, Func<U, bool> predicate) =>
             new SelectWhereEnumerable<TEnumerable, TEnumerator, T, U>(Underlying, Selector, predicate);
+
+        public int? TryFastCount(bool asConsumer) =>
+            asConsumer ? null : Optimizations.Count.TryGetCount(this, Links.Identity<object>.Instance, asConsumer);
+
+        public int? TryRawCount(bool asConsumer) => Underlying.TryLength;
     }
 }

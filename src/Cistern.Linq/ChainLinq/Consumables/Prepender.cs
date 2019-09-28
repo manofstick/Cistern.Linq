@@ -5,7 +5,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed partial class Prepender<T>
         : Consumable<T>
-        , Optimizations.ICountOnConsumable
+        //, Optimizations.ICountOnConsumable
     {
         readonly T _element;
         readonly int _count;
@@ -54,12 +54,12 @@ namespace Cistern.Linq.ChainLinq.Consumables
             } while (next != null);
         }
 
-        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap)
-        {
-            if (_count < 0)
-                throw new OverflowException();
+        //int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap)
+        //{
+        //    if (_count < 0)
+        //        throw new OverflowException();
 
-            return _count;
-        }
+        //    return _count;
+        //}
     }
 }

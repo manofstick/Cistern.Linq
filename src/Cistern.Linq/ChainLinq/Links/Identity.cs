@@ -2,13 +2,15 @@
 {
     sealed partial class Identity<T>
         : ILink<T, T>
-        , Optimizations.ICountOnConsumableLink
+        , Optimizations.ILinkFastCount
     {
         public static ILink<T, T> Instance { get; } = new Identity<T>();
+
         private Identity() { }
 
         Chain<T> ILink<T,T>.Compose(Chain<T> next) => next;
 
-        int Optimizations.ICountOnConsumableLink.GetCount(int count) => count;
+        bool Optimizations.ILinkFastCount.SupportedAsConsumer => true;
+        int? Optimizations.ILinkFastCount.FastCountAdjustment(int count) => count;
     }
 }

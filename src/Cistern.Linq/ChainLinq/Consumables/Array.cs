@@ -5,7 +5,7 @@ namespace Cistern.Linq.ChainLinq.Consumables
 {
     sealed partial class Array<T, V>
         : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
-        , Optimizations.ICountOnConsumable
+        , Optimizations.IConsumableFastCount
     {
         internal T[] Underlying { get; }
 
@@ -24,7 +24,9 @@ namespace Cistern.Linq.ChainLinq.Consumables
         public override void Consume(Consumer<V> consumer) =>
             ChainLinq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<T>(Underlying, _start, _length), Link, consumer);
 
-        int Optimizations.ICountOnConsumable.GetCount(bool onlyIfCheap) =>
-            Optimizations.Count.GetCount(this, this.Link, _length, onlyIfCheap);
+        int? Optimizations.IConsumableFastCount.TryFastCount(bool asConsumer) =>
+            Optimizations.Count.TryGetCount(this, Link, asConsumer);
+        int? Optimizations.IConsumableFastCount.TryRawCount(bool asConsumer) =>
+            _length;
     }
 }
