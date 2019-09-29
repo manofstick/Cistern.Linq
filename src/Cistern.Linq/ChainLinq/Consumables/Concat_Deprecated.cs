@@ -67,18 +67,6 @@ namespace Cistern.Linq.ChainLinq.Consumables
             return new Concat_Deprecated<V, V>(null, prior, this, Links.Identity<V>.Instance);
         }
 
-        public Consumable<V> Append(V element)
-        {
-            if (IsIdentity)
-            {
-                if (_thirdOrNull is Appender<V> appender)
-                {
-                    return new Concat_Deprecated<T, V>(_firstOrNull, _second, (IEnumerable<T>)(object)appender.Add(element), Link);
-                }
-            }
-            return Append(new Appender<V>(element));
-        }
-
         public Consumable<V> Prepend(V element)
         {
             if (IsIdentity)

@@ -16,12 +16,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            if (source is ChainLinq.Consumables.Concat_Deprecated<TSource, TSource> forAppending)
-            {
-                return forAppending.Append(element);
-            }
-
-            return new ChainLinq.Consumables.Concat_Deprecated<TSource, TSource>(null, source, new ChainLinq.Consumables.Appender<TSource>(element), ChainLinq.Links.Identity<TSource>.Instance);
+            return ChainLinq.Consumables.Append<TSource>.Create(source, element);
         }
 
         public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> source, TSource element)
