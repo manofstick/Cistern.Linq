@@ -16,7 +16,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return ChainLinq.Consumables.Append<TSource>.Create(source, element);
+            return ChainLinq.Consumables.AppendPrepend<TSource>.AddElement(source, element, true);
         }
 
         public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> source, TSource element)
@@ -26,13 +26,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            if (source is ChainLinq.Consumables.Concat_Deprecated<TSource, TSource> forPrepending)
-            {
-                return forPrepending.Prepend(element);
-            }
-
-            return new ChainLinq.Consumables.Concat_Deprecated<TSource, TSource>(new ChainLinq.Consumables.Prepender<TSource>(element), source, null, ChainLinq.Links.Identity<TSource>.Instance);
+            return ChainLinq.Consumables.AppendPrepend<TSource>.AddElement(source, element, false);
         }
-
     }
 }
