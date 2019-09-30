@@ -33,11 +33,12 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
 
         const int Start = 0;
         const int OuterEnumeratorMoveNext = 1;
-        const int InnerEnumeratorMoveNext = 2;
-        const int CheckStopped = 3;
-        const int Completing = 4;
-        const int Finished = 5;
-        const int PostFinished = 6;
+        const int InnerEnumeratorMoveNextOnSelf = 2;
+        const int InnerEnumeratorMoveNext = 3;
+        const int CheckStopped = 4;
+        const int Completing = 5;
+        const int Finished = 6;
+        const int PostFinished = 7;
 
         int _state;
 
@@ -100,12 +101,32 @@ namespace Cistern.Linq.ChainLinq.ConsumerEnumerators
                     {
                         _inner = _outer.Current.GetEnumerator();
 
-                        _state = InnerEnumeratorMoveNext;
-                        goto case InnerEnumeratorMoveNext;
+                        if (ReferenceEquals(_chain, this))
+                        {
+                            _state = InnerEnumeratorMoveNextOnSelf;
+                            goto case InnerEnumeratorMoveNextOnSelf;
+                        }
+                        else
+                        {
+                            _state = InnerEnumeratorMoveNext;
+                            goto case InnerEnumeratorMoveNext;
+                        }
                     }
 
                     _state = Completing;
                     goto case Completing;
+
+                case InnerEnumeratorMoveNextOnSelf:
+                    if (!_inner.MoveNext())
+                    {
+                        _inner.Dispose();
+                        _inner = default;
+                        _state = OuterEnumeratorMoveNext;
+                        goto case OuterEnumeratorMoveNext;
+                    }
+
+                    Result = (V)(object)_inner.Current; // should be no-op as TResult should equal T
+                    return true;
 
                 case InnerEnumeratorMoveNext:
                     if (_inner.MoveNext())
