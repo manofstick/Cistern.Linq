@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.Consumables
 {
     abstract class ConsumableEnumerator<V>
-        : ConsumableCons<V>
+        : Consumable<V>
         , IEnumerable<V>
         , IEnumerator<V>
     {

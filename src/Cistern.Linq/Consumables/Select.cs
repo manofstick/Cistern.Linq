@@ -64,10 +64,10 @@ namespace Cistern.Linq.Consumables
         public override Consumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Array<T, V>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
 
-        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(ConsumableCons<U> _, Func<U, V> u2v) =>
+        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(Consumable<U> _, Func<U, V> u2v) =>
             new SelectArray<T, V>(Underlying, t => u2v(Selector(t)));
 
-        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> _, Func<U, bool> predicate) =>
+        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(Consumable<U> _, Func<U, bool> predicate) =>
             new SelectWhereArray<T, U>(Underlying, Selector, predicate);
 
         public int? TryFastCount(bool asCountConsumer) =>
@@ -173,10 +173,10 @@ namespace Cistern.Linq.Consumables
         public override Consumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
 
-        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(ConsumableCons<U> _, Func<U, V> u2v) =>
+        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(Consumable<U> _, Func<U, V> u2v) =>
             new SelectEnumerable<TEnumerable, TEnumerator, T, V>(Underlying, t => u2v(Selector(t)));
 
-        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> _, Func<U, bool> predicate) =>
+        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(Consumable<U> _, Func<U, bool> predicate) =>
             new SelectWhereEnumerable<TEnumerable, TEnumerator, T, U>(Underlying, Selector, predicate);
 
         public int? TryFastCount(bool asCountConsumer) =>

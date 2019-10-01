@@ -156,7 +156,7 @@ namespace Cistern.Linq
 
         internal static Consumable<TSource> Where<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
-            if (source is ConsumableCons<TSource> consumable)
+            if (source is Consumable<TSource> consumable)
             {
                 if (consumable.TailLink is Optimizations.IMergeWhere<TSource> optimization)
                 {
@@ -196,7 +196,7 @@ namespace Cistern.Linq
 
         internal static Consumable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            if (source is ConsumableCons<TSource> consumable)
+            if (source is Consumable<TSource> consumable)
             {
                 if (consumable.TailLink is Optimizations.IMergeSelect<TSource> optimization)
                 {
@@ -228,7 +228,7 @@ namespace Cistern.Linq
         {
             switch (source)
             {
-                case ConsumableCons<T> consumable:
+                case Consumable<T> consumable:
                     if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
                     {
                         return optimization.MergeSkip(consumable, skip);
@@ -260,7 +260,7 @@ namespace Cistern.Linq
 
             switch (source)
             {
-                case ConsumableCons<T> consumable:
+                case Consumable<T> consumable:
                     if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
                     {
                         return optimization.MergeTake(consumable, take);
@@ -297,7 +297,7 @@ namespace Cistern.Linq
         // expensive JIT generic interface call
         internal static Consumable<T> PushTTTransform<T>(IEnumerable<T> e, ILink<T, T> transform)
         {
-            if (e is ConsumableCons<T> consumable)
+            if (e is Consumable<T> consumable)
             {
                 return consumable.AddTail(transform);
             }
@@ -310,7 +310,7 @@ namespace Cistern.Linq
         // TUTrasform is more flexible but slower than TTTransform
         internal static Consumable<U> PushTUTransform<T, U>(IEnumerable<T> e, ILink<T, U> transform)
         {
-            if (e is ConsumableCons<T> consumable)
+            if (e is Consumable<T> consumable)
             {
                 return consumable.AddTail(transform);
             }

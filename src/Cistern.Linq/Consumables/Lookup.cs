@@ -9,7 +9,7 @@ namespace Cistern.Linq.Consumables
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(SystemLinq_ConsumablesLookupDebugView<,>))]
     internal abstract partial class Lookup<TKey, TElement> 
-        : ConsumableCons<IGrouping<TKey, TElement>>
+        : Consumable<IGrouping<TKey, TElement>>
         , ILookup<TKey, TElement>
         , Optimizations.IConsumableFastCount
     {
@@ -48,7 +48,7 @@ namespace Cistern.Linq.Consumables
 
         public bool Contains(TKey key) => GetGrouping(key, create: false) != null;
 
-        internal ConsumableCons<TResult> ApplyResultSelector<TResult>(Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
+        internal Consumable<TResult> ApplyResultSelector<TResult>(Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
             new LookupResultsSelector<TKey, TElement, TResult>(_lastGrouping, Count, resultSelector);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -203,7 +203,7 @@ namespace Cistern.Linq.Consumables
     }
 
     class LookupResultsSelector<TKey, TElement, TResult>
-        : ConsumableCons<TResult>
+        : Consumable<TResult>
         , Optimizations.IConsumableFastCount
     {
         private readonly Grouping<TKey, TElement> _lastGrouping;

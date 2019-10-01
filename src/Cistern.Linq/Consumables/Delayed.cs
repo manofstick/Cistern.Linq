@@ -5,9 +5,9 @@ namespace Cistern.Linq.Consumables
 {
     sealed class Delayed<T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
     {
-        internal Func<ConsumableCons<T>> GetUnderlying { get; }
+        internal Func<Consumable<T>> GetUnderlying { get; }
 
-        public Delayed(Func<ConsumableCons<T>> consumable, ILink<T, V> link) : base(link) =>
+        public Delayed(Func<Consumable<T>> consumable, ILink<T, V> link) : base(link) =>
             GetUnderlying = consumable;
 
         public override Consumable<V> Create   (ILink<T, V> first) => new Delayed<T, V>(GetUnderlying, first);

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.Consumables
 {
     sealed class Empty<T> 
-        : ConsumableCons<T>
+        : Consumable<T>
         , IEnumerator<T>
         , Optimizations.IConsumableFastCount
     {

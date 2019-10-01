@@ -4,17 +4,17 @@ namespace Cistern.Linq.Optimizations
 {
     interface IMergeSelect<T>
     {
-        Consumable<U> MergeSelect<U>(ConsumableCons<T> consumable, Func<T, U> selector);
+        Consumable<U> MergeSelect<U>(Consumable<T> consumable, Func<T, U> selector);
     }
 
     interface IMergeWhere<T>
     {
-        Consumable<T> MergeWhere(ConsumableCons<T> consumable, Func<T, bool> predicate);
+        Consumable<T> MergeWhere(Consumable<T> consumable, Func<T, bool> predicate);
     }
 
     interface IMergeSkipTake<T>
     {
-        Consumable<T> MergeSkip(ConsumableCons<T> consumable, int skip);
-        Consumable<T> MergeTake(ConsumableCons<T> consumable, int take);
+        Consumable<T> MergeSkip(Consumable<T> consumable, int skip);
+        Consumable<T> MergeTake(Consumable<T> consumable, int take);
     }
 }

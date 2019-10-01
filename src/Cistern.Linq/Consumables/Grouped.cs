@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.Consumables
 {
     internal sealed partial class GroupedEnumerable<TSource, TKey>
-        : ConsumableCons<IGrouping<TKey, TSource>>
+        : Consumable<IGrouping<TKey, TSource>>
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -81,7 +81,7 @@ namespace Cistern.Linq.Consumables
     }
 
     internal sealed partial class GroupedEnumerable<TSource, TKey, TElement>
-        : ConsumableCons<IGrouping<TKey, TElement>>
+        : Consumable<IGrouping<TKey, TElement>>
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -161,7 +161,7 @@ namespace Cistern.Linq.Consumables
     }
 
     internal sealed partial class GroupedResultEnumerable<TSource, TKey, TResult>
-        : ConsumableCons<TResult>
+        : Consumable<TResult>
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -229,7 +229,7 @@ namespace Cistern.Linq.Consumables
         private Consumable<V> ToConsumable()
         {
             Lookup<TKey, TSource> lookup = Consumer.Lookup.Consume(_source, _keySelector, _comparer);
-            ConsumableCons<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
+            Consumable<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
             return appliedSelector.AddTail(Link);
         }
 
@@ -241,7 +241,7 @@ namespace Cistern.Linq.Consumables
     }
 
     internal sealed partial class GroupedResultEnumerable<TSource, TKey, TElement, TResult>
-        : ConsumableCons<TResult>
+        : Consumable<TResult>
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -317,7 +317,7 @@ namespace Cistern.Linq.Consumables
         private Consumable<V> ToConsumable()
         {
             Lookup<TKey, TElement> lookup = Consumer.Lookup.Consume(_source, _keySelector, _elementSelector, _comparer);
-            ConsumableCons<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
+            Consumable<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
             return appliedSelector.AddTail(Link);
         }
 

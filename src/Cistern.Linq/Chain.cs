@@ -79,10 +79,7 @@ namespace Cistern.Linq
 
         public abstract IEnumerator<T> GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
 
-    internal abstract class ConsumableCons<T> : Consumable<T>
-    {
         public abstract object TailLink { get; }
         public abstract Consumable<T> AddTail(ILink<T, T> transform);
         public abstract Consumable<U> AddTail<U>(ILink<T, U> transform);

@@ -16,10 +16,10 @@ namespace Cistern.Linq.Links
         Chain<T> ILink<T,U>.Compose(Chain<U> activity) =>
             new Activity(Selector, activity);
 
-        public virtual Consumable<V> MergeSelect<V>(ConsumableCons<U> consumable, Func<U, V> selector) =>
+        public virtual Consumable<V> MergeSelect<V>(Consumable<U> consumable, Func<U, V> selector) =>
             consumable.ReplaceTailLink(new Select<T, U, V>(Selector, selector));
 
-        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> consumable, Func<U, bool> predicate) =>
+        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(Consumable<U> consumable, Func<U, bool> predicate) =>
             consumable.ReplaceTailLink(new SelectWhere<T, U>(Selector, predicate));
 
         bool Optimizations.ILinkFastCount.SupportedAsConsumer => false;
@@ -83,7 +83,7 @@ namespace Cistern.Linq.Links
         public Select(Func<T, U> t2u, Func<U, V> u2v) : base(t => u2v(t2u(t))) =>
             (_t2u, _u2v) = (t2u, u2v);
 
-        public override Consumable<W> MergeSelect<W>(ConsumableCons<V> consumer, Func<V, W> v2w) =>
+        public override Consumable<W> MergeSelect<W>(Consumable<V> consumer, Func<V, W> v2w) =>
             consumer.ReplaceTailLink(new Select<T, U, V, W>(_t2u, _u2v, v2w));
     }
 
@@ -96,7 +96,7 @@ namespace Cistern.Linq.Links
         public Select(Func<T, U> t2u, Func<U, V> u2v, Func<V, W> v2w) : base(t => v2w(u2v(t2u(t)))) =>
             (_t2u, _u2v, _v2w) = (t2u, u2v, v2w);
 
-        public override Consumable<X> MergeSelect<X>(ConsumableCons<W> consumer, Func<W, X> w2x) =>
+        public override Consumable<X> MergeSelect<X>(Consumable<W> consumer, Func<W, X> w2x) =>
             consumer.ReplaceTailLink(new Select<T, U, V, W, X>(_t2u, _u2v, _v2w, w2x));
     }
 

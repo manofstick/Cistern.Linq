@@ -22,7 +22,7 @@ namespace Cistern.Linq.Links
             }
         }
 
-        public Consumable<T> MergeSkip(ConsumableCons<T> consumable, int skip)
+        public Consumable<T> MergeSkip(Consumable<T> consumable, int skip)
         {
             checked
             {
@@ -37,7 +37,7 @@ namespace Cistern.Linq.Links
             }
         }
 
-        public Consumable<T> MergeTake(ConsumableCons<T> consumable, int take)
+        public Consumable<T> MergeTake(Consumable<T> consumable, int take)
         {
             checked
             {

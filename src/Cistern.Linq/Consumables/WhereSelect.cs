@@ -70,7 +70,7 @@ namespace Cistern.Linq.Consumables
         public override Consumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Array<T, V>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.WhereSelect<T, U>(Predicate, Selector), transform));
 
-        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(ConsumableCons<U> _, Func<U, V> selector) =>
+        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(Consumable<U> _, Func<U, V> selector) =>
             new WhereSelectArray<T, V>(Underlying, Predicate, x => selector(Selector(x)));
     }
 
@@ -173,7 +173,7 @@ namespace Cistern.Linq.Consumables
         public override Consumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.WhereSelect<T, U>(Predicate, Selector), transform));
 
-        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(ConsumableCons<U> _, Func<U, V> selector) =>
+        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(Consumable<U> _, Func<U, V> selector) =>
             new WhereSelectEnumerable<TEnumerable, TEnumerator, T, V>(Underlying, Predicate, x => selector(Selector(x)));
     }
 }

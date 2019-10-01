@@ -15,7 +15,7 @@ namespace Cistern.Linq.Links
 
         public SelectIndexed(Func<T, int, U> selector) : this(selector, 0) { }
 
-        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(ConsumableCons<U> consumable, Func<U, bool> second) =>
+        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(Consumable<U> consumable, Func<U, bool> second) =>
             consumable.ReplaceTailLink(new SelectIndexedWhere<T, U>(_selector, second));
 
         Chain<T> ILink<T,U>.Compose(Chain<U> activity) =>
