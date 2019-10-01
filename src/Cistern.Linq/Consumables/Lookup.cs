@@ -175,7 +175,7 @@ namespace Cistern.Linq.Consumables
     }
 
     sealed partial class Lookup<TKey, TValue, V>
-        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, IGrouping<TKey, TValue>>
+        : Consumable<IGrouping<TKey, TValue>, V>
         , Optimizations.IConsumableFastCount
     {
         private readonly Grouping<TKey, TValue> _lastGrouping;
@@ -237,7 +237,7 @@ namespace Cistern.Linq.Consumables
     }
 
     sealed partial class LookupResultsSelector<TKey, TElement, TResult, V>
-        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, TResult>
+        : Consumable<TResult, V>
         , Optimizations.IConsumableFastCount
     {
         private readonly Grouping<TKey, TElement> _lastGrouping;

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.Consumables
 {
     sealed class Enumerable<TEnumerable, TEnumerator, T, U>
-        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<U, T>
+        : Consumable<T, U>
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
         , Optimizations.IConsumableFastCount

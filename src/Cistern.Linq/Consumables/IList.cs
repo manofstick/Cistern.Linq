@@ -3,7 +3,7 @@
 namespace Cistern.Linq.Consumables
 {
     sealed partial class IList<T, V>
-        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+        : Consumable<T, V>
         , Optimizations.IConsumableFastCount
     {
         private readonly IList<T> _list;

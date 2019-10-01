@@ -2,16 +2,11 @@
 
 namespace Cistern.Linq.Consumables
 {
-    /// <summary>
-    /// The generic arguments are reversed here due to a bug in xunit. See https://github.com/xunit/xunit/issues/1870
-    /// </summary>
-    /// <typeparam name="U"></typeparam>
-    /// <typeparam name="T"></typeparam>
-    internal abstract class Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<U, T> : Consumable<U>
+    internal abstract class Consumable<T, U> : Consumable<U>
     {
         public ILink<T, U> Link { get; }
 
-        protected Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug(ILink<T, U> link) =>
+        protected Consumable(ILink<T, U> link) =>
             Link = link;
 
         public abstract Consumable<U> Create(ILink<T, U> first);
@@ -20,21 +15,9 @@ namespace Cistern.Linq.Consumables
         public abstract Consumable<V> Create<V>(ILink<T, V> first);
         public override Consumable<V> AddTail<V>(ILink<U, V> next) => Create(Links.Composition.Create(Link, next));
 
-
         protected bool IsIdentity => ReferenceEquals(Link, Links.Identity<T>.Instance);
 
-        public override object TailLink
-        {
-            get
-            {
-                if (Link is Links.Composition<T, U> composition)
-                {
-                    return composition.TailLink;
-                }
-
-                return Link;
-            }
-        }
+        public override object TailLink => Link is Links.Composition<T, U> c ? c.TailLink : Link;
 
         public override Consumable<V> ReplaceTailLink<Unknown,V>(ILink<Unknown,V> newLink)
         {

@@ -92,7 +92,7 @@ namespace Cistern.Linq.Consumables
         }
 
         sealed partial class AppendPrependConsumable<V>
-            : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+            : Consumable<T, V>
             , Optimizations.IConsumableFastCount
         { 
             public AppendPrependConsumable(SharedElements prepended, int lengthPrepended, IEnumerable<T> e, SharedElements appended, int lengthAppended, ILink<T, V> link) : base(link)

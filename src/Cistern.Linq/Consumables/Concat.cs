@@ -59,7 +59,7 @@ namespace Cistern.Linq.Consumables
         }
 
         sealed partial class ConcatConsumable<V>
-            : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+            : Consumable<T, V>
             , Optimizations.IConsumableFastCount
         {
             Cell _enumerables;

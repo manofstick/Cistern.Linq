@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.Consumables
 {
     sealed partial class Repeat<T, U> 
-        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<U, T>
+        : Consumable<T, U>
         , Optimizations.IConsumableFastCount
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>

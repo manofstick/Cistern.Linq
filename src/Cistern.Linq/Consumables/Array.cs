@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.Consumables
 {
     sealed partial class Array<T, V>
-        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+        : Consumable<T, V>
         , Optimizations.IConsumableFastCount
     {
         internal T[] Underlying { get; }

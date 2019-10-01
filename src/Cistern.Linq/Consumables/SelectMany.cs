@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.Consumables
 {
     sealed partial class SelectMany<Enumerable, T, V>
-        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+        : Consumable<T, V>
         , Optimizations.IConsumableFastCount
         where Enumerable : IEnumerable<T>
     {
@@ -35,7 +35,7 @@ namespace Cistern.Linq.Consumables
             Utils.Consume(_selectMany, new Consumer.CountSelectMany<Enumerable, T>(asCountConsumer));
     }
 
-    sealed partial class SelectMany<TSource, TCollection, T, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, T>
+    sealed partial class SelectMany<TSource, TCollection, T, V> : Consumable<T, V>
     {
         private readonly Consumable<(TSource, IEnumerable<TCollection>)> _selectMany;
         private readonly Func<TSource, TCollection, T> _resultSelector;

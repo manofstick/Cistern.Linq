@@ -51,7 +51,8 @@ namespace Cistern.Linq.Consumables
             ToLookup().GetEnumerator();
     }
 
-    internal sealed partial class GroupedEnumerableWithLinks<TSource, TKey, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, IGrouping<TKey, TSource>>
+    internal sealed partial class GroupedEnumerableWithLinks<TSource, TKey, V>
+        : Consumable<IGrouping<TKey, TSource>, V>
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -132,7 +133,7 @@ namespace Cistern.Linq.Consumables
     }
 
     internal sealed partial class GroupedEnumerableWithLinks<TSource, TKey, TElement, V>
-        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, IGrouping<TKey, TElement>>
+        : Consumable<IGrouping<TKey, TElement>, V>
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -211,7 +212,8 @@ namespace Cistern.Linq.Consumables
             ToLookup().ApplyResultSelector(_resultSelector).GetEnumerator();
     }
 
-    internal sealed partial class GroupedResultEnumerableWithLinks<TSource, TKey, TResult, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, TResult>
+    internal sealed partial class GroupedResultEnumerableWithLinks<TSource, TKey, TResult, V>
+        : Consumable<TResult, V>
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -298,7 +300,7 @@ namespace Cistern.Linq.Consumables
             ToLookup().ApplyResultSelector(_resultSelector).GetEnumerator();
     }
 
-    internal sealed partial class GroupedResultEnumerableWithLinks<TSource, TKey, TElement, TResult, V> : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<V, TResult>
+    internal sealed partial class GroupedResultEnumerableWithLinks<TSource, TKey, TElement, TResult, V> : Consumable<TResult, V>
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.Consumables
 {
     sealed partial class Range<T>
-        : Base_Generic_Arguments_Reversed_To_Work_Around_XUnit_Bug<T, int>
+        : Consumable<int, T>
         , Optimizations.IConsumableFastCount
         , Optimizations.IMergeSelect<T>
         , Optimizations.IMergeWhere<T>
