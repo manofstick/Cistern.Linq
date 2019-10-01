@@ -1,6 +1,6 @@
 ﻿namespace Cistern.Linq.FSharp.Consumers
 
-open Cistern.Linq.ChainLinq
+open Cistern.Linq
 open System.Collections.Generic
 
 type Pick<'T,'U>(chooser:'T->option<'U>) =

@@ -1,4 +1,4 @@
-﻿using Cistern.Linq.ChainLinq;
+﻿using Cistern.Linq;
 using System.Collections.Generic;
 
 namespace Cistern.Linq.Immutable
@@ -6,16 +6,16 @@ namespace Cistern.Linq.Immutable
     public static class Register
     {
         class TryFindSystemCollectionsTypes
-            : ChainLinq.Utils.ITryFindSpecificType
+            : Utils.ITryFindSpecificType
         {
             private TryFindSystemCollectionsTypes() { }
 
-            public static ChainLinq.Utils.ITryFindSpecificType Instance { get; } = new TryFindSystemCollectionsTypes();
+            public static Utils.ITryFindSpecificType Instance { get; } = new TryFindSystemCollectionsTypes();
 
             public string Namespace => "System.Collections.Generic";
 
             public Consumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
-                where Construct : ChainLinq.Utils.IConstruct<T, U>
+                where Construct : Utils.IConstruct<T, U>
             {
                 var firstChar = name[0];
 
@@ -28,7 +28,7 @@ namespace Cistern.Linq.Immutable
                 return null;
             }
 
-            public bool TryInvoke<T, Invoker>(Invoker invoker, IEnumerable<T> e, string name) where Invoker : ChainLinq.Utils.IInvoker<T>
+            public bool TryInvoke<T, Invoker>(Invoker invoker, IEnumerable<T> e, string name) where Invoker : Utils.IInvoker<T>
             {
                 var firstChar = name[0];
 
@@ -44,7 +44,7 @@ namespace Cistern.Linq.Immutable
 
         public static void RegisterSystemCollections()
         {
-            ChainLinq.Utils.Register(TryFindSystemCollectionsTypes.Instance);
+            Utils.Register(TryFindSystemCollectionsTypes.Instance);
         }
     }
 }

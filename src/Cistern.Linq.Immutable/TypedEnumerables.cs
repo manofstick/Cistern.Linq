@@ -1,4 +1,4 @@
-﻿using Cistern.Linq.ChainLinq.Optimizations;
+﻿using Cistern.Linq.Optimizations;
 using System;
 using System.Collections;
 using System.Collections.Immutable;

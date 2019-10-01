@@ -1,6 +1,6 @@
 ﻿module Cistern.Linq.FSharp.Register
 
-open Cistern.Linq.ChainLinq
+open Cistern.Linq
 open System.Collections.Generic
 
 type private TryFindImmutableTypes () =

@@ -1,17 +1,17 @@
-﻿using Cistern.Linq.ChainLinq;
+﻿using Cistern.Linq;
 using System;
 
 namespace Cistern.Linq.FSharp.Links
 {
     internal sealed class PairwiseActivity<T>
         : Activity<T, Tuple<T, T>>
-        , ChainLinq.Optimizations.IHeadStart<T>
+        , Optimizations.IHeadStart<T>
     {
         private Tuple<T,T> _previous;
 
         public PairwiseActivity(Chain<Tuple<T, T>> next) : base(next) { }
 
-        ChainStatus ChainLinq.Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+        ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
         {
             var status = ChainStatus.Flow;
             foreach (var input in source)
@@ -31,7 +31,7 @@ namespace Cistern.Linq.FSharp.Links
             return status;
         }
 
-        ChainStatus ChainLinq.Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+        ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             var status = ChainStatus.Flow;
             foreach (var input in source)
@@ -68,12 +68,12 @@ namespace Cistern.Linq.FSharp.Links
 
     internal sealed class Pairwise<T>
         : ILink<T, Tuple<T, T>>
-        , ChainLinq.Optimizations.ILinkFastCount
+        , Optimizations.ILinkFastCount
     {
         static internal ILink<T, Tuple<T, T>> Instance { get; } = new Pairwise<T>();
 
-        bool ChainLinq.Optimizations.ILinkFastCount.SupportedAsConsumer => true;
-        int? ChainLinq.Optimizations.ILinkFastCount.FastCountAdjustment(int count) => Math.Max(0, count - 1);
+        bool Optimizations.ILinkFastCount.SupportedAsConsumer => true;
+        int? Optimizations.ILinkFastCount.FastCountAdjustment(int count) => Math.Max(0, count - 1);
 
         private Pairwise() {}
 

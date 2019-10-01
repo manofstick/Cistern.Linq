@@ -127,10 +127,10 @@ namespace Cistern.Linq
 
     internal sealed class SystemLinq_ConsumablesLookupDebugView<TKey, TElement>
     {
-        private readonly ChainLinq.Consumables.Lookup<TKey, TElement> _lookup;
+        private readonly Consumables.Lookup<TKey, TElement> _lookup;
         private IGrouping<TKey, TElement>[] _cachedGroupings;
 
-        public SystemLinq_ConsumablesLookupDebugView(ChainLinq.Consumables.Lookup<TKey, TElement> lookup)
+        public SystemLinq_ConsumablesLookupDebugView(Consumables.Lookup<TKey, TElement> lookup)
         {
             _lookup = lookup;
         }

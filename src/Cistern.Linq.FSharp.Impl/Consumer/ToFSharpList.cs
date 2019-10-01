@@ -2,7 +2,7 @@
 using Microsoft.FSharp.Collections;
 using System;
 
-namespace Cistern.Linq.ChainLinq.Consumer
+namespace Cistern.Linq.Consumer
 {
     internal sealed class ToFSharpList<T>
         : Consumer<T, FSharpList<T>>

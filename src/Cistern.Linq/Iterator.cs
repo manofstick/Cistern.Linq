@@ -98,7 +98,7 @@ namespace Cistern.Linq
             /// <param name="selector">The selector used to map each item.</param>
             public virtual IEnumerable<TResult> Select<TResult>(Func<TSource, TResult> selector)
             {
-                return ChainLinq.Utils.PushTUTransform(this, new ChainLinq.Links.Select<TSource, TResult>(selector));
+                return Utils.PushTUTransform(this, new Links.Select<TSource, TResult>(selector));
             }
 
             /// <summary>
@@ -107,7 +107,7 @@ namespace Cistern.Linq
             /// <param name="predicate">The predicate used to filter each item.</param>
             public virtual IEnumerable<TSource> Where(Func<TSource, bool> predicate)
             {
-                return ChainLinq.Utils.PushTTTransform(this, new ChainLinq.Links.Where<TSource>(predicate));
+                return Utils.PushTTTransform(this, new Links.Where<TSource>(predicate));
             }
 
             object IEnumerator.Current => Current;

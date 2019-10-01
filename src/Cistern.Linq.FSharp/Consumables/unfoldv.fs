@@ -1,6 +1,6 @@
 ﻿namespace Cistern.Linq.FSharp.Consumables
 
-open Cistern.Linq.ChainLinq
+open Cistern.Linq
 open System.Collections.Generic
 
 [<Struct; NoComparison; NoEquality>]

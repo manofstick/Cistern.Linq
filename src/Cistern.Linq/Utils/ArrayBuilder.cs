@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Cistern.Linq.Utils
+namespace Cistern.Linq
 {
     struct ArrayBuilder<T>
     {

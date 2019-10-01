@@ -1,6 +1,6 @@
 ﻿module private Cistern.Linq.FSharp.TypedEnumerables
 
-open Cistern.Linq.ChainLinq.Optimizations
+open Cistern.Linq.Optimizations
 
 [<Struct; NoComparison; NoEquality>]
 type FSharpListEnumerator<'T> =

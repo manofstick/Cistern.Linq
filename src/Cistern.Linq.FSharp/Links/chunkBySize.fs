@@ -1,9 +1,9 @@
 ﻿namespace Cistern.Linq.FSharp.Links
 
-open Cistern.Linq.ChainLinq
+open Cistern.Linq
 
 type ChunkBySizeActivity<'T>(chunkBySize, next) =
-    inherit Cistern.Linq.ChainLinq.Activity<'T,array<'T>>(next)
+    inherit Cistern.Linq.Activity<'T,array<'T>>(next)
 
     let mutable current = Unchecked.defaultof<_>
     let mutable idx = Unchecked.defaultof<_>
@@ -21,7 +21,7 @@ type ChunkBySizeActivity<'T>(chunkBySize, next) =
             current <- Unchecked.defaultof<_>
             base.Next output
         else
-            Cistern.Linq.ChainLinq.ChainStatus.Filter
+            Cistern.Linq.ChainStatus.Filter
             
     override __.ChainComplete status =
         if ProcessNextResultHelper.IsStopped status || isNull current then
@@ -33,11 +33,11 @@ type ChunkBySizeActivity<'T>(chunkBySize, next) =
             base.ChainComplete ChainStatus.Flow
 
 type ChunkBySize<'T>(chunkBySize:int) =
-    interface Cistern.Linq.ChainLinq.ILink<'T, array<'T>> with
+    interface Cistern.Linq.ILink<'T, array<'T>> with
         member __.Compose activity = 
             upcast ChunkBySizeActivity(chunkBySize, activity)
 
-    interface Cistern.Linq.ChainLinq.Optimizations.ILinkFastCount with
+    interface Cistern.Linq.Optimizations.ILinkFastCount with
         member __.SupportedAsConsumer = true
         member __.FastCountAdjustment count =
             let count = 

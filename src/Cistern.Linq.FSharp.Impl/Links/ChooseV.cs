@@ -1,4 +1,4 @@
-﻿using Cistern.Linq.ChainLinq;
+﻿using Cistern.Linq;
 using Microsoft.FSharp.Core;
 using System;
 
@@ -9,12 +9,12 @@ namespace Cistern.Linq.FSharp.Links
      * 
         namespace Cistern.Linq.FSharp.Links
 
-        open Cistern.Linq.ChainLinq
+        open Cistern.Linq
         open System.Runtime.CompilerServices
 
         [<Sealed>]
         type ChooseVActivity<'T,'U>(chooser:'T->ValueOption<'U>, next) =
-            inherit Cistern.Linq.ChainLinq.Activity<'T,'U>(next)
+            inherit Cistern.Linq.Activity<'T,'U>(next)
 
             [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
             member __.Process input =
@@ -25,7 +25,7 @@ namespace Cistern.Linq.FSharp.Links
             override this.ProcessNext input = this.Process input
 
         type ChooseV<'T,'U>(chooser:'T -> ValueOption<'U>) =
-            interface Cistern.Linq.ChainLinq.ILink<'T, 'U> with
+            interface Cistern.Linq.ILink<'T, 'U> with
                 member __.Compose activity = 
                     upcast ChooseVActivity(chooser, activity)
 
@@ -33,7 +33,7 @@ namespace Cistern.Linq.FSharp.Links
 
     internal sealed class ChooseVActivity<T, U>
         : Activity<T, U>
-        , ChainLinq.Optimizations.IHeadStart<T>
+        , Optimizations.IHeadStart<T>
     {
         private readonly FSharpFunc<T, FSharpValueOption<U>> chooser;
 
@@ -42,7 +42,7 @@ namespace Cistern.Linq.FSharp.Links
             this.chooser = chooser;
         }
 
-        ChainStatus ChainLinq.Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+        ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
         {
             var status = ChainStatus.Flow;
             foreach(var input in source)
@@ -58,7 +58,7 @@ namespace Cistern.Linq.FSharp.Links
             return status;
         }
 
-        ChainStatus ChainLinq.Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+        ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
             var status = ChainStatus.Flow;
             foreach (var input in source)

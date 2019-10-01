@@ -1,7 +1,7 @@
 ﻿namespace Cistern.Linq.FSharp
 
 open Cistern.Linq
-open Cistern.Linq.ChainLinq
+open Cistern.Linq
 open Cistern.Linq.FSharp
 open System
 open System.Runtime.CompilerServices
@@ -60,15 +60,15 @@ module Linq =
         if isNull e then
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
 
-        let selectMany = ChainLinq.Utils.Select (tryListConsumable e, fun x -> f x);
-        ChainLinq.Consumables.SelectMany<_,_,_> (selectMany, ChainLinq.Links.Identity<_>.Instance) :> seq<'U>
+        let selectMany = Utils.Select (tryListConsumable e, fun x -> f x);
+        Consumables.SelectMany<_,_,_> (selectMany, Links.Identity<_>.Instance) :> seq<'U>
 
     let concat (sources:seq<#seq<'Collection>>) : seq<'Collection> =
         if isNull sources then
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
 
-        let sources = (tryListConsumable sources) |> Cistern.Linq.ChainLinq.Utils.AsConsumable 
-        upcast ChainLinq.Consumables.SelectMany<_,_,_> (sources, ChainLinq.Links.Identity<_>.Instance)
+        let sources = (tryListConsumable sources) |> Cistern.Linq.Utils.AsConsumable 
+        upcast Consumables.SelectMany<_,_,_> (sources, Links.Identity<_>.Instance)
 
     let distinct (source:seq<'T>) : seq<'T> =
         (tryListConsumable source).Distinct Comparison.FastGenericEqualityComparerFromTable
@@ -145,7 +145,7 @@ module Linq =
         if isNull source then
             ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
     
-        ChainLinq.Utils.Consume (tryListConsumable source, Consumers.Pick chooser)
+        Utils.Consume (tryListConsumable source, Consumers.Pick chooser)
 
     let inline reduce (f:'a->'a->'a) (e:seq<'a>) =
         try (tryListConsumable e).Aggregate (fun a c -> f a c) with :? InvalidOperationException as e when e.Source = exceptionSource  -> raise (ArgumentException(e.Message, e))
@@ -173,7 +173,7 @@ module Linq =
 
         match source with
         | :? list<'T> as l -> l
-        | :? Consumable<'T> as c -> ChainLinq.Utils.Consume (c, Consumer.ToFSharpList ())
+        | :? Consumable<'T> as c -> Utils.Consume (c, Consumer.ToFSharpList ())
         | _ -> Seq.toList source
 
     let truncate (count:int) (source:seq<'T>) : seq<'T> =

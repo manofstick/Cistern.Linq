@@ -1,9 +1,9 @@
 ﻿namespace Cistern.Linq.FSharp.Links
 
-open Cistern.Linq.ChainLinq
+open Cistern.Linq
 
 type IndexedActivity<'T>(next) =
-    inherit Cistern.Linq.ChainLinq.Activity<'T,int*'T>(next)
+    inherit Cistern.Linq.Activity<'T,int*'T>(next)
 
     let mutable idx = -1
 
@@ -16,10 +16,10 @@ type Indexed<'T> private () =
 
     static member Instance = instance
 
-    interface Cistern.Linq.ChainLinq.ILink<'T, int*'T> with
+    interface Cistern.Linq.ILink<'T, int*'T> with
         member __.Compose activity = 
             upcast IndexedActivity(activity)
 
-    interface Cistern.Linq.ChainLinq.Optimizations.ILinkFastCount with
+    interface Cistern.Linq.Optimizations.ILinkFastCount with
         member __.SupportedAsConsumer = true
         member __.FastCountAdjustment count = System.Nullable count
