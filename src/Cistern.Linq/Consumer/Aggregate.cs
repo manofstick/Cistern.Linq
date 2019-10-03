@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Threading;
 
 namespace Cistern.Linq.Consumer
 {
@@ -7,15 +7,33 @@ namespace Cistern.Linq.Consumer
         : Consumer<T, TResult>
         , Optimizations.IHeadStart<T>
         , Optimizations.ITailEnd<T>
-
+        , IDisposable
     {
-        readonly Func<TAccumulate, T, TAccumulate> _func;
-        readonly Func<TAccumulate, TResult> _resultSelector;
+        /*readonly*/ Func<TAccumulate, T, TAccumulate> _func;
+        /*readonly*/ Func<TAccumulate, TResult> _resultSelector;
         
         TAccumulate _accumulate;
 
-        public Aggregate(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultSelector) : base(default) =>
+        private Aggregate(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultSelector) : base(default) =>
+            Init(seed, func, resultSelector);
+
+        private void Init(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultSelector) =>
             (_accumulate, _func, _resultSelector) = (seed, func, resultSelector);
+
+        private static Aggregate<T, TAccumulate, TResult> TryGetCachedInstance(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultSelector)
+        {
+            var cached = Interlocked.CompareExchange(ref Cache<Aggregate<T, TAccumulate, TResult>>.Item, null, Cache<Aggregate<T, TAccumulate, TResult>>.Item);
+            if (cached != null)
+            {
+                cached.Init(seed, func, resultSelector);
+            }
+            return cached;
+        }
+
+        void IDisposable.Dispose() => Cache<Aggregate<T, TAccumulate, TResult>>.Item = this;
+
+        public static Aggregate<T, TAccumulate, TResult> FactoryCreate(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultSelector)
+            => TryGetCachedInstance(seed, func, resultSelector) ?? new Aggregate<T, TAccumulate, TResult>(seed, func, resultSelector);
 
         public override ChainStatus ProcessNext(T input)
         {

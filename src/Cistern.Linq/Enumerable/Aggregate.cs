@@ -36,7 +36,8 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.func);
             }
 
-            return Utils.Consume(source, new Consumer.Aggregate<TSource, TAccumulate, TAccumulate>(seed, func, x=>x));
+            using var consumer = Consumer.Aggregate<TSource, TAccumulate, TAccumulate>.FactoryCreate(seed, func, x => x);
+            return Utils.Consume(source, consumer);
         }
 
         public static TResult Aggregate<TSource, TAccumulate, TResult>(this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultSelector)
@@ -56,7 +57,8 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.resultSelector);
             }
 
-            return Utils.Consume(source, new Consumer.Aggregate<TSource, TAccumulate, TResult>(seed, func, resultSelector));
+            using var consumer = Consumer.Aggregate<TSource, TAccumulate, TResult>.FactoryCreate(seed, func, resultSelector);
+            return Utils.Consume(source, consumer);
         }
     }
 }
