@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Cistern.Linq.Consumer
 {
@@ -30,6 +31,7 @@ namespace Cistern.Linq.Consumer
         : Consumer<T, T>
         , Optimizations.IHeadStart<T>
         , Optimizations.ITailEnd<T>
+        , IDisposable
         where T : struct
         where Accumulator : struct
         where Quotient : struct
@@ -37,8 +39,21 @@ namespace Cistern.Linq.Consumer
     {
         protected bool _noData;
 
-        public MaxGeneric() : base(default(Maths).MaxInit) =>
+        protected MaxGeneric() : base(default(Maths).MaxInit) =>
             _noData = true;
+
+        protected static MaxGeneric<T, Accumulator, Quotient, Maths> TryGetCachedInstance()
+        {
+            var cached = Interlocked.CompareExchange(ref Cache<MaxGeneric<T, Accumulator, Quotient, Maths>>.Item, null, Cache<MaxGeneric<T, Accumulator, Quotient, Maths>>.Item);
+            if (cached != null)
+            {
+                cached.Result = default(Maths).MaxInit;
+                cached._noData = true;
+            }
+            return cached;
+        }
+
+        void IDisposable.Dispose() => Cache<MaxGeneric<T, Accumulator, Quotient, Maths>>.Item = this;
 
         public override ChainStatus ChainComplete(ChainStatus status)
         {
@@ -318,6 +333,10 @@ namespace Cistern.Linq.Consumer
 
     sealed class MaxInt : MaxGeneric<int, int, double, Maths.OpsInt>
     {
+        private MaxInt() : base() { }
+
+        public static MaxGeneric<int, int, double, Maths.OpsInt> FactoryCreate() => TryGetCachedInstance() ?? new MaxInt();
+
         public override ChainStatus ProcessNext(int input)
         {
             _noData = false;
@@ -331,6 +350,10 @@ namespace Cistern.Linq.Consumer
 
     sealed class MaxLong : MaxGeneric<long, long, double, Maths.OpsLong>
     {
+        private MaxLong() : base() { }
+
+        public static MaxGeneric<long, long, double, Maths.OpsLong> FactoryCreate() => TryGetCachedInstance() ?? new MaxLong();
+
         public override ChainStatus ProcessNext(long input)
         {
             _noData = false;
@@ -344,6 +367,10 @@ namespace Cistern.Linq.Consumer
 
     sealed class MaxDouble : MaxGeneric<double, double, double, Maths.OpsDouble>
     {
+        private MaxDouble() : base() { }
+
+        public static MaxGeneric<double, double, double, Maths.OpsDouble> FactoryCreate() => TryGetCachedInstance() ?? new MaxDouble();
+
         public override ChainStatus ProcessNext(double input)
         {
             _noData = false;
@@ -357,6 +384,10 @@ namespace Cistern.Linq.Consumer
 
     sealed class MaxFloat : MaxGeneric<float, double, float, Maths.OpsFloat>
     {
+        private MaxFloat() : base() { }
+
+        public static MaxGeneric<float, double, float, Maths.OpsFloat> FactoryCreate() => TryGetCachedInstance() ?? new MaxFloat();
+
         public override ChainStatus ProcessNext(float input)
         {
             _noData = false;
@@ -370,6 +401,10 @@ namespace Cistern.Linq.Consumer
 
     sealed class MaxDecimal : MaxGeneric<decimal, decimal, decimal, Maths.OpsDecimal>
     {
+        private MaxDecimal() : base() { }
+
+        public static MaxGeneric<decimal, decimal, decimal, Maths.OpsDecimal> FactoryCreate() => TryGetCachedInstance() ?? new MaxDecimal();
+
         public override ChainStatus ProcessNext(decimal input)
         {
             _noData = false;

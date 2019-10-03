@@ -73,6 +73,8 @@ namespace Cistern.Linq
         public R Result { get; protected set; }
     }
 
+    static class Cache<T> { public static T Item; }
+
     internal abstract class Consumable<T> : IEnumerable<T>
     {
         public abstract void Consume(Consumer<T> consumer);

@@ -16,7 +16,8 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return Utils.Consume(source, new Consumer.MaxInt());
+            using var consumer = Consumer.MaxInt.FactoryCreate(); 
+            return Utils.Consume(source, consumer);
         }
 
         public static int? Max(this IEnumerable<int?> source)
@@ -36,7 +37,8 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return Utils.Consume(source, new Consumer.MaxLong());
+            using var consumer = Consumer.MaxLong.FactoryCreate(); 
+            return Utils.Consume(source, consumer);
         }
 
         public static long? Max(this IEnumerable<long?> source)
@@ -56,7 +58,8 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return Utils.Consume(source, new Consumer.MaxDouble());
+            using var consumer = Consumer.MaxDouble.FactoryCreate(); 
+            return Utils.Consume(source, consumer);
         }
 
         public static double? Max(this IEnumerable<double?> source)
@@ -76,7 +79,8 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return Utils.Consume(source, new Consumer.MaxFloat());
+            using var consumer = Consumer.MaxFloat.FactoryCreate();
+            return Utils.Consume(source, consumer);
         }
 
         public static float? Max(this IEnumerable<float?> source)
@@ -96,7 +100,8 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            return Utils.Consume(source, new Consumer.MaxDecimal());
+            using var consumer = Consumer.MaxDecimal.FactoryCreate();
+            return Utils.Consume(source, consumer);
         }
 
         public static decimal? Max(this IEnumerable<decimal?> source)

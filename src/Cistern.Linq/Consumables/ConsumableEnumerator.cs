@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Cistern.Linq.Consumables
 {
@@ -8,11 +9,10 @@ namespace Cistern.Linq.Consumables
         , IEnumerable<V>
         , IEnumerator<V>
     {
-        private readonly int _threadId;
         internal int _state;
         internal V _current;
 
-        protected ConsumableEnumerator() => (_state, _threadId) = (0, Environment.CurrentManagedThreadId);
+        protected ConsumableEnumerator() => _state = 0;
 
         V IEnumerator<V>.Current => _current;
         object System.Collections.IEnumerator.Current => _current;
@@ -27,7 +27,7 @@ namespace Cistern.Linq.Consumables
 
         public override IEnumerator<V> GetEnumerator()
         {
-            ConsumableEnumerator<V> enumerator = _state == 0 && _threadId == Environment.CurrentManagedThreadId ? this : Clone();
+            ConsumableEnumerator<V> enumerator = Interlocked.CompareExchange(ref _state, 1, 0) == 0 ? this : Clone();
             enumerator._state = 1;
             return enumerator;
         }
