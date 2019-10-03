@@ -3,14 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Cistern.Linq
 {
     public static partial class Enumerable
     {
-        static readonly ILink<int, int> IntIdentity = Links.Identity<int>.Instance;
-
         public static IEnumerable<int> Range(int start, int count)
         {
             long max = ((long)start) + count - 1;
@@ -24,7 +21,7 @@ namespace Cistern.Linq
                 return Consumables.Empty<int>.Instance;
             }
 
-            return new Consumables.Range<int>(start, count, IntIdentity);
+            return new Consumables.Range(start, count);
         }
     }
 }

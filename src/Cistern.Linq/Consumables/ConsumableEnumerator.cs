@@ -6,7 +6,6 @@ namespace Cistern.Linq.Consumables
 {
     abstract class ConsumableEnumerator<V>
         : Consumable<V>
-        , IEnumerable<V>
         , IEnumerator<V>
     {
         internal int _state;

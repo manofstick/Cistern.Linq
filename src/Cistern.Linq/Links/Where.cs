@@ -15,10 +15,10 @@ namespace Cistern.Linq.Links
         Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
             new Activity(Predicate, activity);
 
-        Consumable<U> Optimizations.IMergeSelect<T>.MergeSelect<U>(Consumable<T> consumable, Func<T, U> selector) =>
+        IConsumable<U> Optimizations.IMergeSelect<T>.MergeSelect<U>(IConsumable<T> consumable, Func<T, U> selector) =>
             consumable.ReplaceTailLink(new WhereSelect<T, U>(Predicate, selector));
 
-        public virtual Consumable<T> MergeWhere(Consumable<T> consumable, Func<T, bool> second) =>
+        public virtual IConsumable<T> MergeWhere(IConsumable<T> consumable, Func<T, bool> second) =>
             consumable.ReplaceTailLink(new Where2<T>(Predicate, second));
 
         sealed partial class Activity
@@ -85,7 +85,7 @@ namespace Cistern.Linq.Links
         public Where2(Func<T, bool> first, Func<T, bool> second) : base(t => first(t) && second(t)) =>
             (_first, _second) = (first, second);
 
-        public override Consumable<T> MergeWhere(Consumable<T> consumable, Func<T, bool> third) =>
+        public override IConsumable<T> MergeWhere(IConsumable<T> consumable, Func<T, bool> third) =>
             consumable.ReplaceTailLink(new Where3<T>(_first, _second, third));
     }
 
@@ -98,7 +98,7 @@ namespace Cistern.Linq.Links
         public Where3(Func<T, bool> first, Func<T, bool> second, Func<T, bool> third) : base(t => first(t) && second(t) && third(t)) =>
             (_first, _second, _third) = (first, second, third);
 
-        public override Consumable<T> MergeWhere(Consumable<T> consumable, Func<T, bool> forth) =>
+        public override IConsumable<T> MergeWhere(IConsumable<T> consumable, Func<T, bool> forth) =>
             consumable.ReplaceTailLink(new Where4<T>(_first, _second, _third, forth));
     }
 

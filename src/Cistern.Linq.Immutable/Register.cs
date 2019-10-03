@@ -15,7 +15,7 @@ namespace Cistern.Linq.Immutable
 
             public string Namespace => "System.Collections.Immutable";
 
-            public Consumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
+            public IConsumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
                 where Construct : Utils.IConstruct<T, U>
             {
                 if (name.Length <= 9)

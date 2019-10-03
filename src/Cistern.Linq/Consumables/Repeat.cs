@@ -15,8 +15,8 @@ namespace Cistern.Linq.Consumables
         public Repeat(T element, int count, ILink<T, U> first) : base(first) =>
             (_element, _count) = (element, count);
 
-        public override Consumable<U> Create   (ILink<T, U> first) => new Repeat<T, U>(_element, _count, first);
-        public override Consumable<V> Create<V>(ILink<T, V> first) => new Repeat<T, V>(_element, _count, first);
+        public override IConsumable<U> Create   (ILink<T, U> first) => new Repeat<T, U>(_element, _count, first);
+        public override IConsumable<V> Create<V>(ILink<T, V> first) => new Repeat<T, V>(_element, _count, first);
 
         public override IEnumerator<U> GetEnumerator() =>
             Cistern.Linq.GetEnumerator.Repeat.Get(_element, _count, Link);
@@ -31,10 +31,10 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => IsIdentity ? this : base.TailLink;
 
-        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(Consumable<U> _, Func<U, V> selector) =>
-            (Consumable<V>)(object)new SelectEnumerable<Consume.Repeat.RepeatEnumerable<T>, Consume.Repeat.RepeatEnumerator<T>, T, V>(new Consume.Repeat.RepeatEnumerable<T>(_element, _count), (Func<T, V>)(object)selector);
+        IConsumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(IConsumable<U> _, Func<U, V> selector) =>
+            (IConsumable<V>)(object)new SelectEnumerable<Consume.Repeat.RepeatEnumerable<T>, Consume.Repeat.RepeatEnumerator<T>, T, V>(new Consume.Repeat.RepeatEnumerable<T>(_element, _count), (Func<T, V>)(object)selector);
 
-        public Consumable<U> MergeWhere(Consumable<U> _, Func<U, bool> predicate) =>
-            (Consumable<U>)(object)new WhereEnumerable<Consume.Repeat.RepeatEnumerable<T>, Consume.Repeat.RepeatEnumerator<T>, T>(new Consume.Repeat.RepeatEnumerable<T>(_element, _count), (Func<T, bool>)(object)predicate);
+        public IConsumable<U> MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
+            (IConsumable<U>)(object)new WhereEnumerable<Consume.Repeat.RepeatEnumerable<T>, Consume.Repeat.RepeatEnumerator<T>, T>(new Consume.Repeat.RepeatEnumerable<T>(_element, _count), (Func<T, bool>)(object)predicate);
     }
 }

@@ -18,7 +18,7 @@ namespace Cistern.Linq
 
             switch (source)
             {
-                case Consumable<TSource> consumable:
+                case IConsumable<TSource> consumable:
                     Consumer<TSource, TSource[]> toArray = null;
 
                     if (consumable is Optimizations.IConsumableFastCount counter)
@@ -60,7 +60,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
-            if (source is Consumable<TSource> consumable)
+            if (source is IConsumable<TSource> consumable)
             {
                 Consumer<TSource, List<TSource>> toList = null;
 

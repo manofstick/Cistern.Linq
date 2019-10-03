@@ -42,14 +42,14 @@ namespace Cistern.Linq.ConsumerEnumerators
 
         int _state;
 
-        Consumable<Enumerable> _consumable;
+        IConsumable<Enumerable> _consumable;
         ILink<T, V> _link;
         Chain<T> _chain;
         IEnumerator<Enumerable> _outer;
         IEnumerator<T> _inner;
         ChainStatus _status;
 
-        public SelectMany(Consumable<Enumerable> selectMany, ILink<T, V> link)
+        public SelectMany(IConsumable<Enumerable> selectMany, ILink<T, V> link)
         {
             _consumable = selectMany;
             _link = link;
@@ -224,7 +224,7 @@ namespace Cistern.Linq.ConsumerEnumerators
 
         int _state;
 
-        Consumable<(TSource, IEnumerable<TCollection>)> _consumable;
+        IConsumable<(TSource, IEnumerable<TCollection>)> _consumable;
         ILink<T, V> _link;
         Func<TSource, TCollection, T> _resultSelector;
         Chain<T> _chain;
@@ -233,7 +233,7 @@ namespace Cistern.Linq.ConsumerEnumerators
         IEnumerator<TCollection> _inner;
         ChainStatus _status;
 
-        public SelectMany(Consumable<(TSource, IEnumerable<TCollection>)> selectMany, Func<TSource, TCollection, T> resultSelector, ILink<T, V> link)
+        public SelectMany(IConsumable<(TSource, IEnumerable<TCollection>)> selectMany, Func<TSource, TCollection, T> resultSelector, ILink<T, V> link)
         {
             _consumable = selectMany;
             _link = link;

@@ -4,7 +4,7 @@ namespace Cistern.Linq.Consumables
 {
     internal interface IConsumableProvider<TElement>
     {
-        Consumable<U> GetConsumable<U>(ILink<TElement, U> transform);
+        IConsumable<U> GetConsumable<U>(ILink<TElement, U> transform);
     }
 
     // Grouping is a publically exposed class, so we provide this class get the Consumable
@@ -18,7 +18,7 @@ namespace Cistern.Linq.Consumables
         {
         }
 
-        public Consumable<U> GetConsumable<U>(ILink<TElement, U> transform)
+        public IConsumable<U> GetConsumable<U>(ILink<TElement, U> transform)
         {
             if (_count == 1)
             {

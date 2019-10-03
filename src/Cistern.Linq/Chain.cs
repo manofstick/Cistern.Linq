@@ -75,7 +75,17 @@ namespace Cistern.Linq
 
     static class Cache<T> { public static T Item; }
 
-    internal abstract class Consumable<T> : IEnumerable<T>
+    internal interface IConsumable<T> : IEnumerable<T>
+    {
+        void Consume(Consumer<T> consumer);
+
+        object TailLink { get; }
+        IConsumable<T> AddTail(ILink<T, T> transform);
+        IConsumable<U> AddTail<U>(ILink<T, U> transform);
+        IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink);
+    }
+
+    internal abstract class Consumable<T> : IConsumable<T>
     {
         public abstract void Consume(Consumer<T> consumer);
 
@@ -83,8 +93,8 @@ namespace Cistern.Linq
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public abstract object TailLink { get; }
-        public abstract Consumable<T> AddTail(ILink<T, T> transform);
-        public abstract Consumable<U> AddTail<U>(ILink<T, U> transform);
-        public abstract Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink);
+        public abstract IConsumable<T> AddTail(ILink<T, T> transform);
+        public abstract IConsumable<U> AddTail<U>(ILink<T, U> transform);
+        public abstract IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink);
     }
 }

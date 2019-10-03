@@ -29,12 +29,12 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => null;
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
-        public override Consumable<IGrouping<TKey, TSource>> AddTail(ILink<IGrouping<TKey, TSource>, IGrouping<TKey, TSource>> transform) =>
+        public override IConsumable<IGrouping<TKey, TSource>> AddTail(ILink<IGrouping<TKey, TSource>, IGrouping<TKey, TSource>> transform) =>
             new GroupedEnumerableWithLinks<TSource, TKey, IGrouping<TKey, TSource>>(_source, _keySelector, _comparer, transform);
 
-        public override Consumable<U> AddTail<U>(ILink<IGrouping<TKey, TSource>, U> transform) =>
+        public override IConsumable<U> AddTail<U>(ILink<IGrouping<TKey, TSource>, U> transform) =>
             new GroupedEnumerableWithLinks<TSource, TKey, U>(_source, _keySelector, _comparer, transform);
 
         private Lookup<TKey, TSource> ToLookup()
@@ -61,12 +61,12 @@ namespace Cistern.Linq.Consumables
         public GroupedEnumerableWithLinks(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer, ILink<IGrouping<TKey, TSource>, V> link) : base(link) =>
             (_source, _keySelector, _comparer) = (source, keySelector, comparer);
 
-        public override Consumable<V> Create(ILink<IGrouping<TKey, TSource>, V> first) =>
+        public override IConsumable<V> Create(ILink<IGrouping<TKey, TSource>, V> first) =>
             new GroupedEnumerableWithLinks<TSource, TKey, V>(_source, _keySelector, _comparer, first);
-        public override Consumable<W> Create<W>(ILink<IGrouping<TKey, TSource>, W> first) =>
+        public override IConsumable<W> Create<W>(ILink<IGrouping<TKey, TSource>, W> first) =>
             new GroupedEnumerableWithLinks<TSource, TKey, W>(_source, _keySelector, _comparer, first);
 
-        private Consumable<V> ToConsumable()
+        private IConsumable<V> ToConsumable()
         {
             if (_source == null)
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
@@ -114,12 +114,12 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => null;
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
-        public override Consumable<IGrouping<TKey, TElement>> AddTail(ILink<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>> transform) =>
+        public override IConsumable<IGrouping<TKey, TElement>> AddTail(ILink<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>> transform) =>
             new GroupedEnumerableWithLinks<TSource, TKey, TElement, IGrouping<TKey, TElement>>(_source, _keySelector, _elementSelector, _comparer, transform);
 
-        public override Consumable<U> AddTail<U>(ILink<IGrouping<TKey, TElement>, U> transform) =>
+        public override IConsumable<U> AddTail<U>(ILink<IGrouping<TKey, TElement>, U> transform) =>
             new GroupedEnumerableWithLinks<TSource, TKey, TElement, U>(_source, _keySelector, _elementSelector, _comparer, transform);
 
         private Lookup<TKey, TElement> ToLookup() =>
@@ -143,12 +143,12 @@ namespace Cistern.Linq.Consumables
         public GroupedEnumerableWithLinks(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer, ILink<IGrouping<TKey, TElement>, V> link) : base(link) =>
             (_source, _keySelector, _elementSelector, _comparer) = (source, keySelector, elementSelector, comparer);
 
-        public override Consumable<V> Create(ILink<IGrouping<TKey, TElement>, V> first) =>
+        public override IConsumable<V> Create(ILink<IGrouping<TKey, TElement>, V> first) =>
             new GroupedEnumerableWithLinks<TSource, TKey, TElement, V>(_source, _keySelector, _elementSelector, _comparer, first);
-        public override Consumable<W> Create<W>(ILink<IGrouping<TKey, TElement>, W> first) =>
+        public override IConsumable<W> Create<W>(ILink<IGrouping<TKey, TElement>, W> first) =>
             new GroupedEnumerableWithLinks<TSource, TKey, TElement, W>(_source, _keySelector, _elementSelector, _comparer, first);
 
-        private Consumable<V> ToConsumable()
+        private IConsumable<V> ToConsumable()
         {
             Lookup<TKey, TElement> lookup = Consumer.Lookup.Consume(_source, _keySelector, _elementSelector, _comparer);
             return lookup.AddTail(Link);
@@ -194,12 +194,12 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => null;
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
-        public override Consumable<TResult> AddTail(ILink<TResult, TResult> transform) =>
+        public override IConsumable<TResult> AddTail(ILink<TResult, TResult> transform) =>
             new GroupedResultEnumerableWithLinks<TSource, TKey, TResult, TResult>(_source, _keySelector, _resultSelector, _comparer, transform);
 
-        public override Consumable<U> AddTail<U>(ILink<TResult, U> transform) =>
+        public override IConsumable<U> AddTail<U>(ILink<TResult, U> transform) =>
             new GroupedResultEnumerableWithLinks<TSource, TKey, TResult, U>(_source, _keySelector, _resultSelector, _comparer, transform);
 
         private Lookup<TKey, TSource> ToLookup() =>
@@ -223,15 +223,15 @@ namespace Cistern.Linq.Consumables
         public GroupedResultEnumerableWithLinks(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TKey, IEnumerable<TSource>, TResult> resultSelector, IEqualityComparer<TKey> comparer, ILink<TResult, V> link) : base(link) =>
             (_source, _keySelector, _resultSelector, _comparer) = (source, keySelector, resultSelector, comparer);
 
-        public override Consumable<V> Create(ILink<TResult, V> first) =>
+        public override IConsumable<V> Create(ILink<TResult, V> first) =>
             new GroupedResultEnumerableWithLinks<TSource, TKey, TResult, V>(_source, _keySelector, _resultSelector, _comparer, first);
-        public override Consumable<W> Create<W>(ILink<TResult, W> first) =>
+        public override IConsumable<W> Create<W>(ILink<TResult, W> first) =>
             new GroupedResultEnumerableWithLinks<TSource, TKey, TResult, W>(_source, _keySelector, _resultSelector, _comparer, first);
 
-        private Consumable<V> ToConsumable()
+        private IConsumable<V> ToConsumable()
         {
             Lookup<TKey, TSource> lookup = Consumer.Lookup.Consume(_source, _keySelector, _comparer);
-            Consumable<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
+            IConsumable<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
             return appliedSelector.AddTail(Link);
         }
 
@@ -282,12 +282,12 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => null;
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
-        public override Consumable<TResult> AddTail(ILink<TResult, TResult> transform) =>
+        public override IConsumable<TResult> AddTail(ILink<TResult, TResult> transform) =>
             new GroupedResultEnumerableWithLinks<TSource, TKey, TElement, TResult, TResult>(_source, _keySelector, _elementSelector, _resultSelector, _comparer, transform);
 
-        public override Consumable<U> AddTail<U>(ILink<TResult, U> transform) =>
+        public override IConsumable<U> AddTail<U>(ILink<TResult, U> transform) =>
             new GroupedResultEnumerableWithLinks<TSource, TKey, TElement, TResult, U>(_source, _keySelector, _elementSelector, _resultSelector, _comparer, transform);
 
         private Lookup<TKey, TElement> ToLookup() =>
@@ -311,15 +311,15 @@ namespace Cistern.Linq.Consumables
         public GroupedResultEnumerableWithLinks(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, IEqualityComparer<TKey> comparer, ILink<TResult, V> link) : base(link) =>
             (_source, _keySelector, _elementSelector, _resultSelector, _comparer) = (source, keySelector, elementSelector, resultSelector, comparer);
 
-        public override Consumable<V> Create(ILink<TResult, V> first) =>
+        public override IConsumable<V> Create(ILink<TResult, V> first) =>
             new GroupedResultEnumerableWithLinks<TSource, TKey, TElement, TResult, V>(_source, _keySelector, _elementSelector, _resultSelector, _comparer, first);
-        public override Consumable<W> Create<W>(ILink<TResult, W> first) =>
+        public override IConsumable<W> Create<W>(ILink<TResult, W> first) =>
             new GroupedResultEnumerableWithLinks<TSource, TKey, TElement, TResult, W>(_source, _keySelector, _elementSelector, _resultSelector, _comparer, first);
 
-        private Consumable<V> ToConsumable()
+        private IConsumable<V> ToConsumable()
         {
             Lookup<TKey, TElement> lookup = Consumer.Lookup.Consume(_source, _keySelector, _elementSelector, _comparer);
-            Consumable<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
+            IConsumable<TResult> appliedSelector = lookup.ApplyResultSelector(_resultSelector);
             return appliedSelector.AddTail(Link);
         }
 

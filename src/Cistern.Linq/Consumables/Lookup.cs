@@ -48,19 +48,19 @@ namespace Cistern.Linq.Consumables
 
         public bool Contains(TKey key) => GetGrouping(key, create: false) != null;
 
-        internal Consumable<TResult> ApplyResultSelector<TResult>(Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
+        internal IConsumable<TResult> ApplyResultSelector<TResult>(Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
             new LookupResultsSelector<TKey, TElement, TResult>(_lastGrouping, Count, resultSelector);
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public override object TailLink => null;
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
-        public override Consumable<IGrouping<TKey, TElement>> AddTail(ILink<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>> transform) =>
+        public override IConsumable<IGrouping<TKey, TElement>> AddTail(ILink<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>> transform) =>
             new Lookup<TKey, TElement, IGrouping<TKey, TElement>>(_lastGrouping, Count, transform);
 
-        public override Consumable<U> AddTail<U>(ILink<IGrouping<TKey, TElement>, U> transform) =>
+        public override IConsumable<U> AddTail<U>(ILink<IGrouping<TKey, TElement>, U> transform) =>
             new Lookup<TKey, TElement, U>(_lastGrouping, Count, transform);
 
         public override IEnumerator<IGrouping<TKey, TElement>> GetEnumerator() =>
@@ -184,9 +184,9 @@ namespace Cistern.Linq.Consumables
         public Lookup(Grouping<TKey, TValue> lastGrouping, int count, ILink<IGrouping<TKey, TValue>, V> first) : base(first) =>
             (_lastGrouping, _count) = (lastGrouping, count);
 
-        public override Consumable<V> Create(ILink<IGrouping<TKey, TValue>, V> first) =>
+        public override IConsumable<V> Create(ILink<IGrouping<TKey, TValue>, V> first) =>
             new Lookup<TKey, TValue, V>(_lastGrouping, _count, first);
-        public override Consumable<W> Create<W>(ILink<IGrouping<TKey, TValue>, W> first) =>
+        public override IConsumable<W> Create<W>(ILink<IGrouping<TKey, TValue>, W> first) =>
             new Lookup<TKey, TValue, W>(_lastGrouping, _count, first);
 
         public override IEnumerator<V> GetEnumerator() =>
@@ -215,12 +215,12 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => null;
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
 
-        public override Consumable<TResult> AddTail(ILink<TResult, TResult> first) =>
+        public override IConsumable<TResult> AddTail(ILink<TResult, TResult> first) =>
             new LookupResultsSelector<TKey, TElement, TResult, TResult>(_lastGrouping, _count, _resultSelector, first);
 
-        public override Consumable<W> AddTail<W>(ILink<TResult, W> first) =>
+        public override IConsumable<W> AddTail<W>(ILink<TResult, W> first) =>
             new LookupResultsSelector<TKey, TElement, TResult, W>(_lastGrouping, _count, _resultSelector, first);
 
         public override IEnumerator<TResult> GetEnumerator() =>
@@ -247,9 +247,9 @@ namespace Cistern.Linq.Consumables
         public LookupResultsSelector(Grouping<TKey, TElement> lastGrouping, int count, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, ILink<TResult, V> first) : base(first) =>
             (_lastGrouping, _count, _resultSelector) = (lastGrouping, count, resultSelector);
 
-        public override Consumable<V> Create(ILink<TResult, V> first) =>
+        public override IConsumable<V> Create(ILink<TResult, V> first) =>
             new LookupResultsSelector<TKey, TElement, TResult, V>(_lastGrouping, _count, _resultSelector, first);
-        public override Consumable<W> Create<W>(ILink<TResult, W> first) =>
+        public override IConsumable<W> Create<W>(ILink<TResult, W> first) =>
             new LookupResultsSelector<TKey, TElement, TResult, W>(_lastGrouping, _count, _resultSelector, first);
 
         public override IEnumerator<V> GetEnumerator() =>

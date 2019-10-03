@@ -61,16 +61,16 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => this; // for IMergeSelect<U>
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) =>
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) =>
             throw new NotImplementedException();
 
-        public override Consumable<U> AddTail(ILink<U, U> transform) =>
+        public override IConsumable<U> AddTail(ILink<U, U> transform) =>
             new Array<T, U>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.WhereSelect<T, U>(Predicate, Selector), transform));
 
-        public override Consumable<V> AddTail<V>(ILink<U, V> transform) =>
+        public override IConsumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Array<T, V>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.WhereSelect<T, U>(Predicate, Selector), transform));
 
-        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(Consumable<U> _, Func<U, V> selector) =>
+        IConsumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(IConsumable<U> _, Func<U, V> selector) =>
             new WhereSelectArray<T, V>(Underlying, Predicate, x => selector(Selector(x)));
     }
 
@@ -165,15 +165,15 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => this; // for IMergeSelect
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new NotImplementedException();
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new NotImplementedException();
 
-        public override Consumable<U> AddTail(ILink<U, U> transform) =>
+        public override IConsumable<U> AddTail(ILink<U, U> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, U>(Underlying, Links.Composition.Create(new Links.WhereSelect<T, U>(Predicate, Selector), transform));
 
-        public override Consumable<V> AddTail<V>(ILink<U, V> transform) =>
+        public override IConsumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.WhereSelect<T, U>(Predicate, Selector), transform));
 
-        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(Consumable<U> _, Func<U, V> selector) =>
+        IConsumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(IConsumable<U> _, Func<U, V> selector) =>
             new WhereSelectEnumerable<TEnumerable, TEnumerator, T, V>(Underlying, Predicate, x => selector(Selector(x)));
     }
 }

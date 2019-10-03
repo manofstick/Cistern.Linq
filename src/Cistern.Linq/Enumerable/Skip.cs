@@ -21,7 +21,7 @@ namespace Cistern.Linq
             {
                 // Return source if not actually skipping, but only if it's a type from here, to avoid
                 // issues if collections are used as keys or otherwise must not be aliased.
-                if (source is Consumable<TSource>)
+                if (source is IConsumable<TSource>)
                 {
                     return source;
                 }

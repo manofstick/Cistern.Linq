@@ -23,7 +23,7 @@ namespace Cistern.Linq.Consumables
             public static SharedElements Empty { get; } = new SharedElements(Array.Empty<T>(), 0);
         }
 
-        public static Consumable<T> AddElement(IEnumerable<T> unknown, T element, bool appendElsePrepend)
+        public static IConsumable<T> AddElement(IEnumerable<T> unknown, T element, bool appendElsePrepend)
         {
             if (unknown is AppendPrependConsumable<T> append)
             {
@@ -53,7 +53,7 @@ namespace Cistern.Linq.Consumables
             return CreateNew(unknown, element, appendElsePrepend);
         }
 
-        private static Consumable<T> CreateNew(IEnumerable<T> e, T element, bool appendElsePrepend)
+        private static IConsumable<T> CreateNew(IEnumerable<T> e, T element, bool appendElsePrepend)
         {
             var data = new T[MinimumCellSize];
             if (appendElsePrepend)
@@ -70,7 +70,7 @@ namespace Cistern.Linq.Consumables
             }
         }
 
-        private static Consumable<T> CreateNewCellFromFullArray(AppendPrependConsumable<T> root, T[] elements, T element, int length, bool appendElsePrepend)
+        private static IConsumable<T> CreateNewCellFromFullArray(AppendPrependConsumable<T> root, T[] elements, T element, int length, bool appendElsePrepend)
         {
             var data = new T[Math.Max(MinimumCellSize, elements.Length * 2)];
             if (appendElsePrepend)
@@ -131,10 +131,10 @@ namespace Cistern.Linq.Consumables
                 return false;
             }
 
-            Consumable<T> GetAppendedPart() => new Array<T, T>(Appended.Elements, 0, AppendedLength, Links.Identity<T>.Instance);
-            Consumable<T> GetPrependedPart() => new Array<T, T>(Prepended.Elements, Prepended.Elements.Length - PrependedLength, PrependedLength, Links.Identity<T>.Instance);
+            IConsumable<T> GetAppendedPart() => new Array<T, T>(Appended.Elements, 0, AppendedLength, Links.Identity<T>.Instance);
+            IConsumable<T> GetPrependedPart() => new Array<T, T>(Prepended.Elements, Prepended.Elements.Length - PrependedLength, PrependedLength, Links.Identity<T>.Instance);
 
-            private Consumable<IEnumerable<T>> GetEnumerableAsConsumable()
+            private IConsumable<IEnumerable<T>> GetEnumerableAsConsumable()
             {
                 IEnumerable<T>[] joined;
                 if (PrependedLength == 0)
@@ -156,8 +156,8 @@ namespace Cistern.Linq.Consumables
                 return new Array<IEnumerable<T>, IEnumerable<T>>(joined, 0, joined.Length, Links.Identity<IEnumerable<T>>.Instance);
             }
 
-            public override Consumable<V> Create(ILink<T, V> link) => new AppendPrependConsumable<V>(Prepended, PrependedLength, Original, Appended, AppendedLength, link);
-            public override Consumable<W> Create<W>(ILink<T, W> link) => new AppendPrependConsumable<W>(Prepended, PrependedLength, Original, Appended, AppendedLength, link);
+            public override IConsumable<V> Create(ILink<T, V> link) => new AppendPrependConsumable<V>(Prepended, PrependedLength, Original, Appended, AppendedLength, link);
+            public override IConsumable<W> Create<W>(ILink<T, W> link) => new AppendPrependConsumable<W>(Prepended, PrependedLength, Original, Appended, AppendedLength, link);
 
             public override IEnumerator<V> GetEnumerator() =>
                 Cistern.Linq.GetEnumerator.SelectMany.Get(GetEnumerableAsConsumable(), Link);

@@ -62,18 +62,18 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => this; // for IMergeSelect & IMergeWhere
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new NotImplementedException();
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new NotImplementedException();
 
-        public override Consumable<T> AddTail(ILink<T, T> transform) =>
+        public override IConsumable<T> AddTail(ILink<T, T> transform) =>
             new Array<T, T>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
-        public override Consumable<U> AddTail<U>(ILink<T, U> transform) =>
+        public override IConsumable<U> AddTail<U>(ILink<T, U> transform) =>
             new Array<T, U>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
-        Consumable<V> Optimizations.IMergeSelect<T>.MergeSelect<V>(Consumable<T> _, Func<T, V> u2v) =>
+        IConsumable<V> Optimizations.IMergeSelect<T>.MergeSelect<V>(IConsumable<T> _, Func<T, V> u2v) =>
             new WhereSelectArray<T, V>(Underlying, Predicate, u2v);
 
-        Consumable<T> Optimizations.IMergeWhere<T>.MergeWhere(Consumable<T> _, Func<T, bool> predicate) =>
+        IConsumable<T> Optimizations.IMergeWhere<T>.MergeWhere(IConsumable<T> _, Func<T, bool> predicate) =>
             new WhereArray<T>(Underlying, t => Predicate(t) && predicate(t));
     }
 
@@ -168,18 +168,18 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => this; // for IMergeSelect & IMergeWhere
 
-        public override Consumable<V1> ReplaceTailLink<Unknown, V1>(ILink<Unknown, V1> newLink) => throw new NotImplementedException();
+        public override IConsumable<V1> ReplaceTailLink<Unknown, V1>(ILink<Unknown, V1> newLink) => throw new NotImplementedException();
 
-        public override Consumable<T> AddTail(ILink<T, T> transform) =>
+        public override IConsumable<T> AddTail(ILink<T, T> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, T>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
-        public override Consumable<V> AddTail<V>(ILink<T, V> transform) =>
+        public override IConsumable<V> AddTail<V>(ILink<T, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
-        Consumable<V> Optimizations.IMergeSelect<T>.MergeSelect<V>(Consumable<T> consumable, Func<T, V> u2v) =>
+        IConsumable<V> Optimizations.IMergeSelect<T>.MergeSelect<V>(IConsumable<T> consumable, Func<T, V> u2v) =>
             new WhereSelectEnumerable<TEnumerable, TEnumerator, T, V>(Underlying, Predicate, u2v);
 
-        Consumable<T> Optimizations.IMergeWhere<T>.MergeWhere(Consumable<T> consumable, Func<T, bool> predicate) =>
+        IConsumable<T> Optimizations.IMergeWhere<T>.MergeWhere(IConsumable<T> consumable, Func<T, bool> predicate) =>
             new WhereEnumerable<TEnumerable, TEnumerator, T>(Underlying, t => Predicate(t) && predicate(t));
     }
 }

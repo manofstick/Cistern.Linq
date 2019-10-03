@@ -13,8 +13,8 @@ namespace Cistern.Linq.Consumables
         public IList(IList<T> list, int start, int count, ILink<T, V> first) : base(first) =>
             (_list, _start, _count) = (list, start, count);
 
-        public override Consumable<V> Create   (ILink<T, V> first) => new IList<T, V>(_list, _start, _count, first);
-        public override Consumable<W> Create<W>(ILink<T, W> first) => new IList<T, W>(_list, _start, _count, first);
+        public override IConsumable<V> Create   (ILink<T, V> first) => new IList<T, V>(_list, _start, _count, first);
+        public override IConsumable<W> Create<W>(ILink<T, W> first) => new IList<T, W>(_list, _start, _count, first);
 
         public override IEnumerator<V> GetEnumerator() =>
             Cistern.Linq.GetEnumerator.IList.Get(_list, _start, _count, Link);

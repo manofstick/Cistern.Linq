@@ -14,7 +14,7 @@ namespace Cistern.Linq.Immutable
 
             public string Namespace => "System.Collections.Generic";
 
-            public Consumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
+            public IConsumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
                 where Construct : Utils.IConstruct<T, U>
             {
                 var firstChar = name[0];

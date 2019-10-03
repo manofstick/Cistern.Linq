@@ -139,7 +139,7 @@ namespace Cistern.Linq.Consume
 
             public override ChainStatus ProcessNext((TSource, IEnumerable<TCollection>) input)
             {
-                if (input.Item2 is Consumable<TCollection> consumable)
+                if (input.Item2 is IConsumable<TCollection> consumable)
                 {
                     var consumer = GetInnerConsumer();
                     consumer.Source = input.Item1;
@@ -184,7 +184,7 @@ namespace Cistern.Linq.Consume
             }
         }
 
-        public static void Invoke<Enumerable, T>(Consumable<Enumerable> e, Chain<T> chain)
+        public static void Invoke<Enumerable, T>(IConsumable<Enumerable> e, Chain<T> chain)
             where Enumerable : IEnumerable<T>
         {
             try
@@ -201,7 +201,7 @@ namespace Cistern.Linq.Consume
             }
         }
 
-        public static void Invoke<TSource, TCollection, T>(Consumable<(TSource, IEnumerable<TCollection>)> e, Func<TSource, TCollection, T> resultSelector, Chain<T> chain)
+        public static void Invoke<TSource, TCollection, T>(IConsumable<(TSource, IEnumerable<TCollection>)> e, Func<TSource, TCollection, T> resultSelector, Chain<T> chain)
         {
             try
             {
@@ -217,11 +217,11 @@ namespace Cistern.Linq.Consume
             }
         }
 
-        public static void Invoke<Enumerable, T, V>(Consumable<Enumerable> e, ILink<T, V> composition, Chain<V> consumer)
+        public static void Invoke<Enumerable, T, V>(IConsumable<Enumerable> e, ILink<T, V> composition, Chain<V> consumer)
             where Enumerable : IEnumerable<T> =>
             Invoke(e, composition.Compose(consumer));
 
-        public static void Invoke<TSource, TCollection, T, V>(Consumable<(TSource, IEnumerable<TCollection>)> e, Func<TSource, TCollection, T> resultSelector, ILink<T, V> composition, Chain<V> consumer) =>
+        public static void Invoke<TSource, TCollection, T, V>(IConsumable<(TSource, IEnumerable<TCollection>)> e, Func<TSource, TCollection, T> resultSelector, ILink<T, V> composition, Chain<V> consumer) =>
             Invoke(e, resultSelector, composition.Compose(consumer));
     }
 }

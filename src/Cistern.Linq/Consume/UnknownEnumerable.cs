@@ -27,7 +27,7 @@ namespace Cistern.Linq.Consume
 
         public static ChainStatus Consume<T>(IEnumerable<T> input, Chain<T> chain, ref ChainConsumer<T> consumer)
         {
-            if (input is Consumable<T> consumable)
+            if (input is IConsumable<T> consumable)
             {
                 var c = GetInnerConsumer(chain, ref consumer);
                 consumable.Consume(c);

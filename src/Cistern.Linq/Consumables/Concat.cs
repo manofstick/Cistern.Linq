@@ -19,7 +19,7 @@ namespace Cistern.Linq.Consumables
                 length == Interlocked.CompareExchange(ref _interlocked_count, length + 1, length);
         }
 
-        public static Consumable<T> Create(IEnumerable<T> first, IEnumerable<T> second)
+        public static IConsumable<T> Create(IEnumerable<T> first, IEnumerable<T> second)
         {
             if (first is ConcatConsumable<T> concat)
             {
@@ -42,13 +42,13 @@ namespace Cistern.Linq.Consumables
             return CreateNew(first, second);
         }
 
-        private static Consumable<T> CreateNew(IEnumerable<T> first, IEnumerable<T> second)
+        private static IConsumable<T> CreateNew(IEnumerable<T> first, IEnumerable<T> second)
         {
             var e = new Cell(new IEnumerable<T>[4] { first, second, null, null }, 2);
             return new ConcatConsumable<T>(e, 2, Links.Identity<T>.Instance);
         }
 
-        private static Consumable<T> CreateNewCell(IEnumerable<T>[] enumerables, IEnumerable<T> second, int length)
+        private static IConsumable<T> CreateNewCell(IEnumerable<T>[] enumerables, IEnumerable<T> second, int length)
         {
             var data = new IEnumerable<T>[enumerables.Length * 2];
             Array.Copy(enumerables, data, length);
@@ -84,11 +84,11 @@ namespace Cistern.Linq.Consumables
                 return false;
             }
 
-            private Consumable<IEnumerable<T>> GetEnumerableAsConsumable() =>
+            private IConsumable<IEnumerable<T>> GetEnumerableAsConsumable() =>
                 new Array<IEnumerable<T>, IEnumerable<T>>(_enumerables.Enumerables, 0, _length, Links.Identity<IEnumerable<T>>.Instance);
 
-            public override Consumable<V> Create(ILink<T, V> link) => new ConcatConsumable<V>(_enumerables, _length, link);
-            public override Consumable<W> Create<W>(ILink<T, W> link) => new ConcatConsumable<W>(_enumerables, _length, link);
+            public override IConsumable<V> Create(ILink<T, V> link) => new ConcatConsumable<V>(_enumerables, _length, link);
+            public override IConsumable<W> Create<W>(ILink<T, W> link) => new ConcatConsumable<W>(_enumerables, _length, link);
 
             public override IEnumerator<V> GetEnumerator() =>
                 Cistern.Linq.GetEnumerator.SelectMany.Get(GetEnumerableAsConsumable(), Link);

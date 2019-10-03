@@ -56,18 +56,18 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => this; // for IMergeSelect & IMergeWhere;
 
-        public override Consumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new NotImplementedException();
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new NotImplementedException();
 
-        public override Consumable<U> AddTail(ILink<U, U> transform) =>
+        public override IConsumable<U> AddTail(ILink<U, U> transform) =>
             new Array<T, U>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
 
-        public override Consumable<V> AddTail<V>(ILink<U, V> transform) =>
+        public override IConsumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Array<T, V>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
 
-        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(Consumable<U> _, Func<U, V> u2v) =>
+        IConsumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(IConsumable<U> _, Func<U, V> u2v) =>
             new SelectArray<T, V>(Underlying, t => u2v(Selector(t)));
 
-        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(Consumable<U> _, Func<U, bool> predicate) =>
+        IConsumable<U> Optimizations.IMergeWhere<U>.MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
             new SelectWhereArray<T, U>(Underlying, Selector, predicate);
 
         public int? TryFastCount(bool asCountConsumer) =>
@@ -164,19 +164,19 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => this; // for IMergeSelect & IMergeWhere
 
-        public override Consumable<V1> ReplaceTailLink<Unknown, V1>(ILink<Unknown, V1> newLink) =>
+        public override IConsumable<V1> ReplaceTailLink<Unknown, V1>(ILink<Unknown, V1> newLink) =>
             throw new NotImplementedException();
 
-        public override Consumable<U> AddTail(ILink<U, U> transform) =>
+        public override IConsumable<U> AddTail(ILink<U, U> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, U>(Underlying, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
 
-        public override Consumable<V> AddTail<V>(ILink<U, V> transform) =>
+        public override IConsumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
 
-        Consumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(Consumable<U> _, Func<U, V> u2v) =>
+        IConsumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(IConsumable<U> _, Func<U, V> u2v) =>
             new SelectEnumerable<TEnumerable, TEnumerator, T, V>(Underlying, t => u2v(Selector(t)));
 
-        Consumable<U> Optimizations.IMergeWhere<U>.MergeWhere(Consumable<U> _, Func<U, bool> predicate) =>
+        IConsumable<U> Optimizations.IMergeWhere<U>.MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
             new SelectWhereEnumerable<TEnumerable, TEnumerator, T, U>(Underlying, Selector, predicate);
 
         public int? TryFastCount(bool asCountConsumer) =>

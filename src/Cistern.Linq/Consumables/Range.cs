@@ -3,61 +3,55 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.Consumables
 {
-    sealed partial class Range<T>
-        : Consumable<int, T>
+    sealed partial class Range
+        : Consumable<int>
         , Optimizations.IConsumableFastCount
-        , Optimizations.IMergeSelect<T>
-        , Optimizations.IMergeWhere<T>
-        , Optimizations.IMergeSkipTake<T>
+        , Optimizations.IMergeSelect<int>
+        , Optimizations.IMergeWhere<int>
+        , Optimizations.IMergeSkipTake<int>
     {
         private readonly int _start;
         private readonly int _count;
-
-        public Range(int start, int count, ILink<int, T> first) : base(first) =>
+        public Range(int start, int count) =>
             (_start, _count) = (start, count);
+        public override IConsumable<int> AddTail(ILink<int, int> transform) =>
+            new Enumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int, int>(new Consume.Range.RangeEnumerable(_start, _count), transform);
+        public override IConsumable<U> AddTail<U>(ILink<int, U> transform) =>
+            new Enumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int, U>(new Consume.Range.RangeEnumerable(_start, _count), transform);
+        public override IEnumerator<int> GetEnumerator() =>
+            Cistern.Linq.GetEnumerator.Range.Get(_start, _count, Links.Identity<int>.Instance);
+        public override void Consume(Consumer<int> consumer) =>
+            Cistern.Linq.Consume.Range.Invoke(_start, _count, Links.Identity<int>.Instance, consumer);
 
-        public override Consumable<T> Create   (ILink<int, T> first) => new Range<T>(_start, _count, first);
-        public override Consumable<U> Create<U>(ILink<int, U> first) => new Range<U>(_start, _count, first);
-
-        public override IEnumerator<T> GetEnumerator() =>
-            Cistern.Linq.GetEnumerator.Range.Get(_start, _count, Link);
-
-        public override void Consume(Consumer<T> consumer) =>
-            Cistern.Linq.Consume.Range.Invoke(_start, _count, Link, consumer);
-
-        public int? TryFastCount(bool asCountConsumer) =>
-            Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
-
+        public int? TryFastCount(bool asCountConsumer) => _count;
         public int? TryRawCount(bool asCountConsumer) => _count;
 
-        public override object TailLink => IsIdentity ? this : base.TailLink;
-
-        Consumable<U> Optimizations.IMergeSelect<T>.MergeSelect<U>(Consumable<T> _, Func<T, U> selector) =>
-            new SelectEnumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int, U>(new Consume.Range.RangeEnumerable(_start, _count), (Func<int, U>)(object)selector);
-
-        public Consumable<T> MergeWhere(Consumable<T> _, Func<T, bool> predicate) =>
-            (Consumable<T>)(object)new WhereEnumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int>(new Consume.Range.RangeEnumerable(_start, _count), (Func<int, bool>) (object)predicate);
-
-        public Consumable<T> MergeSkip(Consumable<T> consumable, int skip)
+        public override object TailLink => this;
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> transform) =>
+            new Enumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int, V>(new Consume.Range.RangeEnumerable(_start, _count), (ILink<int, V>)(object)transform);
+        IConsumable<U> Optimizations.IMergeSelect<int>.MergeSelect<U>(IConsumable<int> _, Func<int, U> selector) =>
+            new SelectEnumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int, U>(new Consume.Range.RangeEnumerable(_start, _count), selector);
+        IConsumable<int> Optimizations.IMergeWhere<int>.MergeWhere(IConsumable<int> _, Func<int, bool> predicate) =>
+            new WhereEnumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int>(new Consume.Range.RangeEnumerable(_start, _count), predicate);
+        IConsumable<int> Optimizations.IMergeSkipTake<int>.MergeSkip(IConsumable<int> consumable, int skip)
         {
             checked
             {
                 var start = _start + skip;
                 var count = _count - skip;
                 if (count <= 0)
-                    return Empty<T>.Instance;
-                return new Range<T>(start, count, Link);
+                    return Empty<int>.Instance;
+                return new Range(start, count);
             }
         }
-
-        public Consumable<T> MergeTake(Consumable<T> consumable, int take)
+        IConsumable<int> Optimizations.IMergeSkipTake<int>.MergeTake(IConsumable<int> consumable, int take)
         {
             checked
             {
                 var count = Math.Min(_count, take);
                 if (count <= 0)
-                    return Empty<T>.Instance;
-                return new Range<T>(_start, count, Link);
+                    return Empty<int>.Instance;
+                return new Range(_start, count);
             }
         }
     }

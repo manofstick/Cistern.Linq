@@ -9,7 +9,7 @@ namespace Cistern.Linq
         {
             string Namespace { get; }
 
-            Consumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
+            IConsumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
                 where Construct : IConstruct<T, U>;
 
             bool TryInvoke<T, Invoker>(Invoker invoker, IEnumerable<T> e, string name)
@@ -38,7 +38,7 @@ namespace Cistern.Linq
 
         internal interface IConstruct<T, U>
         {
-            Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
+            IConsumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
                 where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
                 where TEnumerator : IEnumerator<T>;
         }
@@ -50,7 +50,7 @@ namespace Cistern.Linq
                 where TEnumerator : IEnumerator<T>;
         }
 
-        internal static Consumable<U> CreateConsumableSearch<T, U, Construct>(Construct construct, IEnumerable<T> e)
+        internal static IConsumable<U> CreateConsumableSearch<T, U, Construct>(Construct construct, IEnumerable<T> e)
             where Construct : IConstruct<T, U>
         {
             if (finders.Length > 0)
@@ -105,13 +105,13 @@ namespace Cistern.Linq
 
             public Construct(ILink<T, U> link) => this.link = link;
 
-            public Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
+            public IConsumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
                 where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
                 where TEnumerator : IEnumerator<T> => new Consumables.Enumerable<TEnumerable, TEnumerator, T, U>(e, link);
         }
 
 
-        internal static Consumable<U> CreateConsumable<T, U>(IEnumerable<T> e, ILink<T, U> transform)
+        internal static IConsumable<U> CreateConsumable<T, U>(IEnumerable<T> e, ILink<T, U> transform)
         {
             if (e is T[] array)
             {
@@ -149,14 +149,14 @@ namespace Cistern.Linq
 
             public ConstructWhere(Func<T, bool> predicate) => this.predicate = predicate;
 
-            public Consumable<T> Create<TEnumerable, TEnumerator>(TEnumerable e)
+            public IConsumable<T> Create<TEnumerable, TEnumerator>(TEnumerable e)
                 where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
                 where TEnumerator : IEnumerator<T> => new Consumables.WhereEnumerable<TEnumerable, TEnumerator, T>(e, predicate);
         }
 
-        internal static Consumable<TSource> Where<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        internal static IConsumable<TSource> Where<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
-            if (source is Consumable<TSource> consumable)
+            if (source is IConsumable<TSource> consumable)
             {
                 if (consumable.TailLink is Optimizations.IMergeWhere<TSource> optimization)
                 {
@@ -189,14 +189,14 @@ namespace Cistern.Linq
 
             public ConstructSelect(Func<T, U> selector) => this.selector = selector;
 
-            public Consumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
+            public IConsumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
                 where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
                 where TEnumerator : IEnumerator<T> => new Consumables.SelectEnumerable<TEnumerable, TEnumerator, T, U>(e, selector);
         }
 
-        internal static Consumable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
+        internal static IConsumable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            if (source is Consumable<TSource> consumable)
+            if (source is IConsumable<TSource> consumable)
             {
                 if (consumable.TailLink is Optimizations.IMergeSelect<TSource> optimization)
                 {
@@ -228,7 +228,7 @@ namespace Cistern.Linq
         {
             switch (source)
             {
-                case Consumable<T> consumable:
+                case IConsumable<T> consumable:
                     if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
                     {
                         return optimization.MergeSkip(consumable, skip);
@@ -260,7 +260,7 @@ namespace Cistern.Linq
 
             switch (source)
             {
-                case Consumable<T> consumable:
+                case IConsumable<T> consumable:
                     if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
                     {
                         return optimization.MergeTake(consumable, take);
@@ -281,9 +281,9 @@ namespace Cistern.Linq
             }
         }
 
-        internal static Consumable<T> AsConsumable<T>(IEnumerable<T> e)
+        internal static IConsumable<T> AsConsumable<T>(IEnumerable<T> e)
         {
-            if (e is Consumable<T> c)
+            if (e is IConsumable<T> c)
             {
                 return c;
             }
@@ -295,9 +295,9 @@ namespace Cistern.Linq
 
         // TTTransform is faster tahn TUTransform as AddTail version call can avoid
         // expensive JIT generic interface call
-        internal static Consumable<T> PushTTTransform<T>(IEnumerable<T> e, ILink<T, T> transform)
+        internal static IConsumable<T> PushTTTransform<T>(IEnumerable<T> e, ILink<T, T> transform)
         {
-            if (e is Consumable<T> consumable)
+            if (e is IConsumable<T> consumable)
             {
                 return consumable.AddTail(transform);
             }
@@ -308,9 +308,9 @@ namespace Cistern.Linq
         }
 
         // TUTrasform is more flexible but slower than TTTransform
-        internal static Consumable<U> PushTUTransform<T, U>(IEnumerable<T> e, ILink<T, U> transform)
+        internal static IConsumable<U> PushTUTransform<T, U>(IEnumerable<T> e, ILink<T, U> transform)
         {
-            if (e is Consumable<T> consumable)
+            if (e is IConsumable<T> consumable)
             {
                 return consumable.AddTail(transform);
             }
@@ -320,7 +320,7 @@ namespace Cistern.Linq
             }
         }
 
-        internal static Result Consume<T, Result>(Consumable<T> consumable, Consumer<T, Result> consumer)
+        internal static Result Consume<T, Result>(IConsumable<T> consumable, Consumer<T, Result> consumer)
         {
             consumable.Consume(consumer);
             return consumer.Result;
@@ -346,7 +346,7 @@ namespace Cistern.Linq
 
         internal static Result Consume<T, Result>(IEnumerable<T> e, Consumer<T, Result> consumer)
         {
-            if (e is Consumable<T> consumable)
+            if (e is IConsumable<T> consumable)
             {
                 consumable.Consume(consumer);
             }

@@ -15,8 +15,8 @@ namespace Cistern.Linq.Consumables
         public Array(T[] array, int start, int length, ILink<T, V> first) : base(first) =>
             (Underlying, _start, _length) = (array, start, length);
 
-        public override Consumable<V> Create   (ILink<T, V> first) => new Array<T, V>(Underlying, _start, _length, first);
-        public override Consumable<W> Create<W>(ILink<T, W> first) => new Array<T, W>(Underlying, _start, _length, first);
+        public override IConsumable<V> Create   (ILink<T, V> first) => new Array<T, V>(Underlying, _start, _length, first);
+        public override IConsumable<W> Create<W>(ILink<T, W> first) => new Array<T, W>(Underlying, _start, _length, first);
 
         public override IEnumerator<V> GetEnumerator() =>
             Cistern.Linq.GetEnumerator.Array.Get(Underlying, _start, _length, Link);
