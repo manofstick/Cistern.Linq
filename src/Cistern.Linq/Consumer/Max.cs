@@ -53,7 +53,11 @@ namespace Cistern.Linq.Consumer
             return cached;
         }
 
-        void IDisposable.Dispose() => Cache<MaxGeneric<T, Accumulator, Quotient, Maths>>.Item = this;
+        void IDisposable.Dispose()
+        {
+            Interlocked.MemoryBarrier();
+            Cache<MaxGeneric<T, Accumulator, Quotient, Maths>>.Item = this;
+        }
 
         public override ChainStatus ChainComplete(ChainStatus status)
         {
