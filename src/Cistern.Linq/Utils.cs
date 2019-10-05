@@ -3,8 +3,22 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq
 {
-    static class Utils
+    public static class Registry
     {
+        internal interface IConstruct<T, U>
+        {
+            IConsumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerator : IEnumerator<T>;
+        }
+
+        internal interface IInvoker<T>
+        {
+            void Invoke<TEnumerable, TEnumerator>(TEnumerable e)
+                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+                where TEnumerator : IEnumerator<T>;
+        }
+
         internal interface ITryFindSpecificType
         {
             string Namespace { get; }
@@ -21,9 +35,9 @@ namespace Cistern.Linq
 
         internal static void Register(ITryFindSpecificType finder)
         {
-            lock(sync)
+            lock (sync)
             {
-                foreach(var item in finders)
+                foreach (var item in finders)
                 {
                     if (ReferenceEquals(item.TryFind, finder))
                         return;
@@ -34,20 +48,6 @@ namespace Cistern.Linq
                 newArray[newArray.Length - 1] = (finder.Namespace, finder);
                 finders = newArray;
             }
-        }
-
-        internal interface IConstruct<T, U>
-        {
-            IConsumable<U> Create<TEnumerable, TEnumerator>(TEnumerable e)
-                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
-                where TEnumerator : IEnumerator<T>;
-        }
-
-        internal interface IInvoker<T>
-        {
-            void Invoke<TEnumerable, TEnumerator>(TEnumerable e)
-                where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
-                where TEnumerator : IEnumerator<T>;
         }
 
         internal static IConsumable<U> CreateConsumableSearch<T, U, Construct>(Construct construct, IEnumerable<T> e)
@@ -98,8 +98,17 @@ namespace Cistern.Linq
             invoker.Invoke<Optimizations.IEnumerableEnumerable<T>, IEnumerator<T>>(new Optimizations.IEnumerableEnumerable<T>(e));
         }
 
+        public static void Clear()
+        {
+            finders = Array.Empty<(string, ITryFindSpecificType)>();
+        }
+    }
+
+
+    static class Utils
+    {
         struct Construct<T, U>
-            : IConstruct<T, U>
+            : Registry.IConstruct<T, U>
         {
             private readonly ILink<T, U> link;
 
@@ -134,11 +143,11 @@ namespace Cistern.Linq
                 provider.GetConsumable(transform);
 
             static IConsumable<U> ForEnumerable(IEnumerable<T> e, ILink<T, U> transform) =>
-                CreateConsumableSearch<T, U, Construct<T, U>>(new Construct<T, U>(transform), e);
+                Registry.CreateConsumableSearch<T, U, Construct<T, U>>(new Construct<T, U>(transform), e);
         }
 
         struct ConstructWhere<T>
-            : IConstruct<T, T>
+            : Registry.IConstruct<T, T>
         {
             private readonly Func<T, bool> predicate;
 
@@ -178,11 +187,11 @@ namespace Cistern.Linq
                 new Consumables.WhereEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource>(new Optimizations.ListEnumerable<TSource>(list), predicate);
 
             static IConsumable<TSource> ForEnumerable(IEnumerable<TSource> e, Func<TSource, bool> predicate) =>
-                CreateConsumableSearch<TSource, TSource, ConstructWhere<TSource>>(new ConstructWhere<TSource>(predicate), e);
+                Registry.CreateConsumableSearch<TSource, TSource, ConstructWhere<TSource>>(new ConstructWhere<TSource>(predicate), e);
         }
 
         struct ConstructSelect<T, U>
-            : IConstruct<T, U>
+            : Registry.IConstruct<T, U>
         {
             private readonly Func<T, U> selector;
 
@@ -222,7 +231,7 @@ namespace Cistern.Linq
                 new Consumables.SelectEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource, TResult>(new Optimizations.ListEnumerable<TSource>(list), selector);
 
             static IConsumable<TResult> ForEnumerable(IEnumerable<TSource> source, Func<TSource, TResult> selector) =>
-                CreateConsumableSearch<TSource, TResult, ConstructSelect<TSource, TResult>>(new ConstructSelect<TSource, TResult>(selector), source);
+                Registry.CreateConsumableSearch<TSource, TResult, ConstructSelect<TSource, TResult>>(new ConstructSelect<TSource, TResult>(selector), source);
         }
 
         internal static ILink<T, T> GetSkipLink<T>(int skip) =>
@@ -262,7 +271,7 @@ namespace Cistern.Linq
                 new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, T>(new Optimizations.ListEnumerable<T>(list), GetSkipLink<T>(skip));
 
             static IConsumable<T> ForEnumerable(IEnumerable<T> source, int skip) =>
-                CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(GetSkipLink<T>(skip)), source);
+                Registry.CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(GetSkipLink<T>(skip)), source);
         }
 
         internal static IEnumerable<T> Take<T>(IEnumerable<T> source, int take)
@@ -299,7 +308,7 @@ namespace Cistern.Linq
                 new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, T>(new Optimizations.ListEnumerable<T>(list), new Links.Take<T>(take));
 
             static IConsumable<T> ForEnumerable(IEnumerable<T> source, int take) =>
-                CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(new Links.Take<T>(take)), source);
+                Registry.CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(new Links.Take<T>(take)), source);
         }
 
         internal static IConsumable<T> AsConsumable<T>(IEnumerable<T> e) =>
@@ -322,7 +331,7 @@ namespace Cistern.Linq
         }
 
         struct Invoker<T>
-            : IInvoker<T>
+            : Registry.IInvoker<T>
         {
             private readonly Consumer<T> consumer;
 
@@ -381,7 +390,7 @@ namespace Cistern.Linq
                     break;
 
                 default:
-                    InvokeSearch(new Invoker<T>(consumer), e);
+                    Registry.InvokeSearch(new Invoker<T>(consumer), e);
                     break;
             }
 

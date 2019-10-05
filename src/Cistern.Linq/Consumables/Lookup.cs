@@ -67,7 +67,7 @@ namespace Cistern.Linq.Consumables
             Cistern.Linq.GetEnumerator.Lookup.Get(_lastGrouping, Links.Identity<IGrouping<TKey, TElement>>.Instance);
 
         public override void Consume(Consumer<IGrouping<TKey, TElement>> consumer) =>
-            Cistern.Linq.Consume.Lookup.Invoke(_lastGrouping, Links.Identity<IGrouping<TKey,TElement>>.Instance, consumer);
+            Cistern.Linq.Consume.Lookup.Invoke(_lastGrouping, Count, Links.Identity<IGrouping<TKey,TElement>>.Instance, consumer);
 
         internal abstract GroupingInternal<TKey, TElement> GetGrouping(TKey key, bool create);
 
@@ -193,7 +193,7 @@ namespace Cistern.Linq.Consumables
             Cistern.Linq.GetEnumerator.Lookup.Get(_lastGrouping, Link);
 
         public override void Consume(Consumer<V> consumer) =>
-            Cistern.Linq.Consume.Lookup.Invoke(_lastGrouping, Link, consumer);
+            Cistern.Linq.Consume.Lookup.Invoke(_lastGrouping, _count, Link, consumer);
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
             Optimizations.Count.TryGetCount(this, Link, asCountConsumer);

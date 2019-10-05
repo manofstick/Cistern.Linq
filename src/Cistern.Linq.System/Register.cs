@@ -6,16 +6,16 @@ namespace Cistern.Linq.Immutable
     public static class Register
     {
         class TryFindSystemCollectionsTypes
-            : Utils.ITryFindSpecificType
+            : Registry.ITryFindSpecificType
         {
             private TryFindSystemCollectionsTypes() { }
 
-            public static Utils.ITryFindSpecificType Instance { get; } = new TryFindSystemCollectionsTypes();
+            public static Registry.ITryFindSpecificType Instance { get; } = new TryFindSystemCollectionsTypes();
 
             public string Namespace => "System.Collections.Generic";
 
             public IConsumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
-                where Construct : Utils.IConstruct<T, U>
+                where Construct : Registry.IConstruct<T, U>
             {
                 var firstChar = name[0];
 
@@ -28,7 +28,8 @@ namespace Cistern.Linq.Immutable
                 return null;
             }
 
-            public bool TryInvoke<T, Invoker>(Invoker invoker, IEnumerable<T> e, string name) where Invoker : Utils.IInvoker<T>
+            public bool TryInvoke<T, Invoker>(Invoker invoker, IEnumerable<T> e, string name)
+                where Invoker : Registry.IInvoker<T>
             {
                 var firstChar = name[0];
 
@@ -44,7 +45,7 @@ namespace Cistern.Linq.Immutable
 
         public static void RegisterSystemCollections()
         {
-            Utils.Register(TryFindSystemCollectionsTypes.Instance);
+            Registry.Register(TryFindSystemCollectionsTypes.Instance);
         }
     }
 }

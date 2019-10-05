@@ -9,7 +9,7 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.Containers.Customers
         [Params(ContainerType.Array, ContainerType.List, ContainerType.Enumerable, ContainerType.ImmutableArray, ContainerType.ImmutableList, ContainerType.FSharpList)]
         public ContainerType ContainerType;
 
-        [Params(10, 1000, 100000)]
+        [Params(0, 1, 10, 100, 1000)]
         public int CustomerCount;
 
         protected IEnumerable<DummyData.Customer> Customers;
@@ -17,8 +17,23 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.Containers.Customers
 		[GlobalSetup]
 		public void Setup()
 		{
-            Immutable.Register.RegisterSystemCollectionsImmutable();
-            FSharp.Register.RegisterFSharpCollections();
+            Cistern.Linq.Registry.Clear();
+            switch(ContainerType)
+            {
+                case ContainerType.Array:
+                case ContainerType.List:
+                case ContainerType.Enumerable:
+                    break;
+
+                case ContainerType.ImmutableArray:
+                case ContainerType.ImmutableList:
+                    Immutable.Register.RegisterSystemCollectionsImmutable();
+                    break;
+
+                case ContainerType.FSharpList:
+                    FSharp.Register.RegisterFSharpCollections();
+                    break;
+            }
 
             var customers = DummyData.GetCustomers(CustomerCount);
             Customers = ContainersHelper.ToContainer(customers, ContainerType);

@@ -4,10 +4,10 @@ open Cistern.Linq
 open System.Collections.Generic
 
 type private TryFindImmutableTypes () =
-    interface Utils.ITryFindSpecificType with
+    interface Registry.ITryFindSpecificType with
         member __.Namespace = "Microsoft.FSharp.Collections"
 
-        member __.TryCreateSpecific<'T, 'U, 'Construct when 'Construct :> Utils.IConstruct<'T, 'U>> (construct:'Construct, e:IEnumerable<'T>, name:string) =
+        member __.TryCreateSpecific<'T, 'U, 'Construct when 'Construct :> Registry.IConstruct<'T, 'U>> (construct:'Construct, e:IEnumerable<'T>, name:string) =
             if name.Length <= 6 then null
             else
                 let sixthChar = name.[6] //  here  |
@@ -21,7 +21,7 @@ type private TryFindImmutableTypes () =
                 else 
                     null
 
-        member __.TryInvoke<'T, 'Invoker when 'Invoker :> Utils.IInvoker<'T>> (invoker:'Invoker, e:IEnumerable<'T>, name:string) =
+        member __.TryInvoke<'T, 'Invoker when 'Invoker :> Registry.IInvoker<'T>> (invoker:'Invoker, e:IEnumerable<'T>, name:string) =
             if name.Length <= 6 then false
             else
                 let sixthChar = name.[6] //  here  |
@@ -36,7 +36,7 @@ type private TryFindImmutableTypes () =
                     false
 
 module private TryFindImmutableTypesInstance =
-    let Instance = TryFindImmutableTypes () :> Utils.ITryFindSpecificType
+    let Instance = TryFindImmutableTypes () :> Registry.ITryFindSpecificType
 
 let RegisterFSharpCollections () =
-    Utils.Register TryFindImmutableTypesInstance.Instance
+    Registry.Register TryFindImmutableTypesInstance.Instance

@@ -36,12 +36,40 @@ namespace Cistern.Linq.Consumer
         }
     }
 
-    sealed class Lookup<TSource, TKey> : Consumer<TSource, Consumables.Lookup<TKey, TSource>>
+    sealed class Lookup<TSource, TKey> 
+        : Consumer<TSource, Consumables.Lookup<TKey, TSource>>
+        , Optimizations.IHeadStart<TSource>
     {
         private readonly Func<TSource, TKey> _keySelector;
 
         public Lookup(Consumables.Lookup<TKey, TSource> builder, Func<TSource, TKey> keySelector) : base(builder) =>
             (_keySelector) = (keySelector);
+
+        ChainStatus Optimizations.IHeadStart<TSource>.Execute(ReadOnlySpan<TSource> source)
+        {
+            var keySelector = _keySelector;
+            var lookup = Result;
+            foreach (var item in source)
+            {
+                var key = keySelector(item);
+                var grouping = lookup.GetGrouping(key, create: true);
+                grouping.Add(item);
+            }
+            return ChainStatus.Flow;
+        }
+
+        ChainStatus Optimizations.IHeadStart<TSource>.Execute<Enumerable, Enumerator>(Enumerable source)
+        {
+            var keySelector = _keySelector;
+            var lookup = Result;
+            foreach (var item in source)
+            {
+                var key = keySelector(item);
+                var grouping = lookup.GetGrouping(key, create: true);
+                grouping.Add(item);
+            }
+            return ChainStatus.Flow;
+        }
 
         public override ChainStatus ProcessNext(TSource item)
         {

@@ -7,16 +7,16 @@ namespace Cistern.Linq.Immutable
     public static class Register
     {
         class TryFindImmutableTypes
-            : Utils.ITryFindSpecificType
+            : Registry.ITryFindSpecificType
         {
             private TryFindImmutableTypes() { }
 
-            public static Utils.ITryFindSpecificType Instance { get; } = new TryFindImmutableTypes();
+            public static Registry.ITryFindSpecificType Instance { get; } = new TryFindImmutableTypes();
 
             public string Namespace => "System.Collections.Immutable";
 
             public IConsumable<U> TryCreateSpecific<T, U, Construct>(Construct construct, IEnumerable<T> e, string name)
-                where Construct : Utils.IConstruct<T, U>
+                where Construct : Registry.IConstruct<T, U>
             {
                 if (name.Length <= 9)
                     return null;
@@ -36,7 +36,7 @@ namespace Cistern.Linq.Immutable
             }
 
             public bool TryInvoke<T, Invoker>(Invoker invoker, IEnumerable<T> e, string name)
-                where Invoker : Utils.IInvoker<T>
+                where Invoker : Registry.IInvoker<T>
             {
                 if (name.Length <= 9)
                     return false;
@@ -58,7 +58,7 @@ namespace Cistern.Linq.Immutable
 
         public static void RegisterSystemCollectionsImmutable()
         {
-            Utils.Register(TryFindImmutableTypes.Instance);
+            Registry.Register(TryFindImmutableTypes.Instance);
         }
     }
 }

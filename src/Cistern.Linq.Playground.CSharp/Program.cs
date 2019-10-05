@@ -38,7 +38,7 @@ namespace Playground
 
         static void Benchmark()
         {
-            var z = new Cistern.Linq.Benchmarking.Benchmarks.Containers.Customers.Containers_SelectWhereToListBenchmark();
+            var z = new Cistern.Linq.Benchmarking.Benchmarks.Containers.Customers.Containers_GroupByCountBenchmark();
 
             z.CustomerCount = 10;
             z.ContainerType = Cistern.Linq.Benchmarking.Benchmarks.Containers.ContainerType.FSharpList;
