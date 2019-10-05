@@ -38,15 +38,23 @@ namespace Playground
 
         static void Benchmark()
         {
-            var x = F(new[] { 1, 2, 3 });
-            var y = F(new[] { 4, 5, 6 });
-            var z = F(new[] { 7, 8, 9 });
+            var z = new Cistern.Linq.Benchmarking.Benchmarks.Containers.Customers.Containers_SelectWhereToListBenchmark();
 
-            var a = x.Concat(y).Concat(z);
+            z.CustomerCount = 10;
+            z.ContainerType = Cistern.Linq.Benchmarking.Benchmarks.Containers.ContainerType.FSharpList;
+            z.Setup();
 
-            var b = a.Where(m => m < 6).Last();
+            z.CisternLinq();
 
-            Console.WriteLine(b);
+            //var x = F(new[] { 1, 2, 3 });
+            //var y = F(new[] { 4, 5, 6 });
+            //var z = F(new[] { 7, 8, 9 });
+
+            //var a = x.Concat(y).Concat(z);
+
+            //var b = a.Where(m => m < 6).Last();
+
+            //Console.WriteLine(b);
         }
 
         static void Main(string[] args)

@@ -111,35 +111,30 @@ namespace Cistern.Linq
         }
 
 
-        internal static IConsumable<U> CreateConsumable<T, U>(IEnumerable<T> e, ILink<T, U> transform)
+        internal static IConsumable<U> CreateConsumable<T, U>(IEnumerable<T> source, ILink<T, U> transform)
         {
-            if (e is T[] array)
+            return source switch
             {
-                return
-                    array.Length == 0
-                      ? Consumables.Empty<U>.Instance
-                      : new Consumables.Array<T, U>(array, 0, array.Length, transform);
-            }
-            else if (e is List<T> list)
-            {
-                return new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, U>(new Optimizations.ListEnumerable<T>(list), transform);
-            }
-            else if (e is Consumables.IConsumableProvider<T> provider)
-            {
-                return provider.GetConsumable(transform);
-            }
-            /*
-             * I don't think we should use IList in the general case?
-             * 
-                        else if (e is IList<T> ilist)
-                        {
-                            return new Consumables.IList<T, U>(ilist, 0, ilist.Count, transform);
-                        }
-            */
-            else
-            {
-                return CreateConsumableSearch<T, U, Construct<T, U>>(new Construct<T, U>(transform), e);
-            }
+                T[] array                                   => ForArray(array, transform),
+                List<T> list                                => ForList(list, transform),
+                IConsumable<T> consumable                   => consumable.AddTail(transform),
+                Consumables.IConsumableProvider<T> provider => ForConsumableProvider(provider, transform),
+                var e                                       => ForEnumerable(e, transform)
+            };
+
+            static IConsumable<U> ForArray(T[] array, ILink<T, U> transform) =>
+                array.Length == 0
+                    ? Consumables.Empty<U>.Instance
+                    : new Consumables.Array<T, U>(array, 0, array.Length, transform);
+
+            static IConsumable<U> ForList(List<T> list, ILink<T, U> transform) =>
+                new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, U>(new Optimizations.ListEnumerable<T>(list), transform);
+
+            static IConsumable<U> ForConsumableProvider(Consumables.IConsumableProvider<T> provider, ILink<T, U> transform) =>
+                provider.GetConsumable(transform);
+
+            static IConsumable<U> ForEnumerable(IEnumerable<T> e, ILink<T, U> transform) =>
+                CreateConsumableSearch<T, U, Construct<T, U>>(new Construct<T, U>(transform), e);
         }
 
         struct ConstructWhere<T>
@@ -156,30 +151,34 @@ namespace Cistern.Linq
 
         internal static IConsumable<TSource> Where<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
-            if (source is Consumable<TSource> consumable)
+            return source switch
+            {
+                Consumable<TSource> consumable  => ForConsumable(consumable, predicate),
+                TSource[] array                 => ForArray(array, predicate),
+                List<TSource> list              => ForList(list, predicate),
+                IConsumable<TSource> consumable => ForConsumable(consumable, predicate),
+                var e                           => ForEnumerable(e, predicate)
+            };
+
+            static IConsumable<TSource> ForConsumable(IConsumable<TSource> consumable, Func<TSource, bool> predicate)
             {
                 if (consumable.TailLink is Optimizations.IMergeWhere<TSource> optimization)
                 {
                     return optimization.MergeWhere(consumable, predicate);
                 }
-
                 return consumable.AddTail(new Links.Where<TSource>(predicate));
             }
-            else if (source is TSource[] array)
-            {
-                if (array.Length == 0)
-                    return Consumables.Empty<TSource>.Instance;
-                else
-                    return new Consumables.WhereArray<TSource>(array, predicate);
-            }
-            else if (source is List<TSource> list)
-            {
-                return new Consumables.WhereEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource>(new Optimizations.ListEnumerable<TSource>(list), predicate);
-            }
-            else
-            {
-                return CreateConsumableSearch<TSource, TSource,ConstructWhere<TSource>>(new ConstructWhere<TSource>(predicate), source);
-            }
+
+            static IConsumable<TSource> ForArray(TSource[] array, Func<TSource, bool> predicate) =>
+                (array.Length == 0)
+                    ? Consumables.Empty<TSource>.Instance
+                    : new Consumables.WhereArray<TSource>(array, predicate);
+
+            static IConsumable<TSource> ForList(List<TSource> list, Func<TSource, bool> predicate) =>
+                new Consumables.WhereEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource>(new Optimizations.ListEnumerable<TSource>(list), predicate);
+
+            static IConsumable<TSource> ForEnumerable(IEnumerable<TSource> e, Func<TSource, bool> predicate) =>
+                CreateConsumableSearch<TSource, TSource, ConstructWhere<TSource>>(new ConstructWhere<TSource>(predicate), e);
         }
 
         struct ConstructSelect<T, U>
@@ -196,61 +195,74 @@ namespace Cistern.Linq
 
         internal static IConsumable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            if (source is Consumable<TSource> consumable)
+            return source switch
+            {
+                Consumable<TSource> consumable  => ForConsumable(consumable, selector),
+                TSource[] array                 => ForArray(array, selector),
+                List<TSource> list              => ForList(list, selector),
+                IConsumable<TSource> consumable => ForConsumable(consumable, selector),
+                var e                           => ForEnumerable(e, selector),
+            };
+
+            static IConsumable<TResult> ForConsumable(IConsumable<TSource> consumable, Func<TSource, TResult> selector)
             {
                 if (consumable.TailLink is Optimizations.IMergeSelect<TSource> optimization)
                 {
                     return optimization.MergeSelect(consumable, selector);
                 }
-
                 return consumable.AddTail(new Links.Select<TSource, TResult>(selector));
             }
-            else if (source is TSource[] array)
-            {
-                if (array.Length == 0)
-                    return Consumables.Empty<TResult>.Instance;
-                else
-                    return new Consumables.SelectArray<TSource, TResult>(array, selector);
-            }
-            else if (source is List<TSource> list)
-            {
-                return new Consumables.SelectEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource, TResult>(new Optimizations.ListEnumerable<TSource>(list), selector);
-            }
-            else
-            {
-                return CreateConsumableSearch<TSource, TResult, ConstructSelect<TSource, TResult>>(new ConstructSelect<TSource, TResult>(selector), source);
-            }
+
+            static IConsumable<TResult> ForArray(TSource[] array, Func<TSource, TResult> selector) =>
+                array.Length == 0
+                    ? Consumables.Empty<TResult>.Instance
+                    : new Consumables.SelectArray<TSource, TResult>(array, selector);
+
+            static IConsumable<TResult> ForList(List<TSource> list, Func<TSource, TResult> selector) =>
+                new Consumables.SelectEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource, TResult>(new Optimizations.ListEnumerable<TSource>(list), selector);
+
+            static IConsumable<TResult> ForEnumerable(IEnumerable<TSource> source, Func<TSource, TResult> selector) =>
+                CreateConsumableSearch<TSource, TResult, ConstructSelect<TSource, TResult>>(new ConstructSelect<TSource, TResult>(selector), source);
         }
 
         internal static ILink<T, T> GetSkipLink<T>(int skip) =>
             skip == 0 ? Links.Identity<T>.Instance : new Links.Skip<T>(skip);
+
         internal static IEnumerable<T> Skip<T>(IEnumerable<T> source, int skip)
         {
-            switch (source)
+            return source switch
             {
-                case Consumable<T> consumable:
-                    if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
-                    {
-                        return optimization.MergeSkip(consumable, skip);
-                    }
+                Consumable<T> consumable  => ForConsumable(consumable, skip),
+                T[] array                 => ForArray(array, skip),
+                List<T> list              => ForList(list, skip),
+                IConsumable<T> consumable => ForConsumable(consumable, skip),
+                var e                     => ForEnumerable(e, skip),
+            };
 
-                    return consumable.AddTail(GetSkipLink<T>(skip));
+            static IConsumable<T> ForConsumable(IConsumable<T> consumable, int skip)
+            {
+                if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
+                    return optimization.MergeSkip(consumable, skip);
 
-                case T[] array:
-                    var start = skip;
-                    var count = array.Length - skip;
-
-                    if (count <= 0)
-                        return Consumables.Empty<T>.Instance;
-                    else
-                        return new Consumables.Array<T, T>(array, start, count, Links.Identity<T>.Instance);
-
-                case List<T> list:
-                    return new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, T>(new Optimizations.ListEnumerable<T>(list), GetSkipLink<T>(skip));
-
-                default:
-                    return CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(GetSkipLink<T>(skip)), source);
+                return consumable.AddTail(GetSkipLink<T>(skip));
             }
+
+            static IConsumable<T> ForArray(T[] array, int skip)
+            {
+                var start = skip;
+                var count = array.Length - skip;
+
+                if (count <= 0)
+                    return Consumables.Empty<T>.Instance;
+
+                return new Consumables.Array<T, T>(array, start, count, Links.Identity<T>.Instance);
+            }
+
+            static IConsumable<T> ForList(List<T> list, int skip) =>
+                new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, T>(new Optimizations.ListEnumerable<T>(list), GetSkipLink<T>(skip));
+
+            static IConsumable<T> ForEnumerable(IEnumerable<T> source, int skip) =>
+                CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(GetSkipLink<T>(skip)), source);
         }
 
         internal static IEnumerable<T> Take<T>(IEnumerable<T> source, int take)
@@ -258,67 +270,50 @@ namespace Cistern.Linq
             if (take <= 0)
                 return Consumables.Empty<T>.Instance;
 
-            switch (source)
+            return source switch
             {
-                case Consumable<T> consumable:
-                    if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
-                    {
-                        return optimization.MergeTake(consumable, take);
-                    }
-                    return consumable.AddTail(new Links.Take<T>(take));
+                Consumable<T> consumable  => ForConsumable(consumable, take),
+                T[] array                 => ForArray(array, take),
+                List<T> list              => ForList(list, take),
+                IConsumable<T> consumable => ForConsumable(consumable, take),
+                var e                     => ForEnumerable(e, take),
+            };
 
-                case T[] array:
-                    if (array.Length <= 0)
-                        return Consumables.Empty<T>.Instance;
-                    else
-                        return new Consumables.Array<T, T>(array, 0, Math.Min(take, array.Length), Links.Identity<T>.Instance);
+            static IConsumable<T> ForConsumable(IConsumable<T> consumable, int take)
+            {
+                if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
+                    return optimization.MergeTake(consumable, take);
 
-                case List<T> list:
-                    return new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, T>(new Optimizations.ListEnumerable<T>(list), new Links.Take<T>(take));
-
-                default:
-                    return CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(new Links.Take<T>(take)), source);
+                return consumable.AddTail(new Links.Take<T>(take));
             }
+
+            static IConsumable<T> ForArray(T[] array, int take)
+            {
+                if (array.Length <= 0)
+                    return Consumables.Empty<T>.Instance;
+
+                return new Consumables.Array<T, T>(array, 0, Math.Min(take, array.Length), Links.Identity<T>.Instance);
+            }
+
+            static IConsumable<T> ForList(List<T> list, int take) =>
+                new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, T>(new Optimizations.ListEnumerable<T>(list), new Links.Take<T>(take));
+
+            static IConsumable<T> ForEnumerable(IEnumerable<T> source, int take) =>
+                CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(new Links.Take<T>(take)), source);
         }
 
-        internal static IConsumable<T> AsConsumable<T>(IEnumerable<T> e)
-        {
-            if (e is Consumable<T> c)
-            {
-                return c;
-            }
-            else
-            {
-                return CreateConsumable(e, Links.Identity<T>.Instance);
-            }
-        }
+        internal static IConsumable<T> AsConsumable<T>(IEnumerable<T> e) =>
+            e is Consumable<T> c ? c : CreateConsumable(e, Links.Identity<T>.Instance);
+            
 
         // TTTransform is faster tahn TUTransform as AddTail version call can avoid
         // expensive JIT generic interface call
-        internal static IConsumable<T> PushTTTransform<T>(IEnumerable<T> e, ILink<T, T> transform)
-        {
-            if (e is Consumable<T> consumable)
-            {
-                return consumable.AddTail(transform);
-            }
-            else
-            {
-                return CreateConsumable(e, transform);
-            }
-        }
+        internal static IConsumable<T> PushTTTransform<T>(IEnumerable<T> e, ILink<T, T> transform) =>
+            e is Consumable<T> c ? c.AddTail(transform) : CreateConsumable(e, transform);
 
         // TUTrasform is more flexible but slower than TTTransform
-        internal static IConsumable<U> PushTUTransform<T, U>(IEnumerable<T> e, ILink<T, U> transform)
-        {
-            if (e is Consumable<T> consumable)
-            {
-                return consumable.AddTail(transform);
-            }
-            else
-            {
-                return CreateConsumable(e, transform);
-            }
-        }
+        internal static IConsumable<U> PushTUTransform<T, U>(IEnumerable<T> e, ILink<T, U> transform) =>
+            e is Consumable<T> c ? c.AddTail(transform) : CreateConsumable(e, transform);
 
         internal static Result Consume<T, Result>(IConsumable<T> consumable, Consumer<T, Result> consumer)
         {
@@ -338,50 +333,56 @@ namespace Cistern.Linq
                 where TEnumerator : IEnumerator<T>
             {
                 if (e.TryGetSourceAsSpan(out var span))
-                    Cistern.Linq.Consume.ReadOnlySpan.Invoke(span, consumer);
+                    Linq.Consume.ReadOnlySpan.Invoke(span, consumer);
                 else
-                    Cistern.Linq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T>(e, consumer);
+                    Linq.Consume.Enumerable.Invoke<TEnumerable, TEnumerator, T>(e, consumer);
             }
         }
 
         internal static Result Consume<T, Result>(IEnumerable<T> e, Consumer<T, Result> consumer)
         {
-            if (e is Consumable<T> consumable)
+            switch (e)
             {
-                consumable.Consume(consumer);
-            }
-            else if (e is T[] array)
-            {
-                if (array.Length == 0)
-                {
-                    try { consumer.ChainComplete(ChainStatus.Filter); }
-                    finally { consumer.ChainDispose(); }
-                }
-                else
-                {
-                    Cistern.Linq.Consume.ReadOnlySpan.Invoke(array, consumer);
-                }
-            }
-            else if (e is List<T> list)
-            {
-                if (list.Count == 0)
-                {
-                    try { consumer.ChainComplete(ChainStatus.Filter); }
-                    finally { consumer.ChainDispose(); }
-                }
-                else
-                {
-                    Cistern.Linq.Consume.List.Invoke(list, consumer);
-                }
-            }
-            else if (e is Consumables.IConsumableProvider<T> provider)
-            {
-                var c = provider.GetConsumable(Links.Identity<T>.Instance);
-                c.Consume(consumer);
-            }
-            else
-            {
-                InvokeSearch(new Invoker<T>(consumer), e);
+                case Consumable<T> consumable:
+                    consumable.Consume(consumer);
+                    break;
+
+                case T[] array:
+                    if (array.Length == 0)
+                    {
+                        try { consumer.ChainComplete(ChainStatus.Filter); }
+                        finally { consumer.ChainDispose(); }
+                    }
+                    else
+                    {
+                        Linq.Consume.ReadOnlySpan.Invoke(array, consumer);
+                    }
+                    break;
+
+                case List<T> list:
+                    if (list.Count == 0)
+                    {
+                        try { consumer.ChainComplete(ChainStatus.Filter); }
+                        finally { consumer.ChainDispose(); }
+                    }
+                    else
+                    {
+                        Linq.Consume.List.Invoke(list, consumer);
+                    }
+                    break;
+
+                case IConsumable<T> consumable:
+                    consumable.Consume(consumer);
+                    break;
+
+                case Consumables.IConsumableProvider<T> provider:
+                    var c = provider.GetConsumable(Links.Identity<T>.Instance);
+                    c.Consume(consumer);
+                    break;
+
+                default:
+                    InvokeSearch(new Invoker<T>(consumer), e);
+                    break;
             }
 
             return consumer.Result;
