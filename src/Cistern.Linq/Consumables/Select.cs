@@ -217,9 +217,17 @@ namespace Cistern.Linq.Consumables
 
             public override void CopyTo(U[] array, int arrayIndex)
             {
+                using var e = Parent.Underlying.GetEnumerator();
                 var s = Parent.Selector;
-                foreach (var item in Parent.Underlying)
-                    array[arrayIndex++] = s(item);
+                var moveNext = e.MoveNext();
+                var i = arrayIndex;
+                for (; moveNext && i < array.Length; ++i)
+                {
+                    array[i] = s(e.Current);
+                    moveNext = e.MoveNext();
+                }
+                if (i != array.Length || moveNext)
+                    throw new IndexOutOfRangeException();
             }
         }
 
