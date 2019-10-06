@@ -123,22 +123,33 @@ namespace Cistern.Linq.Consumables
     {
         private readonly IEqualityComparer<TKey> _comparer;
 
+        private GroupingInternal<TKey, TElement> _last;
+        private bool _same;
+
         internal LookupWithComparer(IEqualityComparer<TKey> comparer) =>
             _comparer = comparer;
 
         internal sealed override GroupingInternal<TKey, TElement> GetGrouping(TKey key, bool create)
         {
+            if (_same && _comparer.Equals(_last._key, key))
+            {
+                return _last;
+            }
+
             int hashCode = (key == null) ? 0 : _comparer.GetHashCode(key) & 0x7FFFFFFF;
             GroupingInternal<TKey, TElement> g = _groupings[hashCode % _groupings.Length];
             while(true)
             {
                 if (g == null)
                 {
+                    _same = false;
                     return create ? Create(key, hashCode) : null;
                 }
 
                 if (g._hashCode == hashCode && _comparer.Equals(g._key, key))
                 {
+                    _same = ReferenceEquals(_last, g);
+                    _last = g;
                     return g;
                 }
 
@@ -153,19 +164,30 @@ namespace Cistern.Linq.Consumables
     {
         private readonly EqualityComparer<TKey> _comparer = EqualityComparer<TKey>.Default;
 
+        private GroupingInternal<TKey, TElement> _last;
+        private bool _same;
+
         internal sealed override GroupingInternal<TKey, TElement> GetGrouping(TKey key, bool create)
         {
+            if (_same && _comparer.Equals(_last._key, key))
+            {
+                return _last;
+            }
+
             int hashCode = (key == null) ? 0 : _comparer.GetHashCode(key) & 0x7FFFFFFF;
             GroupingInternal<TKey, TElement> g = _groupings[hashCode % _groupings.Length];
             while (true)
             {
                 if (g == null)
                 {
+                    _same = false;
                     return create ? Create(key, hashCode) : null;
                 }
 
                 if (g._hashCode == hashCode && _comparer.Equals(g._key, key))
                 {
+                    _same = ReferenceEquals(_last, g);
+                    _last = g;
                     return g;
                 }
 

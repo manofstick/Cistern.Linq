@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Cistern.Linq;
 using Cistern.Linq.Benchmarking.Benchmarks.Numeric;
 using Cistern.Linq.Benchmarking.Vanilla.Enumerable;
@@ -40,11 +41,19 @@ namespace Playground
         {
             var z = new Cistern.Linq.Benchmarking.Benchmarks.Containers.Customers.Containers_GroupByCountBenchmark();
 
-            z.CustomerCount = 10;
+            z.CustomerCount = 1000;
             z.ContainerType = Cistern.Linq.Benchmarking.Benchmarks.Containers.ContainerType.FSharpList;
             z.Setup();
 
-            z.CisternLinq();
+            for (var j = 0; j < 10; ++j)
+            {
+                var sw = Stopwatch.StartNew();
+                for (var i = 0; i < 10000; ++i)
+                {
+                    z.CisternLinq();
+                }
+                Console.WriteLine(sw.ElapsedMilliseconds);
+            }
 
             //var x = F(new[] { 1, 2, 3 });
             //var y = F(new[] { 4, 5, 6 });

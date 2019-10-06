@@ -35,7 +35,7 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.Containers.Customers
                     break;
             }
 
-            var customers = DummyData.GetCustomers(CustomerCount);
+            var customers = DummyData.GetCustomers(CustomerCount).OrderBy(x => x.State);
             Customers = ContainersHelper.ToContainer(customers, ContainerType);
         }
 	}
