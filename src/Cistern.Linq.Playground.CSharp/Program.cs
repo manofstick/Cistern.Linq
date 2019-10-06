@@ -39,16 +39,16 @@ namespace Playground
 
         static void Benchmark()
         {
-            var z = new Cistern.Linq.Benchmarking.Benchmarks.Containers.Customers.Containers_GroupByCountBenchmark();
+            var z = new Cistern.Linq.Benchmarking.Benchmarks.String.GroupByCharCharChar();
 
-            z.CustomerCount = 1000;
-            z.ContainerType = Cistern.Linq.Benchmarking.Benchmarks.Containers.ContainerType.FSharpList;
+            z.WordsCount = 1000;
+            z.Sorted = false;
             z.Setup();
 
             for (var j = 0; j < 10; ++j)
             {
                 var sw = Stopwatch.StartNew();
-                for (var i = 0; i < 10000; ++i)
+                for (var i = 0; i < 10; ++i)
                 {
                     z.CisternLinq();
                 }
