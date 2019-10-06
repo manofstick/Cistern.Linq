@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Cistern.Linq.Consumables
@@ -8,6 +9,7 @@ namespace Cistern.Linq.Consumables
         , Optimizations.IConsumableFastCount
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
+        , Optimizations.ITryGetCollectionInterface<U>
     {
         internal T[] Underlying { get; }
         internal Func<T, U> Selector { get; }
@@ -74,6 +76,26 @@ namespace Cistern.Linq.Consumables
             asCountConsumer ? null : Optimizations.Count.TryGetCount(this, Links.Identity<object>.Instance, asCountConsumer);
 
         public int? TryRawCount(bool asCountConsumer) => Underlying.Length;
+
+        class AsCollection : Optimizations.SimpleCollection<U, SelectArray<T, U>>
+        {
+            internal AsCollection(SelectArray<T, U> parent) : base(parent) { }
+
+            public override int Count => Parent.Underlying.Length;
+
+            public override void CopyTo(U[] array, int arrayIndex)
+            {
+                var s = Parent.Selector;
+                foreach (var item in Parent.Underlying)
+                    array[arrayIndex++] = s(item);
+            }
+        }
+
+        public bool TryGetCollectionInterface(out ICollection<U> collection)
+        {
+            collection = new AsCollection(this);
+            return true;
+        }
     }
 
     sealed partial class SelectEnumerable<TEnumerable, TEnumerator, T, U>
@@ -81,6 +103,7 @@ namespace Cistern.Linq.Consumables
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
         , Optimizations.IConsumableFastCount
+        , Optimizations.ITryGetCollectionInterface<U>
         where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
         where TEnumerator : IEnumerator<T>
     {
@@ -183,5 +206,33 @@ namespace Cistern.Linq.Consumables
             asCountConsumer ? null : Optimizations.Count.TryGetCount(this, Links.Identity<object>.Instance, asCountConsumer);
 
         public int? TryRawCount(bool asCountConsumer) => Underlying.TryLength;
+
+        class AsCollection : Optimizations.SimpleCollection<U, SelectEnumerable<TEnumerable, TEnumerator, T, U>>
+        {
+            readonly private int _count;
+
+            internal AsCollection(SelectEnumerable<TEnumerable, TEnumerator, T, U> parent, int count) : base(parent) { _count = count; }
+
+            public override int Count => _count;
+
+            public override void CopyTo(U[] array, int arrayIndex)
+            {
+                var s = Parent.Selector;
+                foreach (var item in Parent.Underlying)
+                    array[arrayIndex++] = s(item);
+            }
+        }
+
+        public bool TryGetCollectionInterface(out ICollection<U> collection)
+        {
+            var tryLength = Underlying.TryLength;
+            if (tryLength.HasValue)
+            {
+                collection = new AsCollection(this, tryLength.Value);
+                return true;
+            }
+            collection = null;
+            return false;
+        }
     }
 }

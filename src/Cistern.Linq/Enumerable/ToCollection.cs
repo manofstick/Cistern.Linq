@@ -60,6 +60,11 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
 
+            if (source is Optimizations.ITryGetCollectionInterface<TSource> tgci && tgci.TryGetCollectionInterface(out var asCollection))
+            {
+                return new List<TSource>(asCollection);
+            }
+
             if (source is IConsumable<TSource> consumable)
             {
                 Consumer<TSource, List<TSource>> toList = null;

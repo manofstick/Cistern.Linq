@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Cistern.Linq;
 using Cistern.Linq.Benchmarking.Benchmarks.Numeric;
 using Cistern.Linq.Benchmarking.Vanilla.Enumerable;
+using Microsoft.FSharp.Collections;
 
 namespace Playground
 {
@@ -39,6 +40,7 @@ namespace Playground
 
         static void Benchmark()
         {
+#if trueX
             var z = new Cistern.Linq.Benchmarking.Benchmarks.String.GroupByCharCharChar();
 
             z.WordsCount = 1000;
@@ -54,6 +56,24 @@ namespace Playground
                 }
                 Console.WriteLine(sw.ElapsedMilliseconds);
             }
+#endif
+#if true
+            var data = ListModule.OfSeq(Enumerable.Range(0, 10000));
+            Cistern.Linq.FSharp.Register.RegisterFSharpCollections();
+
+            for (var j = 0; j < 10; ++j)
+            {
+                var sw = Stopwatch.StartNew();
+                for (var i = 0; i < 10000; ++i)
+                {
+                    var zz = data.Select(x => x).ToList();
+                    
+                }
+                Console.WriteLine(sw.ElapsedMilliseconds);
+            }
+
+
+#endif
 
             //var x = F(new[] { 1, 2, 3 });
             //var y = F(new[] { 4, 5, 6 });
