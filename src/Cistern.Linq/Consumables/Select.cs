@@ -4,6 +4,64 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.Consumables
 {
+    static class SelectImpl
+    {
+        public static void SelectArray_AsCollection_CopyTo<T, U>(T[] source, Func<T, U> selector, U[] array, int arrayIndex)
+        {
+            for (var i = 0; i < source.Length; ++i)
+                array[arrayIndex + i] = selector(source[i]);
+        }
+
+        public static void SelectEnumerable_AsCollection_CopyTo<TEnumerable, TEnumerator, T, U>(TEnumerable enumerable, Func<T, U> selector, U[] array, int arrayIndex)
+            where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+            where TEnumerator : System.Collections.Generic.IEnumerator<T>
+        {
+            if (enumerable.Source is List<T> list)
+            {
+                // Personally I think these go against the general usage of List (i.e. it should only be
+                // handled through GetEnumerator where the version ensures that the List is not modified)
+                // ...BUT... System.Linq accesses it through the indexer for ToList, so so will we.
+                if (arrayIndex == 0 && list.Count == array.Length)
+                    SelectEnumerable_AsCollection_CopyTo_List_Fast(list, selector, array);
+                else
+                    SelectEnumerable_AsCollection_CopyTo_List(list, selector, array, arrayIndex);
+            }
+            else
+            {
+                SelectEnumerable_AsCollection_CopyTo_Enumerable<TEnumerable, TEnumerator, T, U>(enumerable, selector, array, arrayIndex);
+            }
+        }
+
+        private static void SelectEnumerable_AsCollection_CopyTo_List<T, U>(List<T> list, Func<T, U> selector, U[] array, int arrayIndex)
+        {
+            for (var i = 0; i < list.Count; ++i)
+                array[arrayIndex+i] = selector(list[i]);
+        }
+
+        private static void SelectEnumerable_AsCollection_CopyTo_List_Fast<T, U>(List<T> list, Func<T, U> selector, U[] array)
+        {
+            for (var i = 0; i < array.Length; ++i)
+                array[i] = selector(list[i]);
+        }
+
+        private static void SelectEnumerable_AsCollection_CopyTo_Enumerable<TEnumerable, TEnumerator, T, U>(TEnumerable enumerable, Func<T, U> selector, U[] array, int arrayIndex)
+            where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
+            where TEnumerator : IEnumerator<T>
+        {
+            var e = enumerable.GetEnumerator();
+            var s = selector;
+            var moveNext = e.MoveNext();
+            var i = arrayIndex;
+            for (; moveNext && i < array.Length; ++i)
+            {
+                array[i] = s(e.Current);
+                moveNext = e.MoveNext();
+            }
+            if (i != array.Length || moveNext)
+                throw new IndexOutOfRangeException();
+        }
+    }
+
     sealed partial class SelectArray<T, U>
         : ConsumableEnumerator<U>
         , Optimizations.IConsumableFastCount
@@ -83,12 +141,8 @@ namespace Cistern.Linq.Consumables
 
             public override int Count => Parent.Underlying.Length;
 
-            public override void CopyTo(U[] array, int arrayIndex)
-            {
-                var s = Parent.Selector;
-                foreach (var item in Parent.Underlying)
-                    array[arrayIndex++] = s(item);
-            }
+            public override void CopyTo(U[] array, int arrayIndex) =>
+                SelectImpl.SelectArray_AsCollection_CopyTo(Parent.Underlying, Parent.Selector, array, arrayIndex);
         }
 
         public bool TryGetCollectionInterface(out ICollection<U> collection)
@@ -215,20 +269,8 @@ namespace Cistern.Linq.Consumables
 
             public override int Count => _count;
 
-            public override void CopyTo(U[] array, int arrayIndex)
-            {
-                using var e = Parent.Underlying.GetEnumerator();
-                var s = Parent.Selector;
-                var moveNext = e.MoveNext();
-                var i = arrayIndex;
-                for (; moveNext && i < array.Length; ++i)
-                {
-                    array[i] = s(e.Current);
-                    moveNext = e.MoveNext();
-                }
-                if (i != array.Length || moveNext)
-                    throw new IndexOutOfRangeException();
-            }
+            public override void CopyTo(U[] array, int arrayIndex) =>
+                SelectImpl.SelectEnumerable_AsCollection_CopyTo<TEnumerable, TEnumerator, T, U> (Parent.Underlying, Parent.Selector, array, arrayIndex);
         }
 
         public bool TryGetCollectionInterface(out ICollection<U> collection)
