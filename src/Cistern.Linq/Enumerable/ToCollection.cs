@@ -78,7 +78,7 @@ namespace Cistern.Linq
 
                 toList ??= new Consumer.ToList<TSource>();
 
-                return Utils.Consume(source, toList);
+                return Utils.Consume(consumable, toList);
             }
 
             return new List<TSource>(source);
