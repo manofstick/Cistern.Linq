@@ -3,95 +3,18 @@ using System.Collections.Generic;
 
 namespace Cistern.Linq.Consumables
 {
-    internal sealed partial class GroupedEnumerable<TSource, TKey>
-        : Consumable<IGrouping<TKey, TSource>>
+    internal sealed partial class GroupedEnumerable<TSource, TKey, TElement, V>
+        : Consumable<IGrouping<TKey, TElement>, V>
     {
-        private readonly IEnumerable<TSource> _source;
-        private readonly Func<TSource, TKey> _keySelector;
-        private readonly IEqualityComparer<TKey> _comparer;
-
-        public GroupedEnumerable(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer, bool delaySourceException)
-        {
-            if (!delaySourceException && source == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
-
-            if (keySelector == null)
-            {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.keySelector);
-            }
-
-            _source = source;
-            _keySelector = keySelector;
-            _comparer = comparer;
-        }
-
-        public override object TailLink => null;
-
-        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
-
-        public override IConsumable<IGrouping<TKey, TSource>> AddTail(ILink<IGrouping<TKey, TSource>, IGrouping<TKey, TSource>> transform) =>
-            new GroupedEnumerableWithLinks<TSource, TKey, IGrouping<TKey, TSource>>(_source, _keySelector, _comparer, transform);
-
-        public override IConsumable<U> AddTail<U>(ILink<IGrouping<TKey, TSource>, U> transform) =>
-            new GroupedEnumerableWithLinks<TSource, TKey, U>(_source, _keySelector, _comparer, transform);
-
-        private Lookup<TKey, TSource> ToLookup()
-        {
-            if (_source == null)
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            return Consumer.Lookup.Consume(_source, _keySelector, _comparer);
-        }
-
-        public override void Consume(Consumer<IGrouping<TKey, TSource>> consumer) =>
-            ToLookup().Consume(consumer);
-
-        public override IEnumerator<IGrouping<TKey, TSource>> GetEnumerator() =>
-            ToLookup().GetEnumerator();
-    }
-
-    internal sealed partial class GroupedEnumerableWithLinks<TSource, TKey, V>
-        : Consumable<IGrouping<TKey, TSource>, V>
-    {
-        private readonly IEnumerable<TSource> _source;
-        private readonly Func<TSource, TKey> _keySelector;
-        private readonly IEqualityComparer<TKey> _comparer;
-
-        public GroupedEnumerableWithLinks(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer, ILink<IGrouping<TKey, TSource>, V> link) : base(link) =>
-            (_source, _keySelector, _comparer) = (source, keySelector, comparer);
-
-        public override IConsumable<V> Create(ILink<IGrouping<TKey, TSource>, V> first) =>
-            new GroupedEnumerableWithLinks<TSource, TKey, V>(_source, _keySelector, _comparer, first);
-        public override IConsumable<W> Create<W>(ILink<IGrouping<TKey, TSource>, W> first) =>
-            new GroupedEnumerableWithLinks<TSource, TKey, W>(_source, _keySelector, _comparer, first);
-
-        private IConsumable<V> ToConsumable()
-        {
-            if (_source == null)
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            Lookup<TKey, TSource> lookup = Consumer.Lookup.Consume(_source, _keySelector, _comparer);
-            return lookup.AddTail(Link);
-        }
-
-        public override IEnumerator<V> GetEnumerator() =>
-            ToConsumable().GetEnumerator();
-
-        public override void Consume(Consumer<V> consumer) =>
-            ToConsumable().Consume(consumer);
-    }
-
-    internal sealed partial class GroupedEnumerable<TSource, TKey, TElement>
-        : Consumable<IGrouping<TKey, TElement>>
-    {
+        private readonly bool _delaySourceException;
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
         private readonly Func<TSource, TElement> _elementSelector;
         private readonly IEqualityComparer<TKey> _comparer;
 
-        public GroupedEnumerable(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer)
+        public GroupedEnumerable(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer, ILink<IGrouping<TKey, TElement>, V> link, bool delaySourceException) : base(link)
         {
-            if (source == null)
+            if (!delaySourceException && source == null)
             {
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
             }
@@ -106,52 +29,23 @@ namespace Cistern.Linq.Consumables
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.elementSelector);
             }
 
-            _source = source;
-            _keySelector = keySelector;
-            _elementSelector = elementSelector;
-            _comparer = comparer;
+            (_delaySourceException, _source, _keySelector, _elementSelector, _comparer) = (delaySourceException, source, keySelector, elementSelector, comparer);
         }
 
-        public override object TailLink => null;
-
-        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
-
-        public override IConsumable<IGrouping<TKey, TElement>> AddTail(ILink<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>> transform) =>
-            new GroupedEnumerableWithLinks<TSource, TKey, TElement, IGrouping<TKey, TElement>>(_source, _keySelector, _elementSelector, _comparer, transform);
-
-        public override IConsumable<U> AddTail<U>(ILink<IGrouping<TKey, TElement>, U> transform) =>
-            new GroupedEnumerableWithLinks<TSource, TKey, TElement, U>(_source, _keySelector, _elementSelector, _comparer, transform);
-
-        private Lookup<TKey, TElement> ToLookup() =>
-            Consumer.Lookup.Consume(_source, _keySelector, _elementSelector, _comparer);
-
-        public override void Consume(Consumer<IGrouping<TKey, TElement>> consumer) =>
-            ToLookup().Consume(consumer);
-
-        public override IEnumerator<IGrouping<TKey, TElement>> GetEnumerator() =>
-            ToLookup().GetEnumerator();
-    }
-
-    internal sealed partial class GroupedEnumerableWithLinks<TSource, TKey, TElement, V>
-        : Consumable<IGrouping<TKey, TElement>, V>
-    {
-        private readonly IEnumerable<TSource> _source;
-        private readonly Func<TSource, TKey> _keySelector;
-        private readonly Func<TSource, TElement> _elementSelector;
-        private readonly IEqualityComparer<TKey> _comparer;
-
-        public GroupedEnumerableWithLinks(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer, ILink<IGrouping<TKey, TElement>, V> link) : base(link) =>
-            (_source, _keySelector, _elementSelector, _comparer) = (source, keySelector, elementSelector, comparer);
-
         public override IConsumable<V> Create(ILink<IGrouping<TKey, TElement>, V> first) =>
-            new GroupedEnumerableWithLinks<TSource, TKey, TElement, V>(_source, _keySelector, _elementSelector, _comparer, first);
+            new GroupedEnumerable<TSource, TKey, TElement, V>(_source, _keySelector, _elementSelector, _comparer, first, _delaySourceException);
+
         public override IConsumable<W> Create<W>(ILink<IGrouping<TKey, TElement>, W> first) =>
-            new GroupedEnumerableWithLinks<TSource, TKey, TElement, W>(_source, _keySelector, _elementSelector, _comparer, first);
+            new GroupedEnumerable<TSource, TKey, TElement, W>(_source, _keySelector, _elementSelector, _comparer, first, _delaySourceException);
 
         private IConsumable<V> ToConsumable()
         {
-            Lookup<TKey, TElement> lookup = Consumer.Lookup.Consume(_source, _keySelector, _elementSelector, _comparer);
-            return lookup.AddTail(Link);
+            if (_source == null)
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
+
+            var lookup = Consumer.Lookup.Consume(_source, _keySelector, _elementSelector, _comparer);
+            
+            return IsIdentity ? (IConsumable<V>)lookup : lookup.AddTail(Link);
         }
 
         public override IEnumerator<V> GetEnumerator() =>
