@@ -27,16 +27,16 @@ namespace Cistern.Linq
             new Consumables.GroupedEnumerable<TSource, TKey, TElement, IGrouping<TKey, TElement>>(source, keySelector, elementSelector, comparer, Links.Identity<IGrouping<TKey, TElement>>.Instance, false);
 
         public static IEnumerable<TResult> GroupBy<TSource, TKey, TResult>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TKey, IEnumerable<TSource>, TResult> resultSelector) =>
-            new Consumables.GroupedResultEnumerable<TSource, TKey, TResult>(source, keySelector, resultSelector, null);
+            new Consumables.GroupedResultEnumerable<TSource, TKey, TSource, TResult, TResult>(source, keySelector, x => x, resultSelector, null, Links.Identity<TResult>.Instance);
 
         public static IEnumerable<TResult> GroupBy<TSource, TKey, TElement, TResult>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
-            new Consumables.GroupedResultEnumerable<TSource, TKey, TElement, TResult>(source, keySelector, elementSelector, resultSelector, null);
+            new Consumables.GroupedResultEnumerable<TSource, TKey, TElement, TResult, TResult>(source, keySelector, elementSelector, resultSelector, null, Links.Identity<TResult>.Instance);
 
         public static IEnumerable<TResult> GroupBy<TSource, TKey, TResult>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TKey, IEnumerable<TSource>, TResult> resultSelector, IEqualityComparer<TKey> comparer) =>
-            new Consumables.GroupedResultEnumerable<TSource, TKey, TResult>(source, keySelector, resultSelector, comparer);
+            new Consumables.GroupedResultEnumerable<TSource, TKey, TSource, TResult, TResult>(source, keySelector, x=>x, resultSelector, comparer, Links.Identity<TResult>.Instance);
 
         public static IEnumerable<TResult> GroupBy<TSource, TKey, TElement, TResult>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, Func<TKey, IEnumerable<TElement>, TResult> resultSelector, IEqualityComparer<TKey> comparer) =>
-            new Consumables.GroupedResultEnumerable<TSource, TKey, TElement, TResult>(source, keySelector, elementSelector, resultSelector, comparer);
+            new Consumables.GroupedResultEnumerable<TSource, TKey, TElement, TResult, TResult>(source, keySelector, elementSelector, resultSelector, comparer, Links.Identity<TResult>.Instance);
     }
 
     public interface IGrouping<out TKey, out TElement> : IEnumerable<TElement>
