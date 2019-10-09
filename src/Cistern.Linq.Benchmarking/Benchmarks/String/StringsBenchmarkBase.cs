@@ -42,7 +42,7 @@ namespace Cistern.Linq.Benchmarking.Benchmarks
                 }
             }
 
-            Words.Take(WordsCount).ToArray();
+            Words = Words.Take(WordsCount).ToArray();
 		}
 	}
 }

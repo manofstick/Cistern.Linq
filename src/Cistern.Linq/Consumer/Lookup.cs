@@ -21,13 +21,13 @@ namespace Cistern.Linq.Consumer
         internal static Consumables.Lookup<TKey, TSource> Consume<TKey, TSource>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer)
         {
             Consumables.Lookup<TKey, TSource> builder = GetLookupBuilder<TKey, TSource>(comparer);
-            return Utils.Consume(source, new Lookup<TSource, TKey>(builder, keySelector));
+            return Utils.Consume(source, new Lookup<TSource, TKey, TSource>(builder, keySelector, x=>x));
         }
 
         internal static Consumables.Lookup<TKey, TElement> Consume<TSource, TKey, TElement>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer)
         {
             Consumables.Lookup<TKey, TElement> builder = GetLookupBuilder<TKey, TElement>(comparer);
-            return Utils.Consume(source, new LookupSplit<TSource, TKey, TElement>(builder, keySelector, elementSelector));
+            return Utils.Consume(source, new Lookup<TSource, TKey, TElement>(builder, keySelector, elementSelector));
         }
 
         internal static Consumables.Lookup<TKey, TSource> ConsumeForJoin<TKey, TSource>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer)
@@ -39,7 +39,7 @@ namespace Cistern.Linq.Consumer
 
     class LookupImpl
     {
-        private static void AddItems<T, TKey>(Func<T, TKey> keySelector, Consumables.Lookup<TKey, T> lookup, ref (T, T, T, T) items)
+        private static void AddItems<T, TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> lookup, ref (T, T, T, T) items)
         {
             var key1 = keySelector(items.Item1);
             var key2 = keySelector(items.Item2);
@@ -51,52 +51,58 @@ namespace Cistern.Linq.Consumer
             var grouping3 = lookup.GetGrouping(key3, create: true);
             var grouping4 = lookup.GetGrouping(key4, create: true);
 
-            grouping1.Add(items.Item1);
-            grouping2.Add(items.Item2);
-            grouping3.Add(items.Item3);
-            grouping4.Add(items.Item4);
+            var element1 = elementSelector(items.Item1);
+            var element2 = elementSelector(items.Item2);
+            var element3 = elementSelector(items.Item3);
+            var element4 = elementSelector(items.Item4);
+
+            grouping1.Add(element1);
+            grouping2.Add(element2);
+            grouping3.Add(element3);
+            grouping4.Add(element4);
         }
 
-        private static void AddItem<T, TKey>(Func<T, TKey> keySelector, Consumables.Lookup<TKey, T> lookup, T item)
+        private static void AddItem<T, TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> lookup, T item)
         {
             var key = keySelector(item);
             var grouping = lookup.GetGrouping(key, create: true);
-            grouping.Add(item);
+            var element = elementSelector(item);
+            grouping.Add(element);
         }
 
-        private static void AddRemainingItems<T, TKey>(Func<T, TKey> keySelector, Consumables.Lookup<TKey, T> lookup, int count, ref (T, T, T, T) items)
+        private static void AddRemainingItems<T, TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> lookup, int count, ref (T, T, T, T) items)
         {
-            if (count > 0)
+            if (count >= 1)
             {
-                AddItem(keySelector, lookup, items.Item1);
-                if (count > 1)
+                AddItem(keySelector, elementSelector, lookup, items.Item1);
+                if (count >= 2)
                 {
-                    AddItem(keySelector, lookup, items.Item2);
-                    if (count > 2)
+                    AddItem(keySelector, elementSelector, lookup, items.Item2);
+                    if (count >= 3)
                     {
-                        AddItem(keySelector, lookup, items.Item3);
+                        AddItem(keySelector, elementSelector, lookup, items.Item3);
                     }
                 }
             }
         }
 
-        private static void AddRemainingItems<S, T, TKey>(Func<T, TKey> keySelector, Consumables.Lookup<TKey, T> lookup, int count, Func<S, T> selector, ref (S, S, S, S) items)
+        private static void AddRemainingItems<S, T, TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> lookup, int count, Func<S, T> selector, ref (S, S, S, S) items)
         {
-            if (count > 0)
+            if (count >= 1)
             {
-                AddItem(keySelector, lookup, selector(items.Item1));
-                if (count > 1)
+                AddItem(keySelector, elementSelector, lookup, selector(items.Item1));
+                if (count >= 2)
                 {
-                    AddItem(keySelector, lookup, selector(items.Item2));
-                    if (count > 2)
+                    AddItem(keySelector, elementSelector, lookup, selector(items.Item2));
+                    if (count >= 3)
                     {
-                        AddItem(keySelector, lookup, selector(items.Item3));
+                        AddItem(keySelector, elementSelector, lookup, selector(items.Item3));
                     }
                 }
             }
         }
 
-        public static ChainStatus Execute<T, TKey>(ReadOnlySpan<T> source, Func<T, TKey> keySelector, Consumables.Lookup<TKey, T> Result)
+        public static ChainStatus Execute<T, TKey, TElement>(ReadOnlySpan<T> source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> Result)
         {
             (T, T, T, T) items = default;
 
@@ -104,19 +110,19 @@ namespace Cistern.Linq.Consumer
             for (; i < source.Length-4+1; i+=4)
             {
                 items = (source[i+0], source[i+1], source[i+2], source[i+3]);
-                AddItems(keySelector, Result, ref items);
+                AddItems(keySelector, elementSelector, Result, ref items);
             }
 
             for (; i < source.Length; ++i)
             {
                 var item = source[i];
-                AddItem(keySelector, Result, item);
+                AddItem(keySelector, elementSelector, Result, item);
             }
 
             return ChainStatus.Flow;
         }
 
-        public static ChainStatus Execute<T, TKey, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Consumables.Lookup<TKey, T> Result)
+        public static ChainStatus Execute<T, TKey, TElement, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> Result)
             where Enumerable : Optimizations.ITypedEnumerable<T, Enumerator>
             where Enumerator : System.Collections.Generic.IEnumerator<T>
         {
@@ -144,7 +150,7 @@ namespace Cistern.Linq.Consumer
                         {
                             items.Item4 = e.Current;
                             count = 0;
-                            AddItems(keySelector, Result, ref items);
+                            AddItems(keySelector, elementSelector, Result, ref items);
 
                             moveNext = e.MoveNext();
                         }
@@ -152,12 +158,12 @@ namespace Cistern.Linq.Consumer
                 }
             }
 
-            AddRemainingItems(keySelector, Result, count, ref items);
+            AddRemainingItems(keySelector, elementSelector, Result, count, ref items);
 
             return ChainStatus.Flow;
         }
 
-        public static ChainStatus Select<S, T, TKey>(ReadOnlySpan<S> source, Func<T, TKey> keySelector, Func<S, T> selector, Consumables.Lookup<TKey, T> Result)
+        public static ChainStatus Select<S, T, TKey, TElement>(ReadOnlySpan<S> source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<S, T> selector, Consumables.Lookup<TKey, TElement> Result)
         {
             (T, T, T, T) items = default;
 
@@ -165,19 +171,19 @@ namespace Cistern.Linq.Consumer
             for (; i < source.Length-4+1; i+=4)
             {
                 items = (selector(source[i+0]), selector(source[i+1]), selector(source[i+2]), selector(source[i+3]));
-                AddItems(keySelector, Result, ref items);
+                AddItems(keySelector, elementSelector, Result, ref items);
             }
 
             for (; i < source.Length; ++i)
             {
                 var item = source[i];
-                AddItem(keySelector, Result, selector(item));
+                AddItem(keySelector, elementSelector, Result, selector(item));
             }
 
             return ChainStatus.Flow;
         }
 
-        public static ChainStatus Select<S, T, TKey, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<S, T> selector, Consumables.Lookup<TKey, T> Result)
+        public static ChainStatus Select<S, T, TKey, TElement, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<S, T> selector, Consumables.Lookup<TKey, TElement> Result)
             where Enumerable : Optimizations.ITypedEnumerable<S, Enumerator>
             where Enumerator : System.Collections.Generic.IEnumerator<S>
         {
@@ -207,18 +213,18 @@ namespace Cistern.Linq.Consumer
                             moveNext = e.MoveNext();
                             count = 0;
 
-                            AddItems(keySelector, Result, ref items);
+                            AddItems(keySelector, elementSelector, Result, ref items);
                         }
                     }
                 }
             }
 
-            AddRemainingItems(keySelector, Result, count, ref items);
+            AddRemainingItems(keySelector, elementSelector, Result, count, ref items);
 
             return ChainStatus.Flow;
         }
 
-        public static ChainStatus Where<T, TKey>(ReadOnlySpan<T> source, Func<T, TKey> keySelector, Func<T, bool> predicate, Consumables.Lookup<TKey, T> Result)
+        public static ChainStatus Where<T, TKey, TElement>(ReadOnlySpan<T> source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<T, bool> predicate, Consumables.Lookup<TKey, TElement> Result)
         {
             (T, T, T, T) items = default;
 
@@ -252,7 +258,7 @@ namespace Cistern.Linq.Consumer
                                 continue;
                             count = 0;
 
-                            AddItems(keySelector, Result, ref items);
+                            AddItems(keySelector, elementSelector, Result, ref items);
 
                             break;
                         }
@@ -262,12 +268,12 @@ namespace Cistern.Linq.Consumer
                 }
             }
 
-            AddRemainingItems(keySelector, Result, count, ref items);
+            AddRemainingItems(keySelector, elementSelector, Result, count, ref items);
 
             return ChainStatus.Flow;
         }
 
-        public static ChainStatus Where<T, TKey, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<T, bool> predicate, Consumables.Lookup<TKey, T> Result)
+        public static ChainStatus Where<T, TKey, TElement, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<T, bool> predicate, Consumables.Lookup<TKey, TElement> Result)
             where Enumerable : Optimizations.ITypedEnumerable<T, Enumerator>
             where Enumerator : System.Collections.Generic.IEnumerator<T>
         {
@@ -305,7 +311,7 @@ namespace Cistern.Linq.Consumer
                                 continue;
                             count = 0;
 
-                            AddItems(keySelector, Result, ref items);
+                            AddItems(keySelector, elementSelector, Result, ref items);
 
                             break;
                         }
@@ -315,12 +321,12 @@ namespace Cistern.Linq.Consumer
                 }
             }
 
-            AddRemainingItems(keySelector, Result, count, ref items);
+            AddRemainingItems(keySelector, elementSelector, Result, count, ref items);
 
             return ChainStatus.Flow;
         }
 
-        public static ChainStatus SelectMany<T, TKey, TSource, TCollection>(TSource source, Func<T, TKey> keySelector, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector, Consumables.Lookup<TKey, T> Result)
+        public static ChainStatus SelectMany<T, TKey, TElement, TSource, TCollection>(TSource source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector, Consumables.Lookup<TKey, TElement> Result)
         {
             var lookup = Result;
             foreach (var s in span)
@@ -328,12 +334,13 @@ namespace Cistern.Linq.Consumer
                 var item = resultSelector(source, s);
                 var key = keySelector(item);
                 var grouping = lookup.GetGrouping(key, create: true);
-                grouping.Add(item);
+                var element = elementSelector(item);
+                grouping.Add(element);
             }
             return ChainStatus.Flow;
         }
 
-        public static ChainStatus WhereSelect<S, T, TKey>(ReadOnlySpan<S> source, Func<T, TKey> keySelector, Func<S, bool> predicate, Func<S, T> selector, Consumables.Lookup<TKey, T> Result)
+        public static ChainStatus WhereSelect<S, T, TKey, TElement>(ReadOnlySpan<S> source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<S, bool> predicate, Func<S, T> selector, Consumables.Lookup<TKey, TElement> Result)
         {
             (S, S, S, S) itemsS = default;
             (T, T, T, T) items = default;
@@ -369,7 +376,7 @@ namespace Cistern.Linq.Consumer
                             count = 0;
 
                             items = (selector(itemsS.Item1), selector(itemsS.Item2), selector(itemsS.Item3), selector(itemsS.Item4));
-                            AddItems(keySelector, Result, ref items);
+                            AddItems(keySelector, elementSelector, Result, ref items);
 
                             break;
                         }
@@ -379,12 +386,12 @@ namespace Cistern.Linq.Consumer
                 }
             }
             
-            AddRemainingItems(keySelector, Result, count, selector, ref itemsS);
+            AddRemainingItems(keySelector, elementSelector, Result, count, selector, ref itemsS);
 
             return ChainStatus.Flow;
         }
 
-        public static ChainStatus WhereSelect<S, T, TKey, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<S, bool> predicate, Func<S, T> selector, Consumables.Lookup<TKey, T> Result)
+        public static ChainStatus WhereSelect<S, T, TKey, TElement, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<S, bool> predicate, Func<S, T> selector, Consumables.Lookup<TKey, TElement> Result)
             where Enumerable : Optimizations.ITypedEnumerable<S, Enumerator>
             where Enumerator : System.Collections.Generic.IEnumerator<S>
         {
@@ -428,7 +435,7 @@ namespace Cistern.Linq.Consumer
                             count = 0;
 
                             items = (selector(itemsS.Item1), selector(itemsS.Item2), selector(itemsS.Item3), selector(itemsS.Item4));
-                            AddItems(keySelector, Result, ref items);
+                            AddItems(keySelector, elementSelector, Result, ref items);
 
                             break;
                         }
@@ -438,62 +445,21 @@ namespace Cistern.Linq.Consumer
                 }
             }
 
-            AddRemainingItems(keySelector, Result, count, selector, ref itemsS);
+            AddRemainingItems(keySelector, elementSelector, Result, count, selector, ref itemsS);
 
             return ChainStatus.Flow;
         }
     }
 
-    sealed class Lookup<TSource, TKey>
-        : Consumer<TSource, Consumables.Lookup<TKey, TSource>>
+    sealed class Lookup<TSource, TKey, TElement>
+        : Consumer<TSource, Consumables.Lookup<TKey, TElement>>
         , Optimizations.IHeadStart<TSource>
         , Optimizations.ITailEnd<TSource>
     {
         private readonly Func<TSource, TKey> _keySelector;
-
-        public Lookup(Consumables.Lookup<TKey, TSource> builder, Func<TSource, TKey> keySelector) : base(builder) =>
-            (_keySelector) = (keySelector);
-
-        public override ChainStatus ProcessNext(TSource item)
-        {
-            Result.GetGrouping(_keySelector(item), create: true).Add(item);
-            return ChainStatus.Flow;
-        }
-
-        ChainStatus Optimizations.IHeadStart<TSource>.Execute(ReadOnlySpan<TSource> source) =>
-            LookupImpl.Execute(source, _keySelector, Result);
-
-        ChainStatus Optimizations.IHeadStart<TSource>.Execute<Enumerable, Enumerator>(Enumerable source) =>
-            LookupImpl.Execute<TSource, TKey, Enumerable, Enumerator>(source, _keySelector, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.Select<S>(ReadOnlySpan<S> source, Func<S, TSource> selector) =>
-            LookupImpl.Select(source, _keySelector, selector, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, TSource> selector) =>
-            LookupImpl.Select<S, TSource, TKey, Enumerable, Enumerator>(source, _keySelector, selector, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.Where(ReadOnlySpan<TSource> source, Func<TSource, bool> predicate) =>
-            LookupImpl.Where(source, _keySelector, predicate, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.Where<Enumerable, Enumerator>(Enumerable source, Func<TSource, bool> predicate) =>
-            LookupImpl.Where<TSource, TKey, Enumerable, Enumerator>(source, _keySelector, predicate, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.SelectMany<TSource1, TCollection>(TSource1 source, ReadOnlySpan<TCollection> span, Func<TSource1, TCollection, TSource> resultSelector) =>
-            LookupImpl.SelectMany(source, _keySelector, span, resultSelector, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, TSource> selector) =>
-            LookupImpl.WhereSelect(source, _keySelector, predicate, selector, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, TSource> selector) =>
-            LookupImpl.WhereSelect<S, TSource, TKey, Enumerable, Enumerator>(source, _keySelector, predicate, selector, Result);
-    }
-
-    sealed class LookupSplit<TSource, TKey, TElement> : Consumer<TSource, Consumables.Lookup<TKey, TElement>>
-    {
-        private readonly Func<TSource, TKey> _keySelector;
         private readonly Func<TSource, TElement> _elementSelector;
 
-        public LookupSplit(Consumables.Lookup<TKey, TElement> builder, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) : base(builder) =>
+        public Lookup(Consumables.Lookup<TKey, TElement> builder, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) : base(builder) =>
             (_keySelector, _elementSelector) = (keySelector, elementSelector);
 
         public override ChainStatus ProcessNext(TSource item)
@@ -501,6 +467,33 @@ namespace Cistern.Linq.Consumer
             Result.GetGrouping(_keySelector(item), create: true).Add(_elementSelector(item));
             return ChainStatus.Flow;
         }
+
+        ChainStatus Optimizations.IHeadStart<TSource>.Execute(ReadOnlySpan<TSource> source) =>
+            LookupImpl.Execute(source, _keySelector, _elementSelector, Result);
+
+        ChainStatus Optimizations.IHeadStart<TSource>.Execute<Enumerable, Enumerator>(Enumerable source) =>
+            LookupImpl.Execute<TSource, TKey, TElement, Enumerable, Enumerator>(source, _keySelector, _elementSelector, Result);
+
+        ChainStatus Optimizations.ITailEnd<TSource>.Select<S>(ReadOnlySpan<S> source, Func<S, TSource> selector) =>
+            LookupImpl.Select(source, _keySelector, _elementSelector, selector, Result);
+
+        ChainStatus Optimizations.ITailEnd<TSource>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, TSource> selector) =>
+            LookupImpl.Select<S, TSource, TKey, TElement, Enumerable, Enumerator>(source, _keySelector, _elementSelector, selector, Result);
+
+        ChainStatus Optimizations.ITailEnd<TSource>.Where(ReadOnlySpan<TSource> source, Func<TSource, bool> predicate) =>
+            LookupImpl.Where(source, _keySelector, _elementSelector, predicate, Result);
+
+        ChainStatus Optimizations.ITailEnd<TSource>.Where<Enumerable, Enumerator>(Enumerable source, Func<TSource, bool> predicate) =>
+            LookupImpl.Where<TSource, TKey, TElement, Enumerable, Enumerator>(source, _keySelector, _elementSelector, predicate, Result);
+
+        ChainStatus Optimizations.ITailEnd<TSource>.SelectMany<TSource1, TCollection>(TSource1 source, ReadOnlySpan<TCollection> span, Func<TSource1, TCollection, TSource> resultSelector) =>
+            LookupImpl.SelectMany(source, _keySelector, _elementSelector, span, resultSelector, Result);
+
+        ChainStatus Optimizations.ITailEnd<TSource>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, TSource> selector) =>
+            LookupImpl.WhereSelect(source, _keySelector, _elementSelector, predicate, selector, Result);
+
+        ChainStatus Optimizations.ITailEnd<TSource>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, TSource> selector) =>
+            LookupImpl.WhereSelect<S, TSource, TKey, TElement, Enumerable, Enumerator>(source, _keySelector, _elementSelector, predicate, selector, Result);
     }
 
     sealed class LookupForJoin<TSource, TKey> : Consumer<TSource, Consumables.Lookup<TKey, TSource>>
