@@ -21,6 +21,9 @@ namespace Cistern.Linq
                 case IConsumable<TSource> consumable:
                     Consumer<TSource, TSource[]> toArray = null;
 
+                    if (consumable is Optimizations.IDelayed<TSource> delayed)
+                        consumable = delayed.Force();
+
                     if (consumable is Optimizations.IConsumableFastCount counter)
                     {
                         var tryCount = counter.TryFastCount(false);
@@ -69,6 +72,9 @@ namespace Cistern.Linq
             {
                 Consumer<TSource, List<TSource>> toList = null;
 
+                if (consumable is Optimizations.IDelayed<TSource> delayed)
+                    consumable = delayed.Force();
+
                 if (source is Optimizations.IConsumableFastCount counter)
                 {
                     var tryCount = counter.TryFastCount(false);
@@ -102,6 +108,10 @@ namespace Cistern.Linq
             Consumer<TSource, Dictionary<TKey, TSource>> toDictionary = null;
 
             var consumable = Utils.AsConsumable(source);
+
+            if (consumable is Optimizations.IDelayed<TSource> delayed)
+                consumable = delayed.Force();
+
             if (consumable is Optimizations.IConsumableFastCount counter)
             {
                 var tryCount = counter.TryFastCount(false);
@@ -111,7 +121,7 @@ namespace Cistern.Linq
 
             toDictionary ??= new Consumer.ToDictionary<Consumer.KeySourceSelector<TSource, TKey>, TSource, TKey, TSource>(new Consumer.KeySourceSelector<TSource, TKey>(keySelector), comparer);
 
-            return Utils.Consume(source, toDictionary);
+            return Utils.Consume(consumable, toDictionary);
         }
 
         public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) =>
@@ -137,6 +147,10 @@ namespace Cistern.Linq
             Consumer<TSource, Dictionary<TKey, TElement>> toDictionary = null;
 
             var consumable = Utils.AsConsumable(source);
+
+            if (consumable is Optimizations.IDelayed<TSource> delayed)
+                consumable = delayed.Force();
+
             if (consumable is Optimizations.IConsumableFastCount counter)
             {
                 var tryCount = counter.TryFastCount(false);
@@ -146,7 +160,7 @@ namespace Cistern.Linq
 
             toDictionary ??= new Consumer.ToDictionary<Consumer.KeyElementSelector<TSource, TKey, TElement>, TSource, TKey, TElement>(new Consumer.KeyElementSelector<TSource, TKey, TElement>(keySelector, elementSelector), comparer);
 
-            return Utils.Consume(source, toDictionary);
+            return Utils.Consume(consumable, toDictionary);
         }
 
         public static HashSet<TSource> ToHashSet<TSource>(this IEnumerable<TSource> source) => source.ToHashSet(comparer: null);

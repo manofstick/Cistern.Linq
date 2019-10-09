@@ -14,6 +14,8 @@ namespace Playground
 
         system_mikedn,
         cistern_mikedn,
+        system_groupby,
+        cistern_groupby,
         system_mikedn_immutable,
         cistern_mikedn_immutable,
         system_cartlinq,
@@ -26,7 +28,7 @@ namespace Playground
 
     class Program
     {
-        static Playthings plaything = Playthings.benchmark;
+        static Playthings plaything = Playthings.cistern_groupby;
 
         static IEnumerable<int> F(IEnumerable<int> x)
         {
@@ -96,6 +98,9 @@ namespace Playground
 
                 case Playthings.cistern_mikedn: mikedn.CisternLinq.Program.mikedn(); break;
                 case Playthings.system_mikedn: mikedn.SystemLinq.Program.mikedn(); break;
+
+                case Playthings.cistern_groupby: groupBy.CisternLinq.Program.groupby(); break;
+                case Playthings.system_groupby: groupBy.SystemLinq.Program.groupby(); break;
 
                 case Playthings.cistern_matthewwatson: matthewwatson.CisternLinq.Demo.Program.matthewwatson(); break;
                 case Playthings.system_matthewwatson: matthewwatson.SystemLinq.Demo.Program.matthewwatson(); break;

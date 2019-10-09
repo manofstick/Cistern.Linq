@@ -5,6 +5,7 @@ namespace Cistern.Linq.Consumables
 {
     internal sealed partial class GroupedEnumerable<TSource, TKey, TElement, V>
         : Consumable<IGrouping<TKey, TElement>, V>
+        , Optimizations.IDelayed<V>
     {
         private readonly bool _delaySourceException;
         private readonly IEnumerable<TSource> _source;
@@ -53,10 +54,13 @@ namespace Cistern.Linq.Consumables
 
         public override void Consume(Consumer<V> consumer) =>
             ToConsumable().Consume(consumer);
+
+        public IConsumable<V> Force() => ToConsumable();
     }
 
     internal sealed partial class GroupedResultEnumerable<TSource, TKey, TElement, TResult, V>
         : Consumable<TResult, V>
+        , Optimizations.IDelayed<V>
     {
         private readonly IEnumerable<TSource> _source;
         private readonly Func<TSource, TKey> _keySelector;
@@ -106,5 +110,7 @@ namespace Cistern.Linq.Consumables
 
         public override void Consume(Consumer<V> consumer) =>
             ToConsumable().Consume(consumer);
+
+        public IConsumable<V> Force() => ToConsumable();
     }
 }

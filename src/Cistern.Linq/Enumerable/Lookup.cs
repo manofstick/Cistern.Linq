@@ -26,7 +26,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.keySelector);
             }
 
-            return Consumer.Lookup.Consume(source, keySelector, comparer);
+            return Consumer.Lookup.Consume(source, keySelector, x=>x, comparer);
         }
 
         public static ILookup<TKey, TElement> ToLookup<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) =>
