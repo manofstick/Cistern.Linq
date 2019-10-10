@@ -127,7 +127,6 @@ namespace Cistern.Linq
                 T[] array                                   => ForArray(array, transform),
                 List<T> list                                => ForList(list, transform),
                 IConsumable<T> consumable                   => consumable.AddTail(transform),
-                Consumables.IConsumableProvider<T> provider => ForConsumableProvider(provider, transform),
                 var e                                       => ForEnumerable(e, transform)
             };
 
@@ -138,9 +137,6 @@ namespace Cistern.Linq
 
             static IConsumable<U> ForList(List<T> list, ILink<T, U> transform) =>
                 new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, U>(new Optimizations.ListEnumerable<T>(list), transform);
-
-            static IConsumable<U> ForConsumableProvider(Consumables.IConsumableProvider<T> provider, ILink<T, U> transform) =>
-                provider.GetConsumable(transform);
 
             static IConsumable<U> ForEnumerable(IEnumerable<T> e, ILink<T, U> transform) =>
                 Registry.CreateConsumableSearch<T, U, Construct<T, U>>(new Construct<T, U>(transform), e);
@@ -382,11 +378,6 @@ namespace Cistern.Linq
 
                 case IConsumable<T> consumable:
                     consumable.Consume(consumer);
-                    break;
-
-                case Consumables.IConsumableProvider<T> provider:
-                    var c = provider.GetConsumable(Links.Identity<T>.Instance);
-                    c.Consume(consumer);
                     break;
 
                 default:

@@ -28,7 +28,7 @@ namespace Playground
 
     class Program
     {
-        static Playthings plaything = Playthings.system_groupby;
+        static Playthings plaything = Playthings.cistern_groupby;
 
         static IEnumerable<int> F(IEnumerable<int> x)
         {
