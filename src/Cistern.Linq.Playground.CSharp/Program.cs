@@ -28,7 +28,7 @@ namespace Playground
 
     class Program
     {
-        static Playthings plaything = Playthings.cistern_groupby;
+        static Playthings plaything = Playthings.system_groupby;
 
         static IEnumerable<int> F(IEnumerable<int> x)
         {
@@ -42,8 +42,8 @@ namespace Playground
 
         static void Benchmark()
         {
-#if trueX
-            var z = new Cistern.Linq.Benchmarking.Benchmarks.String.GroupByCharCharChar();
+#if true
+            var z = new Cistern.Linq.Benchmarking.Benchmarks.String.GroupByChar();
 
             z.WordsCount = 1000;
             z.Sorted = false;
@@ -59,7 +59,7 @@ namespace Playground
                 Console.WriteLine(sw.ElapsedMilliseconds);
             }
 #endif
-#if true
+#if trueX
             var data = ListModule.OfSeq(Enumerable.Range(0, 10000));
             Cistern.Linq.FSharp.Register.RegisterFSharpCollections();
 

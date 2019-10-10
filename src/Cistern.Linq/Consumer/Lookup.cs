@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Cistern.Linq.Consumables;
 
 namespace Cistern.Linq.Consumer
 {
@@ -18,6 +17,12 @@ namespace Cistern.Linq.Consumer
             }
         }
 
+        internal static Consumables.Lookup<TKey, TSource> Consume<TSource, TKey>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer)
+        {
+            Consumables.Lookup<TKey, TSource> builder = GetLookupBuilder<TKey, TSource>(comparer);
+            return Utils.Consume(source, new Lookup<TSource, TKey>(builder, keySelector));
+        }
+
         internal static Consumables.Lookup<TKey, TElement> Consume<TSource, TKey, TElement>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer)
         {
             Consumables.Lookup<TKey, TElement> builder = GetLookupBuilder<TKey, TElement>(comparer);
@@ -31,467 +36,9 @@ namespace Cistern.Linq.Consumer
         }
     }
 
-#if LookupImpl_IHeadStart
-
     static partial class LookupImpl
     {
-        private static void AddItems<T, TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> lookup, ref (T, T, T, T) items)
-        {
-            var key1 = keySelector(items.Item1);
-            var key2 = keySelector(items.Item2);
-            var key3 = keySelector(items.Item3);
-            var key4 = keySelector(items.Item4);
-
-            var grouping1 = lookup.GetGrouping(key1, create: true);
-            var grouping2 = lookup.GetGrouping(key2, create: true);
-            var grouping3 = lookup.GetGrouping(key3, create: true);
-            var grouping4 = lookup.GetGrouping(key4, create: true);
-
-            var element1 = elementSelector(items.Item1);
-            var element2 = elementSelector(items.Item2);
-            var element3 = elementSelector(items.Item3);
-            var element4 = elementSelector(items.Item4);
-
-            grouping1.Add(element1);
-            grouping2.Add(element2);
-            grouping3.Add(element3);
-            grouping4.Add(element4);
-        }
-
-        private static void AddItem<T, TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> lookup, T item)
-        {
-            var key = keySelector(item);
-            var grouping = lookup.GetGrouping(key, create: true);
-            var element = elementSelector(item);
-            grouping.Add(element);
-        }
-
-        private static void AddRemainingItems<T, TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> lookup, int count, ref (T, T, T, T) items)
-        {
-            if (count >= 1)
-            {
-                AddItem(keySelector, elementSelector, lookup, items.Item1);
-                if (count >= 2)
-                {
-                    AddItem(keySelector, elementSelector, lookup, items.Item2);
-                    if (count >= 3)
-                    {
-                        AddItem(keySelector, elementSelector, lookup, items.Item3);
-                    }
-                }
-            }
-        }
-
-        private static void AddRemainingItems<S, T, TKey, TElement>(Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> lookup, int count, Func<S, T> selector, ref (S, S, S, S) items)
-        {
-            if (count >= 1)
-            {
-                AddItem(keySelector, elementSelector, lookup, selector(items.Item1));
-                if (count >= 2)
-                {
-                    AddItem(keySelector, elementSelector, lookup, selector(items.Item2));
-                    if (count >= 3)
-                    {
-                        AddItem(keySelector, elementSelector, lookup, selector(items.Item3));
-                    }
-                }
-            }
-        }
-
-        public static ChainStatus Execute<T, TKey, TElement>(ReadOnlySpan<T> source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> Result)
-        {
-            (T, T, T, T) items = default;
-
-            var i = 0;
-            for (; i < source.Length - 4 + 1; i += 4)
-            {
-                items = (source[i + 0], source[i + 1], source[i + 2], source[i + 3]);
-                AddItems(keySelector, elementSelector, Result, ref items);
-            }
-
-            for (; i < source.Length; ++i)
-            {
-                var item = source[i];
-                AddItem(keySelector, elementSelector, Result, item);
-            }
-
-            return ChainStatus.Flow;
-        }
-
-        public static ChainStatus Execute<T, TKey, TElement, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Consumables.Lookup<TKey, TElement> Result)
-            where Enumerable : Optimizations.ITypedEnumerable<T, Enumerator>
-            where Enumerator : System.Collections.Generic.IEnumerator<T>
-        {
-            using var e = source.GetEnumerator();
-            (T, T, T, T) items = default;
-
-            int count = 0;
-            var moveNext = e.MoveNext();
-            while (moveNext)
-            {
-                items.Item1 = e.Current;
-                count = 1;
-                moveNext = e.MoveNext();
-                if (moveNext)
-                {
-                    items.Item2 = e.Current;
-                    count = 2;
-                    moveNext = e.MoveNext();
-                    if (moveNext)
-                    {
-                        items.Item3 = e.Current;
-                        count = 3;
-                        moveNext = e.MoveNext();
-                        if (moveNext)
-                        {
-                            items.Item4 = e.Current;
-                            count = 0;
-                            AddItems(keySelector, elementSelector, Result, ref items);
-
-                            moveNext = e.MoveNext();
-                        }
-                    }
-                }
-            }
-
-            AddRemainingItems(keySelector, elementSelector, Result, count, ref items);
-
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed partial class Lookup<TSource, TKey, TElement>
-        : Optimizations.IHeadStart<TSource>
-    {
-        ChainStatus Optimizations.IHeadStart<TSource>.Execute(ReadOnlySpan<TSource> source) =>
-            LookupImpl.Execute(source, _keySelector, _elementSelector, Result);
-
-        ChainStatus Optimizations.IHeadStart<TSource>.Execute<Enumerable, Enumerator>(Enumerable source) =>
-            LookupImpl.Execute<TSource, TKey, TElement, Enumerable, Enumerator>(source, _keySelector, _elementSelector, Result);
-    }
-#endif
-
-#if LookupImpl_ITailEnd
-
-    static partial class LookupImpl
-    { 
-        public static ChainStatus Select<S, T, TKey, TElement>(ReadOnlySpan<S> source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<S, T> selector, Consumables.Lookup<TKey, TElement> Result)
-        {
-            (T, T, T, T) items = default;
-
-            var i = 0;
-            for (; i < source.Length-4+1; i+=4)
-            {
-                items = (selector(source[i+0]), selector(source[i+1]), selector(source[i+2]), selector(source[i+3]));
-                AddItems(keySelector, elementSelector, Result, ref items);
-            }
-
-            for (; i < source.Length; ++i)
-            {
-                var item = source[i];
-                AddItem(keySelector, elementSelector, Result, selector(item));
-            }
-
-            return ChainStatus.Flow;
-        }
-
-        public static ChainStatus Select<S, T, TKey, TElement, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<S, T> selector, Consumables.Lookup<TKey, TElement> Result)
-            where Enumerable : Optimizations.ITypedEnumerable<S, Enumerator>
-            where Enumerator : System.Collections.Generic.IEnumerator<S>
-        {
-            using var e = source.GetEnumerator();
-            (T, T, T, T) items = default;
-
-            int count = 0;
-            var moveNext = e.MoveNext();
-            while (moveNext)
-            {
-                items.Item1 = selector(e.Current);
-                moveNext = e.MoveNext();
-                count = 1;
-                if (moveNext)
-                {
-                    items.Item2 = selector(e.Current);
-                    moveNext = e.MoveNext();
-                    count = 2;
-                    if (moveNext)
-                    {
-                        items.Item3 = selector(e.Current);
-                        moveNext = e.MoveNext();
-                        count = 3;
-                        if (moveNext)
-                        {
-                            items.Item4 = selector(e.Current);
-                            moveNext = e.MoveNext();
-                            count = 0;
-
-                            AddItems(keySelector, elementSelector, Result, ref items);
-                        }
-                    }
-                }
-            }
-
-            AddRemainingItems(keySelector, elementSelector, Result, count, ref items);
-
-            return ChainStatus.Flow;
-        }
-
-        public static ChainStatus Where<T, TKey, TElement>(ReadOnlySpan<T> source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<T, bool> predicate, Consumables.Lookup<TKey, TElement> Result)
-        {
-            (T, T, T, T) items = default;
-
-            int count = 0;
-            int i = 0;
-            while (i < source.Length)
-            {
-                items.Item1 = source[i++];
-                if (!predicate(items.Item1))
-                    continue;
-                count = 1;
-
-                while (i < source.Length)
-                {
-                    items.Item2 = source[i++];
-                    if (!predicate(items.Item2))
-                        continue;
-                    count = 2;
-
-                    while (i < source.Length)
-                    {
-                        items.Item3 = source[i++];
-                        if (!predicate(items.Item3))
-                            continue;
-                        count = 3;
-
-                        while (i < source.Length)
-                        {
-                            items.Item4 = source[i++];
-                            if (!predicate(items.Item4))
-                                continue;
-                            count = 0;
-
-                            AddItems(keySelector, elementSelector, Result, ref items);
-
-                            break;
-                        }
-                        break;
-                    }
-                    break;
-                }
-            }
-
-            AddRemainingItems(keySelector, elementSelector, Result, count, ref items);
-
-            return ChainStatus.Flow;
-        }
-
-        public static ChainStatus Where<T, TKey, TElement, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<T, bool> predicate, Consumables.Lookup<TKey, TElement> Result)
-            where Enumerable : Optimizations.ITypedEnumerable<T, Enumerator>
-            where Enumerator : System.Collections.Generic.IEnumerator<T>
-        {
-            using var e = source.GetEnumerator();
-            (T, T, T, T) items = default;
-
-            int count = 0;
-            var moveNext = e.MoveNext();
-            while (moveNext)
-            {
-                items.Item1 = e.Current;
-                moveNext = e.MoveNext();
-                if (!predicate(items.Item1))
-                    continue;
-                count = 1;
-                while (moveNext)
-                {
-                    items.Item2 = e.Current;
-                    moveNext = e.MoveNext();
-                    if (!predicate(items.Item2))
-                        continue;
-                    count = 2;
-                    while (moveNext)
-                    {
-                        items.Item3 = e.Current;
-                        moveNext = e.MoveNext();
-                        if (!predicate(items.Item3))
-                            continue;
-                        count = 3;
-                        while (moveNext)
-                        {
-                            items.Item4 = e.Current;
-                            moveNext = e.MoveNext();
-                            if (!predicate(items.Item4))
-                                continue;
-                            count = 0;
-
-                            AddItems(keySelector, elementSelector, Result, ref items);
-
-                            break;
-                        }
-                        break;
-                    }
-                    break;
-                }
-            }
-
-            AddRemainingItems(keySelector, elementSelector, Result, count, ref items);
-
-            return ChainStatus.Flow;
-        }
-
-        public static ChainStatus SelectMany<T, TKey, TElement, TSource, TCollection>(TSource source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, ReadOnlySpan<TCollection> span, Func<TSource, TCollection, T> resultSelector, Consumables.Lookup<TKey, TElement> Result)
-        {
-            var lookup = Result;
-            foreach (var s in span)
-            {
-                var item = resultSelector(source, s);
-                var key = keySelector(item);
-                var grouping = lookup.GetGrouping(key, create: true);
-                var element = elementSelector(item);
-                grouping.Add(element);
-            }
-            return ChainStatus.Flow;
-        }
-
-        public static ChainStatus WhereSelect<S, T, TKey, TElement>(ReadOnlySpan<S> source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<S, bool> predicate, Func<S, T> selector, Consumables.Lookup<TKey, TElement> Result)
-        {
-            (S, S, S, S) itemsS = default;
-            (T, T, T, T) items = default;
-
-            int count = 0;
-            int i = 0;
-            while (i < source.Length)
-            {
-                itemsS.Item1 = source[i++];
-                if (!predicate(itemsS.Item1))
-                    continue;
-                count = 1;
-
-                while (i < source.Length)
-                {
-                    itemsS.Item2 = source[i++];
-                    if (!predicate(itemsS.Item2))
-                        continue;
-                    count = 2;
-
-                    while (i < source.Length)
-                    {
-                        itemsS.Item3 = source[i++];
-                        if (!predicate(itemsS.Item3))
-                            continue;
-                        count = 3;
-
-                        while (i < source.Length)
-                        {
-                            itemsS.Item4 = source[i++];
-                            if (!predicate(itemsS.Item4))
-                                continue;
-                            count = 0;
-
-                            items = (selector(itemsS.Item1), selector(itemsS.Item2), selector(itemsS.Item3), selector(itemsS.Item4));
-                            AddItems(keySelector, elementSelector, Result, ref items);
-
-                            break;
-                        }
-                        break;
-                    }
-                    break;
-                }
-            }
-            
-            AddRemainingItems(keySelector, elementSelector, Result, count, selector, ref itemsS);
-
-            return ChainStatus.Flow;
-        }
-
-        public static ChainStatus WhereSelect<S, T, TKey, TElement, Enumerable, Enumerator>(Enumerable source, Func<T, TKey> keySelector, Func<T, TElement> elementSelector, Func<S, bool> predicate, Func<S, T> selector, Consumables.Lookup<TKey, TElement> Result)
-            where Enumerable : Optimizations.ITypedEnumerable<S, Enumerator>
-            where Enumerator : System.Collections.Generic.IEnumerator<S>
-        {
-            using var e = source.GetEnumerator();
-
-            (S, S, S, S) itemsS = default;
-            (T, T, T, T) items = default;
-
-            int count = 0;
-            var moveNext = e.MoveNext();
-            while (moveNext)
-            {
-                itemsS.Item1 = e.Current;
-                moveNext = e.MoveNext();
-                if (!predicate(itemsS.Item1))
-                    continue;
-                count = 1;
-
-                while (moveNext)
-                {
-                    itemsS.Item2 = e.Current;
-                    moveNext = e.MoveNext();
-                    if (!predicate(itemsS.Item2))
-                        continue;
-                    count = 2;
-
-                    while (moveNext)
-                    {
-                        itemsS.Item3 = e.Current;
-                        moveNext = e.MoveNext();
-                        if (!predicate(itemsS.Item3))
-                            continue;
-                        count = 3;
-
-                        while (moveNext)
-                        {
-                            itemsS.Item4 = e.Current;
-                            moveNext = e.MoveNext();
-                            if (!predicate(itemsS.Item4))
-                                continue;
-                            count = 0;
-
-                            items = (selector(itemsS.Item1), selector(itemsS.Item2), selector(itemsS.Item3), selector(itemsS.Item4));
-                            AddItems(keySelector, elementSelector, Result, ref items);
-
-                            break;
-                        }
-                        break;
-                    }
-                    break;
-                }
-            }
-
-            AddRemainingItems(keySelector, elementSelector, Result, count, selector, ref itemsS);
-
-            return ChainStatus.Flow;
-        }
-    }
-
-    sealed partial class Lookup<TSource, TKey, TElement>
-        : Optimizations.ITailEnd<TSource>
-    {
-        ChainStatus Optimizations.ITailEnd<TSource>.Select<S>(ReadOnlySpan<S> source, Func<S, TSource> selector) =>
-            LookupImpl.Select(source, _keySelector, _elementSelector, selector, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, TSource> selector) =>
-            LookupImpl.Select<S, TSource, TKey, TElement, Enumerable, Enumerator>(source, _keySelector, _elementSelector, selector, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.Where(ReadOnlySpan<TSource> source, Func<TSource, bool> predicate) =>
-            LookupImpl.Where(source, _keySelector, _elementSelector, predicate, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.Where<Enumerable, Enumerator>(Enumerable source, Func<TSource, bool> predicate) =>
-            LookupImpl.Where<TSource, TKey, TElement, Enumerable, Enumerator>(source, _keySelector, _elementSelector, predicate, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.SelectMany<TSource1, TCollection>(TSource1 source, ReadOnlySpan<TCollection> span, Func<TSource1, TCollection, TSource> resultSelector) =>
-            LookupImpl.SelectMany(source, _keySelector, _elementSelector, span, resultSelector, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.WhereSelect<S>(ReadOnlySpan<S> source, Func<S, bool> predicate, Func<S, TSource> selector) =>
-            LookupImpl.WhereSelect(source, _keySelector, _elementSelector, predicate, selector, Result);
-
-        ChainStatus Optimizations.ITailEnd<TSource>.WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, TSource> selector) =>
-            LookupImpl.WhereSelect<S, TSource, TKey, TElement, Enumerable, Enumerator>(source, _keySelector, _elementSelector, predicate, selector, Result);
-    }
-#endif
-
-    static partial class LookupImpl
-    {
-        private static void AddItem<TKey, TElement>(Consumables.Lookup<TKey, TElement> lookup, TKey key, TElement element) =>
+        public static void AddItem<TKey, TElement>(Consumables.Lookup<TKey, TElement> lookup, TKey key, TElement element) =>
             lookup.GetGrouping(key, create: true).Add(element);
 
         internal static void AddItems<TKey, TElement>(Consumables.Lookup<TKey, TElement> lookup, ref (TKey, TKey, TKey, TKey) keys, ref (TElement, TElement, TElement, TElement) elements)
@@ -521,15 +68,155 @@ namespace Cistern.Linq.Consumer
                     }
                 }
             }
+        }
+        public static void Execute<TSource, TKey>(ReadOnlySpan<TSource> source, Func<TSource, TKey> getKey, Consumables.Lookup<TKey, TSource> result)
+        {
+            var i = 0;
+            for (; i < source.Length - 4 + 1; i += 4)
+            {
+                var elements = (source[i + 0], source[i + 1], source[i + 2], source[i + 3]);
+                var keys = (getKey(elements.Item1), getKey(elements.Item2), getKey(elements.Item3), getKey(elements.Item4));
 
+                AddItems(result, ref keys, ref elements);
+            }
+
+            for (; i < source.Length; ++i)
+            {
+                var item = source[i];
+
+                AddItem(result, getKey(item), item);
+            }
+        }
+
+        public static void Execute<TSource, TKey, TElement>(ReadOnlySpan<TSource> source, Func<TSource, TKey> getKey, Func<TSource, TElement> getElement, bool _ignoreNullKeys, Consumables.Lookup<TKey, TElement> result)
+        {
+            var idx = 0;
+            var count = 0;
+
+            TSource item;
+            (TKey, TKey, TKey, TKey) keys = default;
+            (TElement, TElement, TElement, TElement) elements = default;
+            while (idx < source.Length)
+            {
+                item = source[idx++];
+                keys.Item1 = getKey(item);
+                if (_ignoreNullKeys && keys.Item1 == null)
+                    continue;
+
+                elements.Item1 = getElement(item);
+                count = 1;
+                while (idx < source.Length)
+                {
+                    item = source[idx++];
+                    keys.Item2 = getKey(item);
+                    if (_ignoreNullKeys && keys.Item2 == null)
+                        continue;
+
+                    elements.Item2 = getElement(item);
+                    count = 2;
+                    while (idx < source.Length)
+                    {
+                        item = source[idx++];
+                        keys.Item3 = getKey(item);
+                        if (_ignoreNullKeys && keys.Item3 == null)
+                            continue;
+
+                        elements.Item3 = getElement(item);
+                        count = 3;
+                        while (idx < source.Length)
+                        {
+                            item = source[idx++];
+                            keys.Item4 = getKey(item);
+                            if (_ignoreNullKeys && keys.Item4 == null)
+                                continue;
+
+                            elements.Item4 = getElement(item);
+
+                            AddItems(result, ref keys, ref elements);
+
+                            count = 0;
+                            break;
+                        }
+                        break;
+                    }
+                    break;
+                }
+            }
+
+            AddRemainingItems(result, count, ref keys, ref elements);
+        }
+
+        public static void Execute<TSource, TKey, TElement, Enumerable, Enumerator>(Enumerable source, Func<TSource, TKey> getKey, Func<TSource, TElement> getElement, bool ignoreNullKeys, Consumables.Lookup<TKey, TElement> result)
+            where Enumerable : Optimizations.ITypedEnumerable<TSource, Enumerator>
+            where Enumerator : System.Collections.Generic.IEnumerator<TSource>
+        {
+            int count = 0;
+
+            TSource item;
+            (TKey, TKey, TKey, TKey) keys = default;
+            (TElement, TElement, TElement, TElement) elements = default;
+            using var e = source.GetEnumerator();
+            var moveNext = e.MoveNext();
+            while (moveNext)
+            {
+                item = e.Current;
+                moveNext = e.MoveNext();
+                keys.Item1 = getKey(item);
+                if (ignoreNullKeys && keys.Item1 == null)
+                    continue;
+
+                elements.Item1 = getElement(item);
+                count = 1;
+                while (moveNext)
+                {
+                    item = e.Current;
+                    moveNext = e.MoveNext();
+                    keys.Item2 = getKey(item);
+                    if (ignoreNullKeys && keys.Item2 == null)
+                        continue;
+
+                    elements.Item2 = getElement(item);
+                    count = 2;
+                    while (moveNext)
+                    {
+                        item = e.Current;
+                        moveNext = e.MoveNext();
+                        keys.Item3 = getKey(item);
+                        if (ignoreNullKeys && keys.Item3 == null)
+                            continue;
+
+                        elements.Item3 = getElement(item);
+                        count = 3;
+                        while (moveNext)
+                        {
+                            item = e.Current;
+                            moveNext = e.MoveNext();
+                            keys.Item4 = getKey(item);
+                            if (ignoreNullKeys && keys.Item4 == null)
+                                continue;
+
+                            elements.Item4 = getElement(item);
+
+                            AddItems(result, ref keys, ref elements);
+
+                            count = 0;
+                            break;
+                        }
+                        break;
+                    }
+                    break;
+                }
+            }
+
+            AddRemainingItems(result, count, ref keys, ref elements);
         }
     }
 
-    sealed partial class Lookup<TSource, TKey, TElement>
+    class Lookup<TSource, TKey, TElement>
         : Consumer<TSource, Consumables.Lookup<TKey, TElement>>
         , Optimizations.IHeadStart<TSource>
     {
-        private readonly Func<TSource, TKey> _keySelector;
+        protected readonly Func<TSource, TKey> _keySelector;
         private readonly Func<TSource, TElement> _elementSelector;
         private readonly bool _ignoreNullKeys;
 
@@ -540,9 +227,10 @@ namespace Cistern.Linq.Consumer
         public Lookup(Consumables.Lookup<TKey, TElement> builder, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, bool ignoreNullKeys) : base(builder) =>
             (_keySelector, _elementSelector, _ignoreNullKeys) = (keySelector, elementSelector, ignoreNullKeys);
 
-        private void Flush()
+        protected void Flush()
         {
             LookupImpl.AddRemainingItems(Result, _count, ref _keys, ref _elements);
+
             _count = 0;
             _keys = default;
             _elements = default;
@@ -589,141 +277,35 @@ namespace Cistern.Linq.Consumer
                         break;
                 }
             }
+
             return ChainStatus.Flow;
         }
 
-        ChainStatus Optimizations.IHeadStart<TSource>.Execute(ReadOnlySpan<TSource> source)
+        public virtual ChainStatus Execute(ReadOnlySpan<TSource> source)
         {
-            if (_count != 0)
-            {
-                Flush();
-            }
-
-            var idx = 0;
-            int count = 0;
-
-            TSource item;
-            (TKey, TKey, TKey, TKey) keys = default;
-            (TElement, TElement, TElement, TElement) elements = default;
-            while (idx < source.Length)
-            {
-                item = source[idx++];
-                keys.Item1 = _keySelector(item);
-                if (_ignoreNullKeys && keys.Item1 == null)
-                    continue;
-
-                elements.Item1 = _elementSelector(item);
-                count = 1;
-                while (idx < source.Length)
-                {
-                    item = source[idx++];
-                    keys.Item2 = _keySelector(item);
-                    if (_ignoreNullKeys && keys.Item2 == null)
-                        continue;
-
-                    elements.Item2 = _elementSelector(item);
-                    count = 2;
-                    while (idx < source.Length)
-                    {
-                        item = source[idx++];
-                        keys.Item3 = _keySelector(item);
-                        if (_ignoreNullKeys && keys.Item3 == null)
-                            continue;
-
-                        elements.Item3 = _elementSelector(item);
-                        count = 3;
-                        while (idx < source.Length)
-                        {
-                            item = source[idx++];
-                            keys.Item4 = _keySelector(item);
-                            if (_ignoreNullKeys && keys.Item4 == null)
-                                continue;
-
-                            elements.Item4 = _elementSelector(item);
-
-                            LookupImpl.AddItems(Result, ref keys, ref elements);
-
-                            count = 0;
-                            break;
-                        }
-                        break;
-                    }
-                    break;
-                }
-            }
-
-            LookupImpl.AddRemainingItems(Result, count, ref keys, ref elements);
-
+            Flush();
+            LookupImpl.Execute(source, _keySelector, _elementSelector, _ignoreNullKeys, Result);
             return ChainStatus.Filter;
         }
 
         ChainStatus Optimizations.IHeadStart<TSource>.Execute<Enumerable, Enumerator>(Enumerable source)
         {
-            if (_count != 0)
-            {
-                Flush();
-            }
+            Flush();
+            LookupImpl.Execute<TSource, TKey, TElement, Enumerable, Enumerator>(source, _keySelector, _elementSelector, _ignoreNullKeys, Result);
+            return ChainStatus.Filter;
+        }
+    }
 
-            int count = 0;
+    class Lookup<TSource, TKey>
+        : Lookup<TSource, TKey, TSource>
+    {
+        public Lookup(Consumables.Lookup<TKey, TSource> builder, Func<TSource, TKey> keySelector) 
+            : base(builder, keySelector, x => x, false) { }
 
-            TSource item;
-            (TKey, TKey, TKey, TKey) keys = default;
-            (TElement, TElement, TElement, TElement) elements = default;
-            using var e = source.GetEnumerator();
-            var moveNext = e.MoveNext();
-            while (moveNext)
-            {
-                item = e.Current;
-                moveNext = e.MoveNext();
-                keys.Item1 = _keySelector(item);
-                if (_ignoreNullKeys && keys.Item1 == null)
-                    continue;
-
-                elements.Item1 = _elementSelector(item);
-                count = 1;
-                while (moveNext)
-                {
-                    item = e.Current;
-                    moveNext = e.MoveNext();
-                    keys.Item2 = _keySelector(item);
-                    if (_ignoreNullKeys && keys.Item2 == null)
-                        continue;
-
-                    elements.Item2 = _elementSelector(item);
-                    count = 2;
-                    while (moveNext)
-                    {
-                        item = e.Current;
-                        moveNext = e.MoveNext();
-                        keys.Item3 = _keySelector(item);
-                        if (_ignoreNullKeys && keys.Item3 == null)
-                            continue;
-
-                        elements.Item3 = _elementSelector(item);
-                        count = 3;
-                        while (moveNext)
-                        {
-                            item = e.Current;
-                            moveNext = e.MoveNext();
-                            keys.Item4 = _keySelector(item);
-                            if (_ignoreNullKeys && keys.Item4 == null)
-                                continue;
-
-                            elements.Item4 = _elementSelector(item);
-
-                            LookupImpl.AddItems(Result, ref keys, ref elements);
-
-                            count = 0;
-                            break;
-                        }
-                        break;
-                    }
-                    break;
-                }
-            }
-
-            LookupImpl.AddRemainingItems(Result, count, ref keys, ref elements);
-
+        public override ChainStatus Execute(ReadOnlySpan<TSource> source)
+        {
+            Flush();
+            LookupImpl.Execute(source, _keySelector, Result);
             return ChainStatus.Filter;
         }
     }
