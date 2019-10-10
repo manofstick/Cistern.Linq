@@ -527,6 +527,7 @@ namespace Cistern.Linq.Consumer
 
     sealed partial class Lookup<TSource, TKey, TElement>
         : Consumer<TSource, Consumables.Lookup<TKey, TElement>>
+        , Optimizations.IHeadStart<TSource>
     {
         private readonly Func<TSource, TKey> _keySelector;
         private readonly Func<TSource, TElement> _elementSelector;
@@ -538,6 +539,20 @@ namespace Cistern.Linq.Consumer
 
         public Lookup(Consumables.Lookup<TKey, TElement> builder, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, bool ignoreNullKeys) : base(builder) =>
             (_keySelector, _elementSelector, _ignoreNullKeys) = (keySelector, elementSelector, ignoreNullKeys);
+
+        private void Flush()
+        {
+            LookupImpl.AddRemainingItems(Result, _count, ref _keys, ref _elements);
+            _count = 0;
+            _keys = default;
+            _elements = default;
+        }
+
+        public override ChainStatus ChainComplete(ChainStatus status)
+        {
+            Flush();
+            return ChainStatus.Filter;
+        }
 
         public override ChainStatus ProcessNext(TSource item)
         {
@@ -577,9 +592,138 @@ namespace Cistern.Linq.Consumer
             return ChainStatus.Flow;
         }
 
-        public override ChainStatus ChainComplete(ChainStatus status)
+        ChainStatus Optimizations.IHeadStart<TSource>.Execute(ReadOnlySpan<TSource> source)
         {
-            LookupImpl.AddRemainingItems(Result, _count, ref _keys, ref _elements);
+            if (_count != 0)
+            {
+                Flush();
+            }
+
+            var idx = 0;
+            int count = 0;
+
+            TSource item;
+            (TKey, TKey, TKey, TKey) keys = default;
+            (TElement, TElement, TElement, TElement) elements = default;
+            while (idx < source.Length)
+            {
+                item = source[idx++];
+                keys.Item1 = _keySelector(item);
+                if (_ignoreNullKeys && keys.Item1 == null)
+                    continue;
+
+                elements.Item1 = _elementSelector(item);
+                count = 1;
+                while (idx < source.Length)
+                {
+                    item = source[idx++];
+                    keys.Item2 = _keySelector(item);
+                    if (_ignoreNullKeys && keys.Item2 == null)
+                        continue;
+
+                    elements.Item2 = _elementSelector(item);
+                    count = 2;
+                    while (idx < source.Length)
+                    {
+                        item = source[idx++];
+                        keys.Item3 = _keySelector(item);
+                        if (_ignoreNullKeys && keys.Item3 == null)
+                            continue;
+
+                        elements.Item3 = _elementSelector(item);
+                        count = 3;
+                        while (idx < source.Length)
+                        {
+                            item = source[idx++];
+                            keys.Item4 = _keySelector(item);
+                            if (_ignoreNullKeys && keys.Item4 == null)
+                                continue;
+
+                            elements.Item4 = _elementSelector(item);
+
+                            LookupImpl.AddItems(Result, ref keys, ref elements);
+
+                            count = 0;
+                            break;
+                        }
+                        break;
+                    }
+                    break;
+                }
+            }
+
+            LookupImpl.AddRemainingItems(Result, count, ref keys, ref elements);
+
+            return ChainStatus.Filter;
+        }
+
+        ChainStatus Optimizations.IHeadStart<TSource>.Execute<Enumerable, Enumerator>(Enumerable source)
+        {
+            if (_count != 0)
+            {
+                Flush();
+            }
+
+            int count = 0;
+
+            TSource item;
+            (TKey, TKey, TKey, TKey) keys = default;
+            (TElement, TElement, TElement, TElement) elements = default;
+            using var e = source.GetEnumerator();
+            var moveNext = e.MoveNext();
+            while (moveNext)
+            {
+                item = e.Current;
+                moveNext = e.MoveNext();
+                keys.Item1 = _keySelector(item);
+                if (_ignoreNullKeys && keys.Item1 == null)
+                    continue;
+
+                elements.Item1 = _elementSelector(item);
+                count = 1;
+                while (moveNext)
+                {
+                    item = e.Current;
+                    moveNext = e.MoveNext();
+                    keys.Item2 = _keySelector(item);
+                    if (_ignoreNullKeys && keys.Item2 == null)
+                        continue;
+
+                    elements.Item2 = _elementSelector(item);
+                    count = 2;
+                    while (moveNext)
+                    {
+                        item = e.Current;
+                        moveNext = e.MoveNext();
+                        keys.Item3 = _keySelector(item);
+                        if (_ignoreNullKeys && keys.Item3 == null)
+                            continue;
+
+                        elements.Item3 = _elementSelector(item);
+                        count = 3;
+                        while (moveNext)
+                        {
+                            item = e.Current;
+                            moveNext = e.MoveNext();
+                            keys.Item4 = _keySelector(item);
+                            if (_ignoreNullKeys && keys.Item4 == null)
+                                continue;
+
+                            elements.Item4 = _elementSelector(item);
+
+                            LookupImpl.AddItems(Result, ref keys, ref elements);
+
+                            count = 0;
+                            break;
+                        }
+                        break;
+                    }
+                    break;
+                }
+            }
+
+            LookupImpl.AddRemainingItems(Result, count, ref keys, ref elements);
+
             return ChainStatus.Filter;
         }
     }
