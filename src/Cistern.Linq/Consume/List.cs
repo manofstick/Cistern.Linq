@@ -29,9 +29,6 @@ namespace Cistern.Linq.Consume
             }
         }
 
-        public static void Invoke<T, V>(List<T> list, ILink<T, V> composition, Chain<V> consumer) =>
-            Invoke(list, composition.Compose(consumer));
-
         private static ChainStatus Pipeline<T>(List<T> list, Chain<T> chain)
         {
             var state = ChainStatus.Flow;

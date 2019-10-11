@@ -28,11 +28,11 @@ namespace Cistern.Linq.Consumables
         {
             if (_count == 1)
             {
-                Cistern.Linq.Consume.IList.Invoke(this, 0, 1, Links.Identity<TElement>.Instance, consumer);
+                Cistern.Linq.Consume.IList.Invoke(this, 0, 1, consumer);
             }
             else
             {
-                Cistern.Linq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<TElement>(_elementArray, 0, _count), Links.Identity<TElement>.Instance, consumer);
+                Cistern.Linq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<TElement>(_elementArray, 0, _count), consumer);
             }
         }
 

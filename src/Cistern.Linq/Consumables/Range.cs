@@ -21,7 +21,7 @@ namespace Cistern.Linq.Consumables
         public override IEnumerator<int> GetEnumerator() =>
             Cistern.Linq.GetEnumerator.Range.Get(_start, _count, Links.Identity<int>.Instance);
         public override void Consume(Consumer<int> consumer) =>
-            Cistern.Linq.Consume.Range.Invoke(_start, _count, Links.Identity<int>.Instance, consumer);
+            Cistern.Linq.Consume.Range.Invoke(_start, _count, consumer);
 
         public int? TryFastCount(bool asCountConsumer) => _count;
         public int? TryRawCount(bool asCountConsumer) => _count;
