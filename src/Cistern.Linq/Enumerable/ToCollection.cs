@@ -116,10 +116,10 @@ namespace Cistern.Linq
             {
                 var tryCount = counter.TryFastCount(false);
                 if (tryCount.HasValue)
-                    toDictionary = new Consumer.ToDictionary<Consumer.KeySourceSelector<TSource, TKey>, TSource, TKey, TSource>(new Consumer.KeySourceSelector<TSource, TKey>(keySelector), tryCount.Value, comparer);
+                    toDictionary = new Consumer.ToDictionary<TSource, TKey, TSource>(keySelector, x => x, tryCount.Value, comparer);
             }
 
-            toDictionary ??= new Consumer.ToDictionary<Consumer.KeySourceSelector<TSource, TKey>, TSource, TKey, TSource>(new Consumer.KeySourceSelector<TSource, TKey>(keySelector), comparer);
+            toDictionary ??= new Consumer.ToDictionary<TSource, TKey, TSource>(keySelector, x => x, comparer);
 
             return Utils.Consume(consumable, toDictionary);
         }
@@ -155,10 +155,10 @@ namespace Cistern.Linq
             {
                 var tryCount = counter.TryFastCount(false);
                 if (tryCount.HasValue)
-                    toDictionary = new Consumer.ToDictionary<Consumer.KeyElementSelector<TSource, TKey, TElement>, TSource, TKey, TElement>(new Consumer.KeyElementSelector<TSource, TKey, TElement>(keySelector, elementSelector), tryCount.Value, comparer);
+                    toDictionary = new Consumer.ToDictionary<TSource, TKey, TElement>(keySelector, elementSelector, tryCount.Value, comparer);
             }
 
-            toDictionary ??= new Consumer.ToDictionary<Consumer.KeyElementSelector<TSource, TKey, TElement>, TSource, TKey, TElement>(new Consumer.KeyElementSelector<TSource, TKey, TElement>(keySelector, elementSelector), comparer);
+            toDictionary ??= new Consumer.ToDictionary<TSource, TKey, TElement>(keySelector, elementSelector, comparer);
 
             return Utils.Consume(consumable, toDictionary);
         }
