@@ -13,7 +13,7 @@ namespace Cistern.Linq.Consumables
         , ILookup<TKey, TElement>
         , Optimizations.IConsumableFastCount
     {
-        GroupingArrayPool<TElement> _pool;
+        GroupingArrayPool<TElement> _poolOrNull;
 
         protected GroupingInternal<TKey, TElement>[] _groupings;
         protected GroupingInternal<TKey, TElement> _lastGrouping;
@@ -21,7 +21,7 @@ namespace Cistern.Linq.Consumables
         internal Lookup()
         {
             _groupings = new GroupingInternal<TKey, TElement>[7];
-            _pool = new GroupingArrayPool<TElement>();
+            _poolOrNull = null; // Initialize lazily, as only required for larger groupings
         }
 
         public int Count { get; protected set; }
@@ -96,7 +96,8 @@ namespace Cistern.Linq.Consumables
             }
 
             int index = hashCode % _groupings.Length;
-            GroupingInternal<TKey, TElement> g = new GroupingInternal<TKey, TElement>(_pool);
+            _poolOrNull ??= new GroupingArrayPool<TElement>();
+            GroupingInternal<TKey, TElement> g = new GroupingInternal<TKey, TElement>(_poolOrNull);
             g._key = key;
             g._hashCode = hashCode;
             g._hashNext = _groupings[index];
