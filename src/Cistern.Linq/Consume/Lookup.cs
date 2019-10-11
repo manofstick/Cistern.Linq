@@ -69,6 +69,8 @@ namespace Cistern.Linq.Consume
             }
         }
 
+        const int MinSizeToCoverExecuteCosts = 10; // from some random testing (depends on pipeline length)
+
         public static void Invoke<TKey, TElement>(Grouping<TKey, TElement> lastGrouping, int count, Chain<IGrouping<TKey, TElement>> chain)
         {
             try
@@ -77,7 +79,7 @@ namespace Cistern.Linq.Consume
 
                 if (lastGrouping != null)
                 {
-                    if (chain is Optimizations.IHeadStart<IGrouping<TKey, TElement>> optimized)
+                    if (count > MinSizeToCoverExecuteCosts && chain is Optimizations.IHeadStart<IGrouping<TKey, TElement>> optimized)
                         status = optimized.Execute<LookupEnumerable<TKey, TElement>, LookupEnumerator<TKey, TElement>>(new LookupEnumerable<TKey, TElement>(lastGrouping, count));
                     else
                         status = Pipeline(lastGrouping, chain);
