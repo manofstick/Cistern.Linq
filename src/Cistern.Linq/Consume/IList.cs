@@ -74,13 +74,15 @@ namespace Cistern.Linq.Consume
             }
         }
 
+        const int MinSizeToCoverExecuteCosts = 10; // from some random testing (depends on pipeline length)
+
         public static void Invoke<T>(IList<T> array, int start, int count, Chain<T> chain)
         {
             try
             {
                 var status = ChainStatus.Flow;
 
-                if (chain is Optimizations.IHeadStart<T> optimized)
+                if (array.Count > MinSizeToCoverExecuteCosts && chain is Optimizations.IHeadStart<T> optimized)
                 {
                     status = optimized.Execute<IListEnumerable<T>, IListEnumerator<T>>(new IListEnumerable<T>(array, start, count));
                 }
