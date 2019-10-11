@@ -151,7 +151,7 @@ namespace Cistern.Linq
         /// <summary>
         /// NB. _elementArray is not valid when _count = 1
         /// </summary>
-        internal TElement[] _elementArray;
+        internal TElement[] _elementsOrNull;
 
         internal Consumables.GroupingInternal<TKey, TElement> _hashNext;
         internal Consumables.GroupingInternal<TKey, TElement> _next;
@@ -159,7 +159,7 @@ namespace Cistern.Linq
         internal Grouping(GroupingArrayPool<TElement> pool)
         {
             _pool = pool;
-            _elementArray = Array.Empty<TElement>();
+            _elementsOrNull = null;
         }
 
         internal void Add(TElement element)
@@ -173,26 +173,26 @@ namespace Cistern.Linq
             {
                 if (_count == 1)
                 {
-                    _elementArray = _pool.Alloc();
-                    _elementArray[0] = _element;
+                    _elementsOrNull = _pool.Alloc();
+                    _elementsOrNull[0] = _element;
                     _element = default(TElement);
                 }
 
-                if (_elementArray.Length == _count)
+                if (_elementsOrNull.Length == _count)
                 {
-                    _elementArray = _pool.Upgrade(_elementArray);
+                    _elementsOrNull = _pool.Upgrade(_elementsOrNull);
                 }
 
-                _elementArray[_count] = element;
+                _elementsOrNull[_count] = element;
                 _count++;
             }
         }
 
         private void Trim()
         {
-            if (_elementArray.Length != _count)
+            if (_elementsOrNull != null && _elementsOrNull.Length != _count)
             {
-                Array.Resize(ref _elementArray, _count);
+                Array.Resize(ref _elementsOrNull, _count);
             }
         }
 
@@ -206,21 +206,21 @@ namespace Cistern.Linq
             {
                 for (int i = 0; i < _count; i++)
                 {
-                    yield return _elementArray[i];
+                    yield return _elementsOrNull[i];
                 }
             }
         }
 
         internal IList<TElement> GetEfficientList(bool canTrim)
         {
-            if (_count == 1 || (!canTrim && _count != _elementArray.Length))
+            if (_count <= 1 || (!canTrim && _count != _elementsOrNull.Length))
             {
                 return this;
             }
 
             Trim();
 
-            return _elementArray;
+            return _elementsOrNull;
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -239,25 +239,28 @@ namespace Cistern.Linq
 
         bool ICollection<TElement>.Contains(TElement item)
         {
-            if (_count == 1)
+            return _count switch
             {
-                return EqualityComparer<TElement>.Default.Equals(item, _element);
-            }
-            else
-            {
-                return Array.IndexOf(_elementArray, item, 0, _count) >= 0;
-            }
+                0 => false,
+                1 => EqualityComparer<TElement>.Default.Equals(item, _element),
+                _ => Array.IndexOf(_elementsOrNull, item, 0, _count) >= 0
+            };
         }
 
         void ICollection<TElement>.CopyTo(TElement[] array, int arrayIndex)
         {
-            if (_count == 1)
+            switch (_count)
             {
-                array[arrayIndex] = _element;
-            }
-            else
-            {
-                Array.Copy(_elementArray, 0, array, arrayIndex, _count);
+                case 0:
+                    break;
+
+                case 1:
+                    array[arrayIndex] = _element;
+                    break;
+
+                default:
+                    Array.Copy(_elementsOrNull, 0, array, arrayIndex, _count);
+                    break;
             }
         }
 
@@ -269,14 +272,12 @@ namespace Cistern.Linq
 
         int IList<TElement>.IndexOf(TElement item)
         {
-            if (_count == 1)
+            return _count switch
             {
-                return EqualityComparer<TElement>.Default.Equals(item, _element) ? 0 : -1;
-            }
-            else
-            {
-                return Array.IndexOf(_elementArray, item, 0, _count);
-            }
+                0 => -1,
+                1 => EqualityComparer<TElement>.Default.Equals(item, _element) ? 0 : -1,
+                _ => Array.IndexOf(_elementsOrNull, item, 0, _count),
+            };
         }
 
         void IList<TElement>.Insert(int index, TElement item) => ThrowHelper.ThrowNotSupportedException();
@@ -295,7 +296,7 @@ namespace Cistern.Linq
                 if (_count == 1)
                     return _element;
 
-                return _elementArray[index];
+                return _elementsOrNull[index];
             }
 
             set

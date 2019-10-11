@@ -91,7 +91,7 @@ namespace Cistern.Linq
                                 }
                                 else
                                 {
-                                    TInner[] elements = g._elementArray;
+                                    TInner[] elements = g._elementsOrNull;
                                     for (int i = 0; i != count; ++i)
                                     {
                                         yield return resultSelector(item, elements[i]);

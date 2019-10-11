@@ -17,12 +17,12 @@ namespace Cistern.Linq.Consumables
         public IConsumable<TElement> AddTail(ILink<TElement, TElement> transform) =>
             (_count == 1)
             ? (IConsumable<TElement>)new IList<TElement, TElement>(this, 0, 1, transform)
-            : (IConsumable<TElement>)new Array<TElement, TElement>(_elementArray, 0, _count, transform);
+            : (IConsumable<TElement>)new Array<TElement, TElement>(_elementsOrNull, 0, _count, transform);
 
         public IConsumable<U> AddTail<U>(ILink<TElement, U> transform) =>
             (_count == 1)
             ? (IConsumable<U>)new IList<TElement, U>(this, 0, 1, transform)
-            : (IConsumable<U>)new Array<TElement, U>(_elementArray, 0, _count, transform);
+            : (IConsumable<U>)new Array<TElement, U>(_elementsOrNull, 0, _count, transform);
 
         public void Consume(Consumer<TElement> consumer)
         {
@@ -32,7 +32,7 @@ namespace Cistern.Linq.Consumables
             }
             else
             {
-                Cistern.Linq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<TElement>(_elementArray, 0, _count), consumer);
+                Cistern.Linq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<TElement>(_elementsOrNull, 0, _count), consumer);
             }
         }
 
