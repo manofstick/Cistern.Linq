@@ -43,18 +43,18 @@ namespace Playground
         static void Benchmark()
         {
 #if true
-            var z = new Cistern.Linq.Benchmarking.Benchmarks.String.String_JoinPalindrome();
+            var z = new Cistern.Linq.Benchmarking.Benchmarks.String.String_GroupByChar();
 
-            z.WordsCount = 466544;
+            z.WordsCount = 1;
             z.Sorted = false;
             z.Setup();
 
-            for (var j = 0; j < 10; ++j)
+            for (var j = 0; j < 25; ++j)
             {
                 var sw = Stopwatch.StartNew();
                 for (var i = 0; i < 1000000; ++i)
                 {
-                    var count = z.ForLoop();
+                    var count = z.CisternLinq();
                 }
                 Console.WriteLine(sw.ElapsedMilliseconds);
             }

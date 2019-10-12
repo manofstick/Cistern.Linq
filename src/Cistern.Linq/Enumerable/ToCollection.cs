@@ -11,83 +11,103 @@ namespace Cistern.Linq
     {
         public static TSource[] ToArray<TSource>(this IEnumerable<TSource> source)
         {
-            if (source == null)
+            return source switch
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
+                null                            => ThrowHelper.ThrowArgumentNullException<TSource[]>(ExceptionArgument.source),
+                ICollection<TSource> collection => ForCollection(collection),
+                IConsumable<TSource> consumable => ForConsumable(consumable),
+                _                               => Utils.Consume(source, new Consumer.ToArrayViaBuilder<TSource>())
+            };
+
+            static TSource[] ForCollection(ICollection<TSource> collection)
+            {
+                var count = collection.Count;
+
+                if (count == 0)
+                {
+                    return Array.Empty<TSource>();
+                }
+                else
+                {
+                    var result = new TSource[count];
+                    collection.CopyTo(result, 0);
+                    return result;
+                }
             }
 
-            switch (source)
+            static TSource[] ForConsumable(IConsumable<TSource> consumable)
             {
-                case IConsumable<TSource> consumable:
-                    Consumer<TSource, TSource[]> toArray = null;
+                Consumer<TSource, TSource[]> toArray = null;
 
-                    if (consumable is Optimizations.IDelayed<TSource> delayed)
-                        consumable = delayed.Force();
+                if (consumable is Optimizations.IDelayed<TSource> delayed)
+                {
+                    consumable = delayed.Force();
+                }
 
-                    if (consumable is Optimizations.IConsumableFastCount counter)
+                if (consumable is Optimizations.ITryGetCollectionInterface<TSource> tgci && tgci.TryGetCollectionInterface(out var asCollection))
+                {
+                    return ForCollection(asCollection);
+                }
+
+                if (consumable is Optimizations.IConsumableFastCount counter)
+                {
+                    var tryCount = counter.TryFastCount(false);
+                    if (tryCount.HasValue)
                     {
-                        var tryCount = counter.TryFastCount(false);
-                        if (tryCount.HasValue)
+                        if (tryCount.Value == 0)
                         {
-                            if (tryCount.Value == 0)
-                                return Array.Empty<TSource>();
-                            else
-                                toArray = new Consumer.ToArrayKnownSize<TSource>(tryCount.Value);
+                            return Array.Empty<TSource>();
+                        }
+                        else
+                        {
+                            toArray = new Consumer.ToArrayKnownSize<TSource>(tryCount.Value);
                         }
                     }
+                }
 
-                    toArray ??= new Consumer.ToArrayViaBuilder<TSource>();
+                toArray ??= new Consumer.ToArrayViaBuilder<TSource>();
 
-                    return Utils.Consume(consumable, toArray);
-
-                case ICollection<TSource> collection:
-                    var count = collection.Count;
-                    if (count == 0)
-                        return Array.Empty<TSource>();
-                    else
-                    {
-                        var result = new TSource[count];
-                        collection.CopyTo(result, 0);
-                        return result;
-                    }
-
-                default:
-                    return Utils.Consume(source, new Consumer.ToArrayViaBuilder<TSource>());
+                return Utils.Consume(consumable, toArray);
             }
         }
 
         public static List<TSource> ToList<TSource>(this IEnumerable<TSource> source)
         {
-            if (source == null)
+            // NB. Optimizations here rely on knowledge that the constructor of List optimizes for the ICollection
+            // interface, which makes it the fastest method for constructing a List.
+            switch (source)
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
+                case null:
+                    ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
+                    goto default;
+
+                case ICollection<TSource> _:
+                    goto default;
+
+                case Optimizations.ITryGetCollectionInterface<TSource> tgci when tgci.TryGetCollectionInterface(out var asCollection):
+                    source = asCollection;
+                    goto default;
+
+                case IConsumable<TSource> consumable:
+                    Consumer<TSource, List<TSource>> toList = null;
+
+                    if (consumable is Optimizations.IDelayed<TSource> delayed)
+                        consumable = delayed.Force();
+
+                    if (source is Optimizations.IConsumableFastCount counter)
+                    {
+                        var tryCount = counter.TryFastCount(false);
+                        if (tryCount.HasValue)
+                            toList = new Consumer.ToList<TSource>(tryCount.Value);
+                    }
+
+                    toList ??= new Consumer.ToList<TSource>();
+
+                    return Utils.Consume(consumable, toList);
+
+                default:
+                    return new List<TSource>(source);
             }
-
-            if (source is Optimizations.ITryGetCollectionInterface<TSource> tgci && tgci.TryGetCollectionInterface(out var asCollection))
-            {
-                return new List<TSource>(asCollection);
-            }
-
-            if (source is IConsumable<TSource> consumable)
-            {
-                Consumer<TSource, List<TSource>> toList = null;
-
-                if (consumable is Optimizations.IDelayed<TSource> delayed)
-                    consumable = delayed.Force();
-
-                if (source is Optimizations.IConsumableFastCount counter)
-                {
-                    var tryCount = counter.TryFastCount(false);
-                    if (tryCount.HasValue)
-                        toList = new Consumer.ToList<TSource>(tryCount.Value);
-                }
-
-                toList ??= new Consumer.ToList<TSource>();
-
-                return Utils.Consume(consumable, toList);
-            }
-
-            return new List<TSource>(source);
         }
 
         public static Dictionary<TKey, TSource> ToDictionary<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) =>

@@ -13,6 +13,8 @@ namespace Cistern.Linq
     {
         internal static void ThrowArgumentNullException(ExceptionArgument argument) => throw new ArgumentNullException(GetArgumentString(argument));
 
+        internal static T ThrowArgumentNullException<T>(ExceptionArgument argument) => throw new ArgumentNullException(GetArgumentString(argument));
+
         internal static void ThrowArgumentOutOfRangeException(ExceptionArgument argument) => throw new ArgumentOutOfRangeException(GetArgumentString(argument));
 
         internal static void ThrowMoreThanOneElementException() => throw new InvalidOperationException(SR.MoreThanOneElement);
