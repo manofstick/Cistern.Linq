@@ -187,13 +187,12 @@ namespace Cistern.Linq
 
         public static HashSet<TSource> ToHashSet<TSource>(this IEnumerable<TSource> source, IEqualityComparer<TSource> comparer)
         {
-            if (source == null)
+            return source switch
             {
-                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-            }
-
-            // Don't pre-allocate based on knowledge of size, as potentially many elements will be dropped.
-            return new HashSet<TSource>(source, comparer);
+                null => ThrowHelper.ThrowArgumentNullException<HashSet<TSource>>(ExceptionArgument.source),
+                IConsumable<TSource> consumable => Utils.Consume(consumable, new Consumer.ToHashSet<TSource>(comparer)),
+                _ => new HashSet<TSource>(source, comparer),
+            };
         }
     }
 }
