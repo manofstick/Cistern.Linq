@@ -28,7 +28,7 @@ namespace Playground
 
     class Program
     {
-        static Playthings plaything = Playthings.cistern_groupby;
+        static Playthings plaything = Playthings.benchmark;
 
         static IEnumerable<int> F(IEnumerable<int> x)
         {
@@ -43,18 +43,18 @@ namespace Playground
         static void Benchmark()
         {
 #if true
-            var z = new Cistern.Linq.Benchmarking.Benchmarks.String.GroupByChar();
+            var z = new Cistern.Linq.Benchmarking.Benchmarks.String.String_JoinPalindrome();
 
-            z.WordsCount = 1000;
+            z.WordsCount = 466544;
             z.Sorted = false;
             z.Setup();
 
             for (var j = 0; j < 10; ++j)
             {
                 var sw = Stopwatch.StartNew();
-                for (var i = 0; i < 10; ++i)
+                for (var i = 0; i < 1000000; ++i)
                 {
-                    z.CisternLinq();
+                    var count = z.ForLoop();
                 }
                 Console.WriteLine(sw.ElapsedMilliseconds);
             }

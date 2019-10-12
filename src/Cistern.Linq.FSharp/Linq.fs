@@ -200,6 +200,9 @@ module Linq =
         upcast Consumables.Enumerable(Consumables.ZipEnumerable (source1, source2), Links.Identity.Instance)
 
 type Linq =
+    static member dict (e:seq<'a*'b>) =
+        System.Collections.ObjectModel.ReadOnlyDictionary<'a,'b>(Cistern.Linq.Enumerable.ToDictionary(e, (fun (lhs,_) -> lhs), (fun (_,rhs) -> rhs), Comparison.FastGenericEqualityComparerFromTable<'a>)) :> System.Collections.Generic.IDictionary<'a, 'b>
+
     static member sum (e:seq<float>)                   = (Linq.tryListConsumable e).Sum ()
     static member sum (e:seq<float32>)                 = (Linq.tryListConsumable e).Sum ()
     static member sum (e:seq<decimal>)                 = (Linq.tryListConsumable e).Sum ()

@@ -11,6 +11,7 @@
     <Compile Include="ChunkBySize.fs" />
     <Compile Include="Pairwise.fs" />
     <Compile Include="Unfold.fs" />
+    <Compile Include="String.fs" />
     <Compile Include="ValueOptionExtensions.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
