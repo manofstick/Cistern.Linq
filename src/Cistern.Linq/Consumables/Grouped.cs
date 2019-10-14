@@ -84,7 +84,22 @@ namespace Cistern.Linq.Consumables
 
             var lookup = Consumer.Lookup.Consume(_source, _keySelector, _comparer);
 
-            return IsIdentity ? (IConsumable<V>)lookup : lookup.AddTail(Link);
+            return lookup.AddTail(Link);
+        }
+    }
+    class GroupedEnumerable<TSource, TKey>
+        : GroupedEnumerable<TSource, TKey, IGrouping<TKey, TSource>>
+    {
+        public GroupedEnumerable(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer, bool delaySourceException)
+            : base(source, keySelector, comparer, null, delaySourceException)
+        {}
+
+        protected override IConsumable<IGrouping<TKey, TSource>> ToConsumable()
+        {
+            if (_source == null)
+                ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
+
+            return Consumer.Lookup.Consume(_source, _keySelector, _comparer);
         }
     }
 
