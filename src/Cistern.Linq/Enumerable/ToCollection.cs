@@ -94,7 +94,7 @@ namespace Cistern.Linq
                     if (consumable is Optimizations.IDelayed<TSource> delayed)
                         consumable = delayed.Force();
 
-                    if (source is Optimizations.IConsumableFastCount counter)
+                    if (consumable is Optimizations.IConsumableFastCount counter)
                     {
                         var tryCount = counter.TryFastCount(false);
                         if (tryCount.HasValue)
