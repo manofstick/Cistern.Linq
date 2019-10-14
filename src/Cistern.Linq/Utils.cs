@@ -231,7 +231,7 @@ namespace Cistern.Linq
         }
 
         internal static ILink<T, T> GetSkipLink<T>(int skip) =>
-            skip == 0 ? Links.Identity<T>.Instance : new Links.Skip<T>(skip);
+            skip == 0 ? null : new Links.Skip<T>(skip);
 
         internal static IEnumerable<T> Skip<T>(IEnumerable<T> source, int skip)
         {
@@ -260,7 +260,7 @@ namespace Cistern.Linq
                 if (count <= 0)
                     return Consumables.Empty<T>.Instance;
 
-                return new Consumables.Array<T, T>(array, start, count, Links.Identity<T>.Instance);
+                return new Consumables.Array<T, T>(array, start, count, null);
             }
 
             static IConsumable<T> ForList(List<T> list, int skip) =>
@@ -297,7 +297,7 @@ namespace Cistern.Linq
                 if (array.Length <= 0)
                     return Consumables.Empty<T>.Instance;
 
-                return new Consumables.Array<T, T>(array, 0, Math.Min(take, array.Length), Links.Identity<T>.Instance);
+                return new Consumables.Array<T, T>(array, 0, Math.Min(take, array.Length), null);
             }
 
             static IConsumable<T> ForList(List<T> list, int take) =>
@@ -308,7 +308,7 @@ namespace Cistern.Linq
         }
 
         internal static IConsumable<T> AsConsumable<T>(IEnumerable<T> e) =>
-            e is Consumable<T> c ? c : CreateConsumable(e, Links.Identity<T>.Instance);
+            e is Consumable<T> c ? c : CreateConsumable<T,T>(e, null);
             
 
         // TTTransform is faster tahn TUTransform as AddTail version call can avoid

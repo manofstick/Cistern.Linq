@@ -29,7 +29,7 @@ namespace Cistern.Linq.Consumables
         public int Count { get; protected set; }
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
-            Optimizations.Count.TryGetCount(this, Links.Identity<object>.Instance, asCountConsumer);
+            Count;
 
         int? Optimizations.IConsumableFastCount.TryRawCount(bool asCountConsumer) =>
             Count;
@@ -254,7 +254,7 @@ namespace Cistern.Linq.Consumables
             Cistern.Linq.Consume.Lookup.Invoke(_lastGrouping, _resultSelector, consumer);
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
-            Optimizations.Count.TryGetCount(this, Links.Identity<object>.Instance, asCountConsumer);
+            _count;
 
         int? Optimizations.IConsumableFastCount.TryRawCount(bool asCountConsumer) =>
             _count;

@@ -32,7 +32,7 @@ namespace Cistern.Linq.Consumables
                         if (idx < enumerables.Length)
                         {
                             enumerables[idx] = second;
-                            return new ConcatConsumable<T>(cell, idx + 1, Links.Identity<T>.Instance);
+                            return new ConcatConsumable<T>(cell, idx + 1, null);
                         }
 
                         return CreateNewCell(enumerables, second, idx);
@@ -45,7 +45,7 @@ namespace Cistern.Linq.Consumables
         private static IConsumable<T> CreateNew(IEnumerable<T> first, IEnumerable<T> second)
         {
             var e = new Cell(new IEnumerable<T>[4] { first, second, null, null }, 2);
-            return new ConcatConsumable<T>(e, 2, Links.Identity<T>.Instance);
+            return new ConcatConsumable<T>(e, 2, null);
         }
 
         private static IConsumable<T> CreateNewCell(IEnumerable<T>[] enumerables, IEnumerable<T> second, int length)
@@ -55,7 +55,7 @@ namespace Cistern.Linq.Consumables
             data[length] = second;
 
             var cell = new Cell(data, length + 1);
-            return new ConcatConsumable<T>(cell, length + 1, Links.Identity<T>.Instance);
+            return new ConcatConsumable<T>(cell, length + 1, null);
         }
 
         sealed partial class ConcatConsumable<V>
@@ -85,7 +85,7 @@ namespace Cistern.Linq.Consumables
             }
 
             private IConsumable<IEnumerable<T>> GetEnumerableAsConsumable() =>
-                new Array<IEnumerable<T>, IEnumerable<T>>(_enumerables.Enumerables, 0, _length, Links.Identity<IEnumerable<T>>.Instance);
+                new Array<IEnumerable<T>, IEnumerable<T>>(_enumerables.Enumerables, 0, _length, null);
 
             public override IConsumable<V> Create(ILink<T, V> link) => new ConcatConsumable<V>(_enumerables, _length, link);
             public override IConsumable<W> Create<W>(ILink<T, W> link) => new ConcatConsumable<W>(_enumerables, _length, link);

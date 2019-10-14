@@ -131,7 +131,7 @@ namespace Cistern.Linq.Consumables
             new SelectWhereArray<T, U>(Underlying, Selector, predicate);
 
         public int? TryFastCount(bool asCountConsumer) =>
-            asCountConsumer ? null : Optimizations.Count.TryGetCount(this, Links.Identity<object>.Instance, asCountConsumer);
+            asCountConsumer ? null : (int?)Underlying.Length;
 
         public int? TryRawCount(bool asCountConsumer) => Underlying.Length;
 
@@ -257,7 +257,7 @@ namespace Cistern.Linq.Consumables
             new SelectWhereEnumerable<TEnumerable, TEnumerator, T, U>(Underlying, Selector, predicate);
 
         public int? TryFastCount(bool asCountConsumer) =>
-            asCountConsumer ? null : Optimizations.Count.TryGetCount(this, Links.Identity<object>.Instance, asCountConsumer);
+            asCountConsumer ? null : Underlying.TryLength;
 
         public int? TryRawCount(bool asCountConsumer) => Underlying.TryLength;
 

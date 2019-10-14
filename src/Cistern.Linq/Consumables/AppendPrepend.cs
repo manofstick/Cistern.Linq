@@ -37,12 +37,12 @@ namespace Cistern.Linq.Consumables
                             if (appendElsePrepend)
                             {
                                 elements[idx] = element;
-                                return new AppendPrependConsumable<T>(append.Prepended, append.PrependedLength, append.Original, cell, idx + 1, Links.Identity<T>.Instance);
+                                return new AppendPrependConsumable<T>(append.Prepended, append.PrependedLength, append.Original, cell, idx + 1, null);
                             }
                             else
                             {
                                 elements[elements.Length - 1 - idx] = element;
-                                return new AppendPrependConsumable<T>(cell, idx + 1, append.Original, append.Appended, append.AppendedLength, Links.Identity<T>.Instance);
+                                return new AppendPrependConsumable<T>(cell, idx + 1, append.Original, append.Appended, append.AppendedLength, null);
                             }
                         }
 
@@ -60,13 +60,13 @@ namespace Cistern.Linq.Consumables
             {
                 data[0] = element;
                 var appended = new SharedElements(data, 1);
-                return new AppendPrependConsumable<T>(SharedElements.Empty, 0, e, appended, 1, Links.Identity<T>.Instance);
+                return new AppendPrependConsumable<T>(SharedElements.Empty, 0, e, appended, 1, null);
             }
             else
             {
                 data[data.Length-1] = element;
                 var prepended = new SharedElements(data, 1);
-                return new AppendPrependConsumable<T>(prepended, 1, e, SharedElements.Empty, 0, Links.Identity<T>.Instance);
+                return new AppendPrependConsumable<T>(prepended, 1, e, SharedElements.Empty, 0, null);
             }
         }
 
@@ -79,7 +79,7 @@ namespace Cistern.Linq.Consumables
                 data[length] = element;
                 var cell = new SharedElements(data, length + 1);
 
-                return new AppendPrependConsumable<T>(root.Prepended, root.PrependedLength, root.Original, cell, length + 1, Links.Identity<T>.Instance);
+                return new AppendPrependConsumable<T>(root.Prepended, root.PrependedLength, root.Original, cell, length + 1, null);
             }
             else
             {
@@ -87,7 +87,7 @@ namespace Cistern.Linq.Consumables
                 data[data.Length - length - 1] = element;
                 var cell = new SharedElements(data, length + 1);
 
-                return new AppendPrependConsumable<T>(cell, length + 1, root.Original, root.Appended, root.AppendedLength, Links.Identity<T>.Instance);
+                return new AppendPrependConsumable<T>(cell, length + 1, root.Original, root.Appended, root.AppendedLength, null);
             }
         }
 
@@ -131,8 +131,8 @@ namespace Cistern.Linq.Consumables
                 return false;
             }
 
-            IConsumable<T> GetAppendedPart() => new Array<T, T>(Appended.Elements, 0, AppendedLength, Links.Identity<T>.Instance);
-            IConsumable<T> GetPrependedPart() => new Array<T, T>(Prepended.Elements, Prepended.Elements.Length - PrependedLength, PrependedLength, Links.Identity<T>.Instance);
+            IConsumable<T> GetAppendedPart() => new Array<T, T>(Appended.Elements, 0, AppendedLength, null);
+            IConsumable<T> GetPrependedPart() => new Array<T, T>(Prepended.Elements, Prepended.Elements.Length - PrependedLength, PrependedLength, null);
 
             private IConsumable<IEnumerable<T>> GetEnumerableAsConsumable()
             {
@@ -153,7 +153,7 @@ namespace Cistern.Linq.Consumables
                     var appended = GetAppendedPart();
                     joined = new[] { prepended, Original, appended };
                 }
-                return new Array<IEnumerable<T>, IEnumerable<T>>(joined, 0, joined.Length, Links.Identity<IEnumerable<T>>.Instance);
+                return new Array<IEnumerable<T>, IEnumerable<T>>(joined, 0, joined.Length, null);
             }
 
             public override IConsumable<V> Create(ILink<T, V> link) => new AppendPrependConsumable<V>(Prepended, PrependedLength, Original, Appended, AppendedLength, link);

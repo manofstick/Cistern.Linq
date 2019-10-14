@@ -59,12 +59,12 @@ namespace Cistern.Linq.Links
         {
             var identity = Identity<U>.Instance;
 
-            if (ReferenceEquals(identity, first))
+            if (first == null || ReferenceEquals(identity, first))
             {
                 return (ILink<T, V>)(object)second;
             }
 
-            if (ReferenceEquals(identity, second))
+            if (second == null || ReferenceEquals(identity, second))
             {
                 return (ILink<T, V>)(object)first;
             }

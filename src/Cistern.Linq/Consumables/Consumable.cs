@@ -4,24 +4,25 @@ namespace Cistern.Linq.Consumables
 {
     internal abstract class Consumable<T, U> : Consumable<U>
     {
-        public ILink<T, U> Link { get; }
+        private readonly ILink<T, U> _linkOrNull;
+        public ILink<T, U> Link => _linkOrNull ?? (ILink<T, U>)Links.Identity<T>.Instance;
 
         protected Consumable(ILink<T, U> link) =>
-            Link = link;
+            _linkOrNull = link;
 
         public abstract IConsumable<U> Create(ILink<T, U> first);
-        public override IConsumable<U> AddTail(ILink<U, U> next) => Create(Links.Composition.Create(Link, next));
+        public override IConsumable<U> AddTail(ILink<U, U> next) => Create(_linkOrNull == null ? (ILink<T,U>)next : new Links.Composition<T, U, U>(_linkOrNull, next));
 
         public abstract IConsumable<V> Create<V>(ILink<T, V> first);
-        public override IConsumable<V> AddTail<V>(ILink<U, V> next) => Create(Links.Composition.Create(Link, next));
+        public override IConsumable<V> AddTail<V>(ILink<U, V> next) => Create(_linkOrNull == null ? (ILink<T, V>)next : new Links.Composition<T, U, V>(_linkOrNull, next));
 
-        protected bool IsIdentity => ReferenceEquals(Link, Links.Identity<T>.Instance);
+        protected bool IsIdentity => _linkOrNull == null;
 
-        public override object TailLink => Link is Links.Composition<T, U> c ? c.TailLink : Link;
+        public override object TailLink => _linkOrNull is Links.Composition<T, U> c ? c.TailLink : _linkOrNull;
 
         public override IConsumable<V> ReplaceTailLink<Unknown,V>(ILink<Unknown,V> newLink)
         {
-            if (Link is Links.Composition<T, U> composition)
+            if (_linkOrNull is Links.Composition<T, U> composition)
             {
                 return Create(composition.ReplaceTail(newLink));
             }

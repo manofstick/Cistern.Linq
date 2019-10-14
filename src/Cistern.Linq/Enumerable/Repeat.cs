@@ -21,7 +21,7 @@ namespace Cistern.Linq
                 return Consumables.Empty<TResult>.Instance;
             }
 
-            return new Consumables.Repeat<TResult, TResult>(element, count, Links.Identity<TResult>.Instance);
+            return new Consumables.Repeat<TResult, TResult>(element, count, null);
         }
     }
 }

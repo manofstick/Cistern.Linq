@@ -22,7 +22,7 @@ namespace Cistern.Linq
             }
 
             var selectMany = Utils.Select(source, selector);
-            return new Consumables.SelectMany<IEnumerable<TResult>, TResult, TResult>(selectMany, Links.Identity<TResult>.Instance);
+            return new Consumables.SelectMany<IEnumerable<TResult>, TResult, TResult>(selectMany, null);
         }
 
         public static IEnumerable<TResult> SelectMany<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, int, IEnumerable<TResult>> selector)
@@ -37,7 +37,7 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.selector);
             }
             var selectMany = Utils.PushTUTransform(source, new Links.SelectIndexed<TSource, IEnumerable<TResult>>(selector));
-            return new Consumables.SelectMany<IEnumerable<TResult>, TResult, TResult>(selectMany, Links.Identity<TResult>.Instance);
+            return new Consumables.SelectMany<IEnumerable<TResult>, TResult, TResult>(selectMany, null);
         }
 
         public static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(this IEnumerable<TSource> source, Func<TSource, int, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
@@ -58,7 +58,7 @@ namespace Cistern.Linq
             }
 
             var selectMany = Utils.PushTUTransform(source, new Links.SelectManyIndexed<TSource, TCollection>(collectionSelector));
-            return new Consumables.SelectMany<TSource, TCollection, TResult, TResult>(selectMany, resultSelector, Links.Identity<TResult>.Instance);
+            return new Consumables.SelectMany<TSource, TCollection, TResult, TResult>(selectMany, resultSelector, null);
         }
 
         public static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(this IEnumerable<TSource> source, Func<TSource, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
@@ -79,7 +79,7 @@ namespace Cistern.Linq
             }
 
             var selectMany = Utils.PushTUTransform(source, new Links.SelectMany<TSource, TCollection>(collectionSelector));
-            return new Consumables.SelectMany<TSource, TCollection, TResult, TResult>(selectMany, resultSelector, Links.Identity<TResult>.Instance);
+            return new Consumables.SelectMany<TSource, TCollection, TResult, TResult>(selectMany, resultSelector, null);
         }
 
     }

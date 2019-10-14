@@ -22,7 +22,7 @@ module Linq =
 
     let tryListConsumable (source:seq<'a>) : seq<'a> =
         match source with
-        | :? list<'a> as l -> Links.Identity.Instance |> addLinkToList l
+        | :? list<'a> as l -> null |> addLinkToList l
         | _ -> source
 
     let private addLink (source:seq<'T>) (link:ILink<'T,'U>) : seq<'U> =
@@ -39,7 +39,7 @@ module Linq =
         if isNull source2 then
             ThrowHelper.ThrowArgumentNullException ExceptionArgument.source2
 
-        upcast Consumables.Enumerable(Consumables.AllPairsEnumerable (source1, source2), Links.Identity.Instance)
+        upcast Consumables.Enumerable(Consumables.AllPairsEnumerable (source1, source2), null)
 
     let append (source1:seq<'T>) (source2:seq<'T>) : seq<'T> =
         (tryListConsumable source1).Concat source2
@@ -61,14 +61,14 @@ module Linq =
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
 
         let selectMany = Utils.Select (tryListConsumable e, fun x -> f x);
-        Consumables.SelectMany<_,_,_> (selectMany, Links.Identity<_>.Instance) :> seq<'U>
+        Consumables.SelectMany<_,_,_> (selectMany, null) :> seq<'U>
 
     let concat (sources:seq<#seq<'Collection>>) : seq<'Collection> =
         if isNull sources then
             ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
 
         let sources = (tryListConsumable sources) |> Cistern.Linq.Utils.AsConsumable 
-        upcast Consumables.SelectMany<_,_,_> (sources, Links.Identity<_>.Instance)
+        upcast Consumables.SelectMany<_,_,_> (sources, null)
 
     let distinct (source:seq<'T>) : seq<'T> =
         (tryListConsumable source).Distinct Comparison.FastGenericEqualityComparerFromTable
@@ -109,11 +109,11 @@ module Linq =
     let init (count:int) (initializer:int->'T) : seq<'T> =
         if count < 0 then raise (ArgumentException ())
         elif count = 0 then upcast Consumables.Empty<'T>.Instance
-        else upcast Consumables.Enumerable (Consumables.InitEnumerable(count, initializer), Links.Identity.Instance)
+        else upcast Consumables.Enumerable (Consumables.InitEnumerable(count, initializer), null)
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let initInfinite (initializer:int->'T) : seq<'T> =
-        upcast Consumables.Enumerable (Consumables.InitEnumerable(Int32.MaxValue, initializer), Links.Identity.Instance)
+        upcast Consumables.Enumerable (Consumables.InitEnumerable(Int32.MaxValue, initializer), null)
 
     let isEmpty (e:seq<'a>) =
         not ((tryListConsumable e).Any ())
@@ -132,11 +132,11 @@ module Linq =
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let ofArray (source:array<'T>) : seq<'T> =
-        upcast Consumables.Array(source, 0, source.Length, Links.Identity.Instance)
+        upcast Consumables.Array(source, 0, source.Length, null)
     
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let ofList (source:list<'T>) : seq<'T> =
-        Links.Identity.Instance |> addLinkToList source
+        null |> addLinkToList source
 
     let pairwise (source:seq<'T>) : seq<'T * 'T> =
         Cistern.Linq.FSharp.Links.Pairwise.Instance |> addLink source
@@ -181,11 +181,11 @@ module Linq =
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let unfold (f:'State->option<'T*'State>) (seed:'State) : seq<'T> =
-        Consumables.Enumerable (Consumables.UnfoldEnumerable(f, seed), Links.Identity.Instance) :> seq<'T>
+        Consumables.Enumerable (Consumables.UnfoldEnumerable(f, seed), null) :> seq<'T>
 
     [<MethodImpl(MethodImplOptions.NoInlining)>]
     let unfoldV (f:'State->voption<'T*'State>) (seed:'State) : seq<'T> =
-        Consumables.Enumerable (Consumables.UnfoldVEnumerable(f, seed), Links.Identity.Instance) :> seq<'T>
+        Consumables.Enumerable (Consumables.UnfoldVEnumerable(f, seed), null) :> seq<'T>
 
     let inline where (predicate:'T->bool) (source:seq<'T>) : seq<'T> =
         (tryListConsumable source).Where predicate
@@ -197,7 +197,7 @@ module Linq =
         if isNull source2 then
             ThrowHelper.ThrowArgumentNullException ExceptionArgument.source2
 
-        upcast Consumables.Enumerable(Consumables.ZipEnumerable (source1, source2), Links.Identity.Instance)
+        upcast Consumables.Enumerable(Consumables.ZipEnumerable (source1, source2), null)
 
 type Linq =
     static member dict (e:seq<'a*'b>) =
