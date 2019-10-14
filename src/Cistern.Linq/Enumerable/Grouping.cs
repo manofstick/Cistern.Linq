@@ -140,7 +140,7 @@ namespace Cistern.Linq
         internal TKey _key;
         internal int _hashCode;
 
-        GroupingArrayPool<TElement> _pool;
+        Consumables.Lookup<TKey, TElement> _owner;
         internal int _count;
         /// <summary>
         /// for single elements buckets we don't allocate a seperate array, rather we use
@@ -156,9 +156,9 @@ namespace Cistern.Linq
         internal Consumables.GroupingInternal<TKey, TElement> _hashNext;
         internal Consumables.GroupingInternal<TKey, TElement> _next;
 
-        internal Grouping(GroupingArrayPool<TElement> pool)
+        internal Grouping(Consumables.Lookup<TKey, TElement> owner)
         {
-            _pool = pool;
+            _owner = owner;
             _elementsOrNull = null;
         }
 
@@ -173,14 +173,14 @@ namespace Cistern.Linq
             {
                 if (_count == 1)
                 {
-                    _elementsOrNull = _pool.Alloc();
+                    _elementsOrNull = _owner.Pool.Alloc();
                     _elementsOrNull[0] = _element;
                     _element = default(TElement);
                 }
 
                 if (_elementsOrNull.Length == _count)
                 {
-                    _elementsOrNull = _pool.Upgrade(_elementsOrNull);
+                    _elementsOrNull = _owner.Pool.Upgrade(_elementsOrNull);
                 }
 
                 _elementsOrNull[_count] = element;

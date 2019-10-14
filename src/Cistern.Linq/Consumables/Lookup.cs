@@ -24,6 +24,8 @@ namespace Cistern.Linq.Consumables
             _poolOrNull = null; // Initialize lazily, as only required for larger groupings
         }
 
+        internal GroupingArrayPool<TElement> Pool => _poolOrNull ??= new GroupingArrayPool<TElement>();
+
         public int Count { get; protected set; }
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
@@ -96,8 +98,7 @@ namespace Cistern.Linq.Consumables
             }
 
             int index = hashCode % _groupings.Length;
-            _poolOrNull ??= new GroupingArrayPool<TElement>();
-            GroupingInternal<TKey, TElement> g = new GroupingInternal<TKey, TElement>(_poolOrNull);
+            GroupingInternal<TKey, TElement> g = new GroupingInternal<TKey, TElement>(this);
             g._key = key;
             g._hashCode = hashCode;
             g._hashNext = _groupings[index];

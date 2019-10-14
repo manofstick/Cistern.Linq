@@ -10,7 +10,7 @@ namespace Cistern.Linq.Consumables
         : Grouping<TKey, TElement>
         , IConsumable<TElement>
     {
-        internal GroupingInternal(GroupingArrayPool<TElement> pool) : base(pool) {}
+        internal GroupingInternal(Lookup<TKey, TElement> owner) : base(owner) {}
 
         public object TailLink => null;
 
