@@ -12,13 +12,13 @@ namespace Cistern.Linq
     public static partial class Enumerable
     {
         public static IEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) =>
-            new Consumables.GroupedEnumerable<TSource, TKey, IGrouping<TKey, TSource>>(source, keySelector, null, null, false);
+            new Consumables.GroupedEnumerable<TSource, TKey>(source, keySelector, null, false);
 
         public static IEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer) =>
-            new Consumables.GroupedEnumerable<TSource, TKey, IGrouping<TKey, TSource>>(source, keySelector, comparer, null, false);
+            new Consumables.GroupedEnumerable<TSource, TKey>(source, keySelector, comparer, false);
 
         internal static IEnumerable<IGrouping<TKey, TSource>> GroupByDelaySourceException<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer) =>
-            new Consumables.GroupedEnumerable<TSource, TKey, IGrouping<TKey, TSource>>(source, keySelector, comparer, null, true);
+            new Consumables.GroupedEnumerable<TSource, TKey>(source, keySelector, comparer, true);
 
         public static IEnumerable<IGrouping<TKey, TElement>> GroupBy<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector) =>
             new Consumables.GroupedEnumerable<TSource, TKey, TElement, IGrouping<TKey, TElement>>(source, keySelector, elementSelector, null, null, false);
