@@ -152,7 +152,7 @@ namespace Cistern.Linq.Consumables
         }
     }
 
-    sealed partial class SelectEnumerable<TEnumerable, TEnumerator, T, U>
+    partial class SelectEnumerable<TEnumerable, TEnumerator, T, U>
         : ConsumableEnumerator<U>
         , Optimizations.IMergeSelect<U>
         , Optimizations.IMergeWhere<U>
@@ -250,10 +250,10 @@ namespace Cistern.Linq.Consumables
         public override IConsumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.Select<T, U>(Selector), transform));
 
-        IConsumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(IConsumable<U> _, Func<U, V> u2v) =>
+        public virtual IConsumable<V> MergeSelect<V>(IConsumable<U> _, Func<U, V> u2v) =>
             new SelectEnumerable<TEnumerable, TEnumerator, T, V>(Underlying, t => u2v(Selector(t)));
 
-        IConsumable<U> Optimizations.IMergeWhere<U>.MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
+        public virtual IConsumable<U> MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
             new SelectWhereEnumerable<TEnumerable, TEnumerator, T, U>(Underlying, Selector, predicate);
 
         public int? TryFastCount(bool asCountConsumer) =>
@@ -283,6 +283,39 @@ namespace Cistern.Linq.Consumables
             }
             collection = null;
             return false;
+        }
+    }
+
+    sealed class SelectList<T, U>
+        : SelectEnumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, U>
+    {
+        public SelectList(List<T> list, Func<T, U> selector)
+            : base(new Optimizations.ListEnumerable<T>(list), selector) {}
+
+        public override IConsumable<V> MergeSelect<V>(IConsumable<U> _, Func<U, V> u2v) =>
+            new SelectList<T, V>(Underlying.List, t => u2v(Selector(t)));
+
+        public override IConsumable<U> MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
+            new SelectWhereList<T, U>(Underlying.List, Selector, predicate);
+
+        public override void Consume(Consumer<U> consumer)
+        {
+            if (consumer is Optimizations.IPipelineList<U> pipeline)
+            {
+                try
+                {
+                    var status = pipeline.Select(Underlying.List, Selector);
+                    consumer.ChainComplete(status & ~ChainStatus.Flow);
+                }
+                finally
+                {
+                    consumer.ChainDispose();
+                }
+            }
+            else
+            {
+                base.Consume(consumer);
+            }
         }
     }
 }

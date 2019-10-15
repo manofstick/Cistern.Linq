@@ -77,7 +77,7 @@ namespace Cistern.Linq.Consumables
             new WhereArray<T>(Underlying, t => Predicate(t) && predicate(t));
     }
 
-    sealed partial class WhereEnumerable<TEnumerable, TEnumerator, T>
+    partial class WhereEnumerable<TEnumerable, TEnumerator, T>
         : ConsumableEnumerator<T>
         , Optimizations.IMergeSelect<T>
         , Optimizations.IMergeWhere<T>
@@ -176,10 +176,45 @@ namespace Cistern.Linq.Consumables
         public override IConsumable<V> AddTail<V>(ILink<T, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
-        IConsumable<V> Optimizations.IMergeSelect<T>.MergeSelect<V>(IConsumable<T> consumable, Func<T, V> u2v) =>
+        public virtual IConsumable<V> MergeSelect<V>(IConsumable<T> consumable, Func<T, V> u2v) =>
             new WhereSelectEnumerable<TEnumerable, TEnumerator, T, V>(Underlying, Predicate, u2v);
 
-        IConsumable<T> Optimizations.IMergeWhere<T>.MergeWhere(IConsumable<T> consumable, Func<T, bool> predicate) =>
+        public virtual IConsumable<T> MergeWhere(IConsumable<T> consumable, Func<T, bool> predicate) =>
             new WhereEnumerable<TEnumerable, TEnumerator, T>(Underlying, t => Predicate(t) && predicate(t));
     }
+
+    sealed class WhereList<T>
+        : WhereEnumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T>
+    {
+        public WhereList(List<T> list, Func<T, bool> predicate)
+            : base(new Optimizations.ListEnumerable<T>(list), predicate) {}
+
+        public override IConsumable<V> MergeSelect<V>(IConsumable<T> consumable, Func<T, V> u2v) =>
+            new WhereSelectList<T, V>(Underlying.List, Predicate, u2v);
+
+        public override IConsumable<T> MergeWhere(IConsumable<T> consumable, Func<T, bool> predicate) =>
+            new WhereList<T>(Underlying.List, t => Predicate(t) && predicate(t));
+
+        public override void Consume(Consumer<T> consumer)
+        {
+            if (consumer is Optimizations.IPipelineList<T> pipeline)
+            {
+                try
+                {
+                    var status = pipeline.Where(Underlying.List, Predicate);
+                    consumer.ChainComplete(status & ~ChainStatus.Flow);
+                }
+                finally
+                {
+                    consumer.ChainDispose();
+                }
+            }
+            else
+            {
+                base.Consume(consumer);
+            }
+        }
+
+    }
+
 }

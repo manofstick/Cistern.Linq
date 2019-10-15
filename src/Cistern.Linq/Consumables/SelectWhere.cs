@@ -56,7 +56,7 @@ namespace Cistern.Linq.Consumables
             new SelectWhereArray<T, U>(Underlying, Selector, x => Predicate(x) && predicate(x));
     }
 
-    sealed partial class SelectWhereEnumerable<TEnumerable, TEnumerator, T, U>
+    partial class SelectWhereEnumerable<TEnumerable, TEnumerator, T, U>
         : ConsumableEnumerator<U>
         , Optimizations.IMergeWhere<U>
         where TEnumerable : Optimizations.ITypedEnumerable<T, TEnumerator>
@@ -135,7 +135,39 @@ namespace Cistern.Linq.Consumables
 
         public override IConsumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.SelectWhere<T, U>(Selector, Predicate), transform));
-        IConsumable<U> Optimizations.IMergeWhere<U>.MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
+        public virtual IConsumable<U> MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
             new SelectWhereEnumerable<TEnumerable, TEnumerator, T, U>(Underlying, Selector, x => Predicate(x) && predicate(x));
     }
+
+    sealed class SelectWhereList<T, U>
+        : SelectWhereEnumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, U>
+    {
+        public SelectWhereList(List<T> list, Func<T, U> selector, Func<U, bool> predicate)
+            : base(new Optimizations.ListEnumerable<T>(list), selector, predicate) { }
+
+        public override IConsumable<U> MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
+            new SelectWhereList<T, U>(Underlying.List, Selector, x => Predicate(x) && predicate(x));
+
+        public override void Consume(Consumer<U> consumer)
+        {
+            if (consumer is Optimizations.IPipelineList<U> pipeline)
+            {
+                try
+                {
+                    var status = pipeline.SelectWhere(Underlying.List, Selector, Predicate);
+                    consumer.ChainComplete(status & ~ChainStatus.Flow);
+                }
+                finally
+                {
+                    consumer.ChainDispose();
+                }
+            }
+            else
+            {
+                base.Consume(consumer);
+            }
+        }
+
+    }
+
 }

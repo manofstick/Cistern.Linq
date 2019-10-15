@@ -180,7 +180,7 @@ namespace Cistern.Linq
                     : new Consumables.WhereArray<TSource>(array, predicate);
 
             static IConsumable<TSource> ForList(List<TSource> list, Func<TSource, bool> predicate) =>
-                new Consumables.WhereEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource>(new Optimizations.ListEnumerable<TSource>(list), predicate);
+                new Consumables.WhereList<TSource>(list, predicate);
 
             static IConsumable<TSource> ForEnumerable(IEnumerable<TSource> e, Func<TSource, bool> predicate) =>
                 Registry.CreateConsumableSearch<TSource, TSource, ConstructWhere<TSource>>(new ConstructWhere<TSource>(predicate), e);
@@ -224,7 +224,7 @@ namespace Cistern.Linq
                     : new Consumables.SelectArray<TSource, TResult>(array, selector);
 
             static IConsumable<TResult> ForList(List<TSource> list, Func<TSource, TResult> selector) =>
-                new Consumables.SelectEnumerable<Optimizations.ListEnumerable<TSource>, List<TSource>.Enumerator, TSource, TResult>(new Optimizations.ListEnumerable<TSource>(list), selector);
+                new Consumables.SelectList<TSource, TResult>(list, selector);
 
             static IConsumable<TResult> ForEnumerable(IEnumerable<TSource> source, Func<TSource, TResult> selector) =>
                 Registry.CreateConsumableSearch<TSource, TResult, ConstructSelect<TSource, TResult>>(new ConstructSelect<TSource, TResult>(selector), source);

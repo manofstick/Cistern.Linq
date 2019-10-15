@@ -43,14 +43,15 @@ namespace Cistern.Linq.Optimizations
     struct ListEnumerable<T>
         : ITypedEnumerable<T, List<T>.Enumerator>
     {
-        private List<T> source;
-        public ListEnumerable(List<T> source) => this.source = source;
+        public readonly List<T> List { get; }
 
-        public IEnumerable<T> Source => source;
+        public ListEnumerable(List<T> source) => this.List = source;
 
-        public int? TryLength => source.Count;
+        public IEnumerable<T> Source => List;
 
-        public List<T>.Enumerator GetEnumerator() => source.GetEnumerator();
+        public int? TryLength => List.Count;
+
+        public List<T>.Enumerator GetEnumerator() => List.GetEnumerator();
 
         public bool TryGetSourceAsSpan(out ReadOnlySpan<T> readOnlySpan)
         {
@@ -60,12 +61,12 @@ namespace Cistern.Linq.Optimizations
 
         public bool TryLast(out T result)
         {
-            if (source.Count == 0)
+            if (List.Count == 0)
             {
                 result = default;
                 return false;
             }
-            result = source[source.Count - 1];
+            result = List[List.Count - 1];
             return true;
         }
     }

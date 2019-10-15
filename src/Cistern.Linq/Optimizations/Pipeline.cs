@@ -29,6 +29,13 @@ namespace Cistern.Linq.Optimizations
         ChainStatus WhereSelect<Enumerable, Enumerator, S>(Enumerable source, Func<S, bool> predicate, Func<S, T> selector)
             where Enumerable : ITypedEnumerable<S, Enumerator>
             where Enumerator : IEnumerator<S>;
+    }
 
+    interface IPipelineList<T>
+    {
+        ChainStatus Select<S>(List<S> source, Func<S, T> selector);
+        ChainStatus Where(List<T> source, Func<T, bool> predicate);
+        ChainStatus WhereSelect<S>(List<S> source, Func<S, bool> predicate, Func<S, T> selector);
+        ChainStatus SelectWhere<S>(List<S> source, Func<S, T> selector, Func<T, bool> predicate);
     }
 }
