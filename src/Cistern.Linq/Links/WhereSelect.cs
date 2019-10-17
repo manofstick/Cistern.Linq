@@ -15,7 +15,7 @@ namespace Cistern.Linq.Links
         Chain<T> ILink<T,U>.Compose(Chain<U> activity) =>
             new Activity(Predicate, Selector, activity);
 
-        public IConsumable<V> MergeSelect<V>(IConsumable<U> consumable, Func<U, V> u2v) =>
+        public IConsumable<V> MergeSelect<V>(Consumable<U> consumable, Func<U, V> u2v) =>
             consumable.ReplaceTailLink(new WhereSelect<T, V>(Predicate, t => u2v(Selector(t))));
 
         sealed class Activity

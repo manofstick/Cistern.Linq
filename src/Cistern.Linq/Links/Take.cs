@@ -16,7 +16,7 @@ namespace Cistern.Linq.Links
 
         int? Optimizations.ILinkFastCount.FastCountAdjustment(int count) => Math.Min(_count, count);
 
-        public IConsumable<T> MergeSkip(IConsumable<T> consumable, int skip)
+        public IConsumable<T> MergeSkip(Consumable<T> consumable, int skip)
         {
             if (skip == 0)
                 return consumable;
@@ -24,7 +24,7 @@ namespace Cistern.Linq.Links
             return consumable.ReplaceTailLink(new TakeSkip<T>(_count, skip));
         }
 
-        public IConsumable<T> MergeTake(IConsumable<T> consumable, int take)
+        public IConsumable<T> MergeTake(Consumable<T> consumable, int take)
         {
             if (take > _count)
                 return consumable;

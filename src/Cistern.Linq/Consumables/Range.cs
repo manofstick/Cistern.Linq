@@ -29,11 +29,11 @@ namespace Cistern.Linq.Consumables
         public override object TailLink => this;
         public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> transform) =>
             new Enumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int, V>(new Consume.Range.RangeEnumerable(_start, _count), (ILink<int, V>)(object)transform);
-        IConsumable<U> Optimizations.IMergeSelect<int>.MergeSelect<U>(IConsumable<int> _, Func<int, U> selector) =>
+        IConsumable<U> Optimizations.IMergeSelect<int>.MergeSelect<U>(Consumable<int> _, Func<int, U> selector) =>
             new SelectEnumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int, U>(new Consume.Range.RangeEnumerable(_start, _count), selector);
-        IConsumable<int> Optimizations.IMergeWhere<int>.MergeWhere(IConsumable<int> _, Func<int, bool> predicate) =>
+        IConsumable<int> Optimizations.IMergeWhere<int>.MergeWhere(Consumable<int> _, Func<int, bool> predicate) =>
             new WhereEnumerable<Consume.Range.RangeEnumerable, Consume.Range.RangeEnumerator, int>(new Consume.Range.RangeEnumerable(_start, _count), predicate);
-        IConsumable<int> Optimizations.IMergeSkipTake<int>.MergeSkip(IConsumable<int> consumable, int skip)
+        IConsumable<int> Optimizations.IMergeSkipTake<int>.MergeSkip(Consumable<int> consumable, int skip)
         {
             checked
             {
@@ -44,7 +44,7 @@ namespace Cistern.Linq.Consumables
                 return new Range(start, count);
             }
         }
-        IConsumable<int> Optimizations.IMergeSkipTake<int>.MergeTake(IConsumable<int> consumable, int take)
+        IConsumable<int> Optimizations.IMergeSkipTake<int>.MergeTake(Consumable<int> consumable, int take)
         {
             checked
             {

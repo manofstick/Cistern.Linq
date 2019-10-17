@@ -9,7 +9,7 @@ namespace Cistern.Linq.Consumables
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(SystemLinq_ConsumablesLookupDebugView<,>))]
     internal abstract partial class Lookup<TKey, TElement> 
-        : Consumable<IGrouping<TKey, TElement>>
+        : IConsumable<IGrouping<TKey, TElement>>
         , ILookup<TKey, TElement>
         , Optimizations.IConsumableFastCount
     {
@@ -55,20 +55,16 @@ namespace Cistern.Linq.Consumables
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public override object TailLink => null;
-
-        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
-
-        public override IConsumable<IGrouping<TKey, TElement>> AddTail(ILink<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>> transform) =>
+        public IConsumable<IGrouping<TKey, TElement>> AddTail(ILink<IGrouping<TKey, TElement>, IGrouping<TKey, TElement>> transform) =>
             new Lookup<TKey, TElement, IGrouping<TKey, TElement>>(_lastGrouping, Count, transform);
 
-        public override IConsumable<U> AddTail<U>(ILink<IGrouping<TKey, TElement>, U> transform) =>
+        public IConsumable<U> AddTail<U>(ILink<IGrouping<TKey, TElement>, U> transform) =>
             new Lookup<TKey, TElement, U>(_lastGrouping, Count, transform);
 
-        public override IEnumerator<IGrouping<TKey, TElement>> GetEnumerator() =>
+        public IEnumerator<IGrouping<TKey, TElement>> GetEnumerator() =>
             Cistern.Linq.GetEnumerator.Lookup.Get(_lastGrouping, Links.Identity<IGrouping<TKey, TElement>>.Instance);
 
-        public override void Consume(Consumer<IGrouping<TKey, TElement>> consumer) =>
+        public void Consume(Consumer<IGrouping<TKey, TElement>> consumer) =>
             Cistern.Linq.Consume.Lookup.Invoke(_lastGrouping, Count, consumer);
 
         internal abstract GroupingInternal<TKey, TElement> GetGrouping(TKey key, bool create);
@@ -227,7 +223,7 @@ namespace Cistern.Linq.Consumables
     }
 
     class LookupResultsSelector<TKey, TElement, TResult>
-        : Consumable<TResult>
+        : IConsumable<TResult>
         , Optimizations.IConsumableFastCount
     {
         private readonly Grouping<TKey, TElement> _lastGrouping;
@@ -237,20 +233,17 @@ namespace Cistern.Linq.Consumables
         public LookupResultsSelector(Grouping<TKey, TElement> lastGrouping, int count, Func<TKey, IEnumerable<TElement>, TResult> resultSelector) =>
             (_lastGrouping, _count, _resultSelector) = (lastGrouping, count, resultSelector);
 
-        public override object TailLink => null;
-
-        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new ArgumentException("TailLink is null, so this shouldn't be called");
-
-        public override IConsumable<TResult> AddTail(ILink<TResult, TResult> first) =>
+        public IConsumable<TResult> AddTail(ILink<TResult, TResult> first) =>
             new LookupResultsSelector<TKey, TElement, TResult, TResult>(_lastGrouping, _count, _resultSelector, first);
 
-        public override IConsumable<W> AddTail<W>(ILink<TResult, W> first) =>
+        public IConsumable<W> AddTail<W>(ILink<TResult, W> first) =>
             new LookupResultsSelector<TKey, TElement, TResult, W>(_lastGrouping, _count, _resultSelector, first);
 
-        public override IEnumerator<TResult> GetEnumerator() =>
+        public IEnumerator<TResult> GetEnumerator() =>
             Cistern.Linq.GetEnumerator.Lookup.Get(_lastGrouping, _resultSelector, Links.Identity<TResult>.Instance);
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public override void Consume(Consumer<TResult> consumer) =>
+        public void Consume(Consumer<TResult> consumer) =>
             Cistern.Linq.Consume.Lookup.Invoke(_lastGrouping, _resultSelector, consumer);
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>

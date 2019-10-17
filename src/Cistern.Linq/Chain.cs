@@ -79,10 +79,8 @@ namespace Cistern.Linq
     {
         void Consume(Consumer<T> consumer);
 
-        object TailLink { get; }
         IConsumable<T> AddTail(ILink<T, T> transform);
         IConsumable<U> AddTail<U>(ILink<T, U> transform);
-        IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink);
     }
 
     internal abstract class Consumable<T> : IConsumable<T>

@@ -31,10 +31,10 @@ namespace Cistern.Linq.Consumables
 
         public override object TailLink => IsIdentity ? this : base.TailLink;
 
-        IConsumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(IConsumable<U> _, Func<U, V> selector) =>
+        IConsumable<V> Optimizations.IMergeSelect<U>.MergeSelect<V>(Consumable<U> _, Func<U, V> selector) =>
             new SelectEnumerable<TEnumerable, TEnumerator, T, V>(Underlying, (Func<T, V>)(object)selector);
 
-        public IConsumable<U> MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
+        public IConsumable<U> MergeWhere(Consumable<U> _, Func<U, bool> predicate) =>
             (IConsumable<U>)(object)new WhereEnumerable<TEnumerable, TEnumerator, T>(Underlying, (Func<T, bool>)(object)predicate);
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>

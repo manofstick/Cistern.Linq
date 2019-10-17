@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Cistern.Linq.Consumables
 {
     sealed class Empty<T> 
-        : Consumable<T>
+        : IConsumable<T>
         , IEnumerator<T>
         , Optimizations.IConsumableFastCount
     {
@@ -15,12 +15,13 @@ namespace Cistern.Linq.Consumables
 
         public IConsumable<W> Create<W>(ILink<T, W> first) => Empty<W>.Instance;
 
-        public override IConsumable<T> AddTail(ILink<T, T> transform) => this;
-        public override IConsumable<U> AddTail<U>(ILink<T, U> transform) => Empty<U>.Instance;
+        public IConsumable<T> AddTail(ILink<T, T> transform) => this;
+        public IConsumable<U> AddTail<U>(ILink<T, U> transform) => Empty<U>.Instance;
 
-        public override IEnumerator<T> GetEnumerator() => this;
+        public IEnumerator<T> GetEnumerator() => this;
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public override void Consume(Consumer<T> consumer)
+        public void Consume(Consumer<T> consumer)
         {
             try
             {
@@ -35,13 +36,9 @@ namespace Cistern.Linq.Consumables
         void IDisposable.Dispose() { }
         bool IEnumerator.MoveNext() => false;
         void IEnumerator.Reset() { }
-
         
         object IEnumerator.Current => default;
         T IEnumerator<T>.Current => default;
-
-        public override object TailLink => null;
-        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new InvalidOperationException();
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) => 0;
         int? Optimizations.IConsumableFastCount.TryRawCount(bool asCountConsumer) => 0;

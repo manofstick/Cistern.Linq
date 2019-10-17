@@ -12,8 +12,6 @@ namespace Cistern.Linq.Consumables
     {
         internal GroupingInternal(Lookup<TKey, TElement> owner) : base(owner) {}
 
-        public object TailLink => null;
-
         public IConsumable<TElement> AddTail(ILink<TElement, TElement> transform) =>
             (_count == 1)
             ? (IConsumable<TElement>)new IList<TElement, TElement>(this, 0, 1, transform)
@@ -35,8 +33,5 @@ namespace Cistern.Linq.Consumables
                 Cistern.Linq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<TElement>(_elementsOrNull, 0, _count), consumer);
             }
         }
-
-        public IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) =>
-            throw new System.NotSupportedException();
     }
 }

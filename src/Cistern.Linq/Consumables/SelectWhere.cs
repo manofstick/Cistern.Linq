@@ -52,7 +52,7 @@ namespace Cistern.Linq.Consumables
         public override IConsumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Array<T, V>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.SelectWhere<T, U>(Selector, Predicate), transform));
 
-        IConsumable<U> Optimizations.IMergeWhere<U>.MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
+        IConsumable<U> Optimizations.IMergeWhere<U>.MergeWhere(Consumable<U> _, Func<U, bool> predicate) =>
             new SelectWhereArray<T, U>(Underlying, Selector, x => Predicate(x) && predicate(x));
     }
 
@@ -135,7 +135,7 @@ namespace Cistern.Linq.Consumables
 
         public override IConsumable<V> AddTail<V>(ILink<U, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.SelectWhere<T, U>(Selector, Predicate), transform));
-        public virtual IConsumable<U> MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
+        public virtual IConsumable<U> MergeWhere(Consumable<U> _, Func<U, bool> predicate) =>
             new SelectWhereEnumerable<TEnumerable, TEnumerator, T, U>(Underlying, Selector, x => Predicate(x) && predicate(x));
     }
 
@@ -145,7 +145,7 @@ namespace Cistern.Linq.Consumables
         public SelectWhereList(List<T> list, Func<T, U> selector, Func<U, bool> predicate)
             : base(new Optimizations.ListEnumerable<T>(list), selector, predicate) { }
 
-        public override IConsumable<U> MergeWhere(IConsumable<U> _, Func<U, bool> predicate) =>
+        public override IConsumable<U> MergeWhere(Consumable<U> _, Func<U, bool> predicate) =>
             new SelectWhereList<T, U>(Underlying.List, Selector, x => Predicate(x) && predicate(x));
 
         public override void Consume(Consumer<U> consumer)

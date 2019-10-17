@@ -70,10 +70,10 @@ namespace Cistern.Linq.Consumables
         public override IConsumable<U> AddTail<U>(ILink<T, U> transform) =>
             new Array<T, U>(Underlying, 0, Underlying.Length, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
-        IConsumable<V> Optimizations.IMergeSelect<T>.MergeSelect<V>(IConsumable<T> _, Func<T, V> u2v) =>
+        IConsumable<V> Optimizations.IMergeSelect<T>.MergeSelect<V>(Consumable<T> _, Func<T, V> u2v) =>
             new WhereSelectArray<T, V>(Underlying, Predicate, u2v);
 
-        IConsumable<T> Optimizations.IMergeWhere<T>.MergeWhere(IConsumable<T> _, Func<T, bool> predicate) =>
+        IConsumable<T> Optimizations.IMergeWhere<T>.MergeWhere(Consumable<T> _, Func<T, bool> predicate) =>
             new WhereArray<T>(Underlying, t => Predicate(t) && predicate(t));
     }
 
@@ -176,10 +176,10 @@ namespace Cistern.Linq.Consumables
         public override IConsumable<V> AddTail<V>(ILink<T, V> transform) =>
             new Enumerable<TEnumerable, TEnumerator, T, V>(Underlying, Links.Composition.Create(new Links.Where<T>(Predicate), transform));
 
-        public virtual IConsumable<V> MergeSelect<V>(IConsumable<T> consumable, Func<T, V> u2v) =>
+        public virtual IConsumable<V> MergeSelect<V>(Consumable<T> consumable, Func<T, V> u2v) =>
             new WhereSelectEnumerable<TEnumerable, TEnumerator, T, V>(Underlying, Predicate, u2v);
 
-        public virtual IConsumable<T> MergeWhere(IConsumable<T> consumable, Func<T, bool> predicate) =>
+        public virtual IConsumable<T> MergeWhere(Consumable<T> consumable, Func<T, bool> predicate) =>
             new WhereEnumerable<TEnumerable, TEnumerator, T>(Underlying, t => Predicate(t) && predicate(t));
     }
 
@@ -189,10 +189,10 @@ namespace Cistern.Linq.Consumables
         public WhereList(List<T> list, Func<T, bool> predicate)
             : base(new Optimizations.ListEnumerable<T>(list), predicate) {}
 
-        public override IConsumable<V> MergeSelect<V>(IConsumable<T> consumable, Func<T, V> u2v) =>
+        public override IConsumable<V> MergeSelect<V>(Consumable<T> consumable, Func<T, V> u2v) =>
             new WhereSelectList<T, V>(Underlying.List, Predicate, u2v);
 
-        public override IConsumable<T> MergeWhere(IConsumable<T> consumable, Func<T, bool> predicate) =>
+        public override IConsumable<T> MergeWhere(Consumable<T> consumable, Func<T, bool> predicate) =>
             new WhereList<T>(Underlying.List, t => Predicate(t) && predicate(t));
 
         public override void Consume(Consumer<T> consumer)

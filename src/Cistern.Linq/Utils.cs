@@ -161,11 +161,11 @@ namespace Cistern.Linq
                 Consumable<TSource> consumable  => ForConsumable(consumable, predicate),
                 TSource[] array                 => ForArray(array, predicate),
                 List<TSource> list              => ForList(list, predicate),
-                IConsumable<TSource> consumable => ForConsumable(consumable, predicate),
+                IConsumable<TSource> consumable => ForIConsumable(consumable, predicate),
                 var e                           => ForEnumerable(e, predicate)
             };
 
-            static IConsumable<TSource> ForConsumable(IConsumable<TSource> consumable, Func<TSource, bool> predicate)
+            static IConsumable<TSource> ForConsumable(Consumable<TSource> consumable, Func<TSource, bool> predicate)
             {
                 if (consumable.TailLink is Optimizations.IMergeWhere<TSource> optimization)
                 {
@@ -181,6 +181,9 @@ namespace Cistern.Linq
 
             static IConsumable<TSource> ForList(List<TSource> list, Func<TSource, bool> predicate) =>
                 new Consumables.WhereList<TSource>(list, predicate);
+
+            static IConsumable<TSource> ForIConsumable(IConsumable<TSource> consumable, Func<TSource, bool> predicate) =>
+                consumable.AddTail(new Links.Where<TSource>(predicate));
 
             static IConsumable<TSource> ForEnumerable(IEnumerable<TSource> e, Func<TSource, bool> predicate) =>
                 Registry.CreateConsumableSearch<TSource, TSource, ConstructWhere<TSource>>(new ConstructWhere<TSource>(predicate), e);
@@ -205,11 +208,11 @@ namespace Cistern.Linq
                 Consumable<TSource> consumable  => ForConsumable(consumable, selector),
                 TSource[] array                 => ForArray(array, selector),
                 List<TSource> list              => ForList(list, selector),
-                IConsumable<TSource> consumable => ForConsumable(consumable, selector),
+                IConsumable<TSource> consumable => ForIConsumable(consumable, selector),
                 var e                           => ForEnumerable(e, selector),
             };
 
-            static IConsumable<TResult> ForConsumable(IConsumable<TSource> consumable, Func<TSource, TResult> selector)
+            static IConsumable<TResult> ForConsumable(Consumable<TSource> consumable, Func<TSource, TResult> selector)
             {
                 if (consumable.TailLink is Optimizations.IMergeSelect<TSource> optimization)
                 {
@@ -226,6 +229,9 @@ namespace Cistern.Linq
             static IConsumable<TResult> ForList(List<TSource> list, Func<TSource, TResult> selector) =>
                 new Consumables.SelectList<TSource, TResult>(list, selector);
 
+            static IConsumable<TResult> ForIConsumable(IConsumable<TSource> consumable, Func<TSource, TResult> selector) =>
+                consumable.AddTail(new Links.Select<TSource, TResult>(selector));
+
             static IConsumable<TResult> ForEnumerable(IEnumerable<TSource> source, Func<TSource, TResult> selector) =>
                 Registry.CreateConsumableSearch<TSource, TResult, ConstructSelect<TSource, TResult>>(new ConstructSelect<TSource, TResult>(selector), source);
         }
@@ -240,11 +246,11 @@ namespace Cistern.Linq
                 Consumable<T> consumable  => ForConsumable(consumable, skip),
                 T[] array                 => ForArray(array, skip),
                 List<T> list              => ForList(list, skip),
-                IConsumable<T> consumable => ForConsumable(consumable, skip),
+                IConsumable<T> consumable => ForIConsumable(consumable, skip),
                 var e                     => ForEnumerable(e, skip),
             };
 
-            static IConsumable<T> ForConsumable(IConsumable<T> consumable, int skip)
+            static IConsumable<T> ForConsumable(Consumable<T> consumable, int skip)
             {
                 if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
                     return optimization.MergeSkip(consumable, skip);
@@ -266,6 +272,9 @@ namespace Cistern.Linq
             static IConsumable<T> ForList(List<T> list, int skip) =>
                 new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, T>(new Optimizations.ListEnumerable<T>(list), GetSkipLink<T>(skip));
 
+            static IConsumable<T> ForIConsumable(IConsumable<T> consumable, int skip) =>
+                consumable.AddTail(GetSkipLink<T>(skip));
+
             static IConsumable<T> ForEnumerable(IEnumerable<T> source, int skip) =>
                 Registry.CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(GetSkipLink<T>(skip)), source);
         }
@@ -280,11 +289,11 @@ namespace Cistern.Linq
                 Consumable<T> consumable  => ForConsumable(consumable, take),
                 T[] array                 => ForArray(array, take),
                 List<T> list              => ForList(list, take),
-                IConsumable<T> consumable => ForConsumable(consumable, take),
+                IConsumable<T> consumable => ForIConsumable(consumable, take),
                 var e                     => ForEnumerable(e, take),
             };
 
-            static IConsumable<T> ForConsumable(IConsumable<T> consumable, int take)
+            static IConsumable<T> ForConsumable(Consumable<T> consumable, int take)
             {
                 if (consumable.TailLink is Optimizations.IMergeSkipTake<T> optimization)
                     return optimization.MergeTake(consumable, take);
@@ -302,6 +311,9 @@ namespace Cistern.Linq
 
             static IConsumable<T> ForList(List<T> list, int take) =>
                 new Consumables.Enumerable<Optimizations.ListEnumerable<T>, List<T>.Enumerator, T, T>(new Optimizations.ListEnumerable<T>(list), new Links.Take<T>(take));
+
+            static IConsumable<T> ForIConsumable(IConsumable<T> consumable, int take) =>
+                consumable.AddTail(new Links.Take<T>(take));
 
             static IConsumable<T> ForEnumerable(IEnumerable<T> source, int take) =>
                 Registry.CreateConsumableSearch<T, T, Construct<T, T>>(new Construct<T, T>(new Links.Take<T>(take)), source);
