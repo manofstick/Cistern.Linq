@@ -156,37 +156,63 @@ namespace Cistern.Linq
 
         internal static IConsumable<TSource> Where<TSource>(IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
-            return source switch
-            {
-                Consumable<TSource> consumable  => ForConsumable(consumable, predicate),
-                TSource[] array                 => ForArray(array, predicate),
-                List<TSource> list              => ForList(list, predicate),
-                IConsumable<TSource> consumable => ForIConsumable(consumable, predicate),
-                var e                           => ForEnumerable(e, predicate)
-            };
+            // This layout, albeit weird, seems to create better code for the JIT
+            // as it avoids a (relatively, for small collections) expensive JIT_GenericHandleMethod call
+            // for some reason
+            return Step1();
 
-            static IConsumable<TSource> ForConsumable(Consumable<TSource> consumable, Func<TSource, bool> predicate)
+            IConsumable<TSource> Step1()
+            { 
+                var consumable = source as Consumable<TSource>;
+                if (consumable == null)
+                    return Step2();
+
+                return HandleConsumable(consumable);
+            }
+
+            IConsumable<TSource> Step2()
+            {
+                var array = source as TSource[];
+                if (array == null)
+                    return Step3();
+
+                return (array.Length == 0)
+                    ? Consumables.Empty<TSource>.Instance
+                    : new Consumables.WhereArray<TSource>(array, predicate);
+            }
+
+            IConsumable<TSource> Step3()
+            {
+                var list = source as List<TSource>;
+                if (list == null)
+                    return Step4();
+
+                return new Consumables.WhereList<TSource>(list, predicate);
+            }
+
+            IConsumable<TSource> Step4()
+            {
+                var consumable = source as IConsumable<TSource>;
+                if (consumable == null)
+                    return Step5();
+
+                return AddTail(consumable);
+            }
+
+            IConsumable<TSource> Step5() =>
+                Registry.CreateConsumableSearch<TSource, TSource, ConstructWhere<TSource>>(new ConstructWhere<TSource>(predicate), source);
+
+            IConsumable<TSource> AddTail(IConsumable<TSource> consumable) =>
+                consumable.AddTail(new Links.Where<TSource>(predicate));
+
+            IConsumable<TSource> HandleConsumable(Consumable<TSource> consumable)
             {
                 if (consumable.TailLink is Optimizations.IMergeWhere<TSource> optimization)
                 {
                     return optimization.MergeWhere(consumable, predicate);
                 }
-                return consumable.AddTail(new Links.Where<TSource>(predicate));
+                return AddTail(consumable);
             }
-
-            static IConsumable<TSource> ForArray(TSource[] array, Func<TSource, bool> predicate) =>
-                (array.Length == 0)
-                    ? Consumables.Empty<TSource>.Instance
-                    : new Consumables.WhereArray<TSource>(array, predicate);
-
-            static IConsumable<TSource> ForList(List<TSource> list, Func<TSource, bool> predicate) =>
-                new Consumables.WhereList<TSource>(list, predicate);
-
-            static IConsumable<TSource> ForIConsumable(IConsumable<TSource> consumable, Func<TSource, bool> predicate) =>
-                consumable.AddTail(new Links.Where<TSource>(predicate));
-
-            static IConsumable<TSource> ForEnumerable(IEnumerable<TSource> e, Func<TSource, bool> predicate) =>
-                Registry.CreateConsumableSearch<TSource, TSource, ConstructWhere<TSource>>(new ConstructWhere<TSource>(predicate), e);
         }
 
         struct ConstructSelect<T, U>
@@ -203,37 +229,61 @@ namespace Cistern.Linq
 
         internal static IConsumable<TResult> Select<TSource, TResult>(IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            return source switch
-            {
-                Consumable<TSource> consumable  => ForConsumable(consumable, selector),
-                TSource[] array                 => ForArray(array, selector),
-                List<TSource> list              => ForList(list, selector),
-                IConsumable<TSource> consumable => ForIConsumable(consumable, selector),
-                var e                           => ForEnumerable(e, selector),
-            };
+            // This layout, albeit weird, seems to create better code for the JIT
+            return Step1();
 
-            static IConsumable<TResult> ForConsumable(Consumable<TSource> consumable, Func<TSource, TResult> selector)
+            IConsumable<TResult> Step1()
+            {
+                var consumable = source as Consumable<TSource>;
+                if (consumable == null)
+                    return Step2();
+
+                return HandleConsumable(consumable);
+            }
+
+            IConsumable<TResult> Step2()
+            {
+                var array = source as TSource[];
+                if (array == null)
+                    return Step3();
+
+                return array.Length == 0
+                    ? Consumables.Empty<TResult>.Instance
+                    : new Consumables.SelectArray<TSource, TResult>(array, selector);
+            }
+
+            IConsumable<TResult> Step3()
+            {
+                var list = source as List<TSource>;
+                if (list == null)
+                    return Step4();
+
+                return new Consumables.SelectList<TSource, TResult>(list, selector);
+            }
+
+            IConsumable<TResult> Step4()
+            {
+                var consumable = source as IConsumable<TSource>;
+                if (consumable == null)
+                    return Step5();
+
+                return AddTail(consumable);
+            }
+
+            IConsumable<TResult> Step5() =>
+                Registry.CreateConsumableSearch<TSource, TResult, ConstructSelect<TSource, TResult>>(new ConstructSelect<TSource, TResult>(selector), source);
+
+            IConsumable<TResult> AddTail(IConsumable<TSource> consumable) =>
+                consumable.AddTail(new Links.Select<TSource, TResult>(selector));
+
+            IConsumable<TResult> HandleConsumable(Consumable<TSource> consumable)
             {
                 if (consumable.TailLink is Optimizations.IMergeSelect<TSource> optimization)
                 {
                     return optimization.MergeSelect(consumable, selector);
                 }
-                return consumable.AddTail(new Links.Select<TSource, TResult>(selector));
+                return AddTail(consumable);
             }
-
-            static IConsumable<TResult> ForArray(TSource[] array, Func<TSource, TResult> selector) =>
-                array.Length == 0
-                    ? Consumables.Empty<TResult>.Instance
-                    : new Consumables.SelectArray<TSource, TResult>(array, selector);
-
-            static IConsumable<TResult> ForList(List<TSource> list, Func<TSource, TResult> selector) =>
-                new Consumables.SelectList<TSource, TResult>(list, selector);
-
-            static IConsumable<TResult> ForIConsumable(IConsumable<TSource> consumable, Func<TSource, TResult> selector) =>
-                consumable.AddTail(new Links.Select<TSource, TResult>(selector));
-
-            static IConsumable<TResult> ForEnumerable(IEnumerable<TSource> source, Func<TSource, TResult> selector) =>
-                Registry.CreateConsumableSearch<TSource, TResult, ConstructSelect<TSource, TResult>>(new ConstructSelect<TSource, TResult>(selector), source);
         }
 
         internal static ILink<T, T> GetSkipLink<T>(int skip) =>

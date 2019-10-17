@@ -43,7 +43,7 @@ namespace Playground
         static void Benchmark()
         {
 #if true
-            var z = new Cistern.Linq.Benchmarking.Benchmarks.String.String_GroupByChar();
+            var z = new Cistern.Linq.Benchmarking.Benchmarks.String.String_GroupByCharCharChar();
 
             z.WordsCount = 1;
             z.Sorted = false;

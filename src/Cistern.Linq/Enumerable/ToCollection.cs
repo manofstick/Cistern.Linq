@@ -164,23 +164,31 @@ namespace Cistern.Linq
                 ThrowHelper.ThrowArgumentNullException(ExceptionArgument.elementSelector);
             }
 
-            Consumer<TSource, Dictionary<TKey, TElement>> toDictionary = null;
+            var consumable = GetFinalizedConsumable(source);
 
-            var consumable = Utils.AsConsumable(source);
+            var toDictionary = GetDictionaryConsumer(consumable, keySelector, elementSelector, comparer);
 
-            if (consumable is Optimizations.IDelayed<TSource> delayed)
-                consumable = delayed.Force();
+            return Utils.Consume(consumable, toDictionary);
+        }
 
+        private static Consumer<TSource, Dictionary<TKey, TElement>> GetDictionaryConsumer<TSource, TKey, TElement>(IConsumable<TSource> consumable, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer)
+        {
             if (consumable is Optimizations.IConsumableFastCount counter)
             {
                 var tryCount = counter.TryFastCount(false);
                 if (tryCount.HasValue)
-                    toDictionary = new Consumer.ToDictionary<TSource, TKey, TElement>(keySelector, elementSelector, tryCount.Value, comparer);
+                    return new Consumer.ToDictionary<TSource, TKey, TElement>(keySelector, elementSelector, tryCount.Value, comparer);
             }
 
-            toDictionary ??= new Consumer.ToDictionary<TSource, TKey, TElement>(keySelector, elementSelector, comparer);
+            return new Consumer.ToDictionary<TSource, TKey, TElement>(keySelector, elementSelector, comparer);
+        }
 
-            return Utils.Consume(consumable, toDictionary);
+        private static IConsumable<TSource> GetFinalizedConsumable<TSource>(IEnumerable<TSource> source)
+        {
+            var consumable = Utils.AsConsumable(source);
+            if (consumable is Optimizations.IDelayed<TSource> delayed)
+                consumable = delayed.Force();
+            return consumable;
         }
 
         public static HashSet<TSource> ToHashSet<TSource>(this IEnumerable<TSource> source) => source.ToHashSet(comparer: null);
