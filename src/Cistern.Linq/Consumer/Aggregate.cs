@@ -131,7 +131,7 @@ namespace Cistern.Linq.Consumer
         : Consumer<T, TResult>
         , Optimizations.IHeadStart<T>
         , Optimizations.ITailEnd<T>
-        , IDisposable
+        , Cache.IClean
     {
         /*readonly*/ Func<TAccumulate, T, TAccumulate> _func;
         /*readonly*/ Func<TAccumulate, TResult> _resultSelector;
@@ -145,16 +145,14 @@ namespace Cistern.Linq.Consumer
 
         public static Aggregate<T, TAccumulate, TResult> FactoryCreate(TAccumulate seed, Func<TAccumulate, T, TAccumulate> func, Func<TAccumulate, TResult> resultSelector)
         {
-            var cached = Interlocked.Exchange(ref Cache<Aggregate<T, TAccumulate, TResult>>.Item, null) ?? new Aggregate<T, TAccumulate, TResult>();
+            var cached = Cache.TryGet<Aggregate<T, TAccumulate, TResult>>() ?? new Aggregate<T, TAccumulate, TResult>();
             cached.Init(seed, func, resultSelector);
             return cached;
         }
 
-        void IDisposable.Dispose()
-        {
-            Interlocked.MemoryBarrier(); // ensure that access to Result is finalized before returning to pool
-            Cache<Aggregate<T, TAccumulate, TResult>>.Item = this;
-        }
+        void IDisposable.Dispose() => Cache.Stash(this);
+
+        void Cache.IClean.Clean() => Init(default, default, default);
 
         public override ChainStatus ProcessNext(T input)
         {

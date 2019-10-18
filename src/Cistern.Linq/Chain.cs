@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Cistern.Linq
 {
@@ -73,7 +75,32 @@ namespace Cistern.Linq
         public R Result { get; protected set; }
     }
 
-    static class Cache<T> { public static T Item; }
+    static class Cache
+    {
+        public interface IClean : IDisposable
+        {
+            void Clean();
+        }
+
+        static class Typed<T> where T : class
+        {
+            public static T Item;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T TryGet<T>()
+            where T : class =>
+            Interlocked.Exchange(ref Typed<T>.Item, null);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Stash<T>(T item)
+            where T : class, IClean
+        {
+            item.Clean();
+            Interlocked.MemoryBarrier();
+            Typed<T>.Item = item;
+        }
+    }
 
     internal interface IConsumable<T> : IEnumerable<T>
     {

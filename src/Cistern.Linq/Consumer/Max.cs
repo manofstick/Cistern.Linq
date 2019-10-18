@@ -31,7 +31,7 @@ namespace Cistern.Linq.Consumer
         : Consumer<T, T>
         , Optimizations.IHeadStart<T>
         , Optimizations.ITailEnd<T>
-        , IDisposable
+        , Cache.IClean
         where T : struct
         where Accumulator : struct
         where Quotient : struct
@@ -42,22 +42,23 @@ namespace Cistern.Linq.Consumer
         protected MaxGeneric() : base(default(Maths).MaxInit) =>
             _noData = true;
 
+        protected void Init(T initialResult)
+        {
+            Result = initialResult;
+            _noData = true;
+        }
+
         protected static MaxGeneric<T, Accumulator, Quotient, Maths> TryGetCachedInstance()
         {
-            var cached = Interlocked.CompareExchange(ref Cache<MaxGeneric<T, Accumulator, Quotient, Maths>>.Item, null, Cache<MaxGeneric<T, Accumulator, Quotient, Maths>>.Item);
+            var cached = Cache.TryGet<MaxGeneric<T, Accumulator, Quotient, Maths>>();
             if (cached != null)
-            {
-                cached.Result = default(Maths).MaxInit;
-                cached._noData = true;
-            }
+                cached.Init(default(Maths).MaxInit);
             return cached;
         }
 
-        void IDisposable.Dispose()
-        {
-            Interlocked.MemoryBarrier();
-            Cache<MaxGeneric<T, Accumulator, Quotient, Maths>>.Item = this;
-        }
+        void IDisposable.Dispose() => Cache.Stash(this);
+
+        void Cache.IClean.Clean() => Init(default);
 
         public override ChainStatus ChainComplete(ChainStatus status)
         {
