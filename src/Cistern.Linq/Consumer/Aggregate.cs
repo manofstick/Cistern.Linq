@@ -1,22 +1,33 @@
 ﻿using System;
-using System.Threading;
 
 namespace Cistern.Linq.Consumer
 {
     static class AggregateImpl
     {
-        public static TAccumulate Execute<T, TAccumulate>(ReadOnlySpan<T> source, Func<TAccumulate, T, TAccumulate> func, TAccumulate accumulate)
+        public static ChainStatus Execute<T, TAccumulate>(ReadOnlySpan<T> source, ref Func<TAccumulate, T, TAccumulate> func, ref TAccumulate accumulate)
         {
+            // playing around a bit here, I see that when I don't pass the Func by reference, the C# compiler just 
+            // removes the copy (which I was just playing with to see if it created better performance).
+            // Anyway, maybe investigate more at some later stage...
             var f = func;
             var a = accumulate;
 
-            foreach (var input in source)
-                a = f(a, input);
+            var i = 0;
+            for (; i < source.Length - 4 + 1; i += 4)
+            {
+                var x = (source[i+0], source[i+1], source[i+2], source[i+3]);
+                a = f(f(f(f(a,x.Item1),x.Item2),x.Item3),x.Item4);
+            }
 
-            return a;
+            for (; i < source.Length; ++i)
+                a = f(a, source[i]);
+
+            accumulate = a;
+
+            return ChainStatus.Flow;
         }
 
-        public static TAccumulate Execute<T, TAccumulate, Enumerable, Enumerator>(Enumerable source, Func<TAccumulate, T, TAccumulate> func, TAccumulate accumulate)
+        public static ChainStatus Execute<T, TAccumulate, Enumerable, Enumerator>(Enumerable source, ref Func<TAccumulate, T, TAccumulate> func, ref TAccumulate accumulate)
             where Enumerable : Optimizations.ITypedEnumerable<T, Enumerator>
             where Enumerator : System.Collections.Generic.IEnumerator<T>
         {
@@ -26,18 +37,30 @@ namespace Cistern.Linq.Consumer
             foreach (var input in source)
                 a = f(a, input);
 
-            return a;
+            accumulate = a;
+
+            return ChainStatus.Flow;
         }
 
-        public static TAccumulate Select<T, TAccumulate, S>(ReadOnlySpan<S> source, Func<TAccumulate, T, TAccumulate> func, TAccumulate accumulate, Func<S, T> selector)
+        public static ChainStatus Select<T, TAccumulate, S>(ReadOnlySpan<S> source, ref Func<TAccumulate, T, TAccumulate> func, ref TAccumulate accumulate, ref Func<S, T> selector)
         {
             var f = func;
             var a = accumulate;
+            var s = selector;
 
-            foreach (var input in source)
-                a = f(a, selector(input));
+            var i = 0;
+            for (; i < source.Length - 4 + 1; i += 4)
+            {
+                var x = (source[i + 0], source[i + 1], source[i + 2], source[i + 3]);
+                a = f(f(f(f(a, s(x.Item1)), s(x.Item2)), s(x.Item3)), s(x.Item4));
+            }
 
-            return a;
+            for (; i < source.Length; ++i)
+                a = f(a, s(source[i]));
+
+            accumulate = a;
+
+            return ChainStatus.Flow;
         }
 
         public static TAccumulate Select<S, T, TAccumulate, Enumerable, Enumerator>(Enumerable source, Func<TAccumulate, T, TAccumulate> func, TAccumulate accumulate, Func<S, T> selector)
@@ -166,23 +189,14 @@ namespace Cistern.Linq.Consumer
             return ChainStatus.Stop;
         }
 
-        ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
-        {
-            _accumulate = AggregateImpl.Execute(source, _func, _accumulate);
-            return ChainStatus.Flow;
-        }
+        ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source) =>
+            AggregateImpl.Execute(source, ref _func, ref _accumulate);
 
-        ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
-        {
-            _accumulate = AggregateImpl.Execute<T, TAccumulate, Enumerable, Enumerator>(source, _func, _accumulate);
-            return ChainStatus.Flow;
-        }
+        ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source) =>
+            AggregateImpl.Execute<T, TAccumulate, Enumerable, Enumerator>(source, ref _func, ref _accumulate);
 
-        ChainStatus Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector)
-        {
-            _accumulate = AggregateImpl.Select(source, _func, _accumulate, selector);
-            return ChainStatus.Flow;
-        }
+        ChainStatus Optimizations.ITailEnd<T>.Select<S>(ReadOnlySpan<S> source, Func<S, T> selector) =>
+            AggregateImpl.Select(source, ref _func, ref _accumulate, ref selector);
 
         ChainStatus Optimizations.ITailEnd<T>.Select<Enumerable, Enumerator, S>(Enumerable source, Func<S, T> selector)
         {
