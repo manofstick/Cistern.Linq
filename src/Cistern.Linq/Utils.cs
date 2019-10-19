@@ -353,10 +353,12 @@ namespace Cistern.Linq
 
             static IConsumable<T> ForArray(T[] array, int take)
             {
-                if (array.Length <= 0)
+                var newLength = Math.Min(take, array.Length);
+
+                if (newLength <= 0)
                     return Consumables.Empty<T>.Instance;
 
-                return new Consumables.Array<T, T>(array, 0, Math.Min(take, array.Length), null);
+                return new Consumables.Array<T, T>(array, 0, newLength, null);
             }
 
             static IConsumable<T> ForList(List<T> list, int take) =>
