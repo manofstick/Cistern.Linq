@@ -54,18 +54,18 @@ module Linq =
         if chunkSize <= 0 then
             ThrowHelper.ThrowArgumentOutOfRangeException ExceptionArgument.chunkSize
 
-        Cistern.Linq.FSharp.Links.ChunkBySize chunkSize |> addLink source
+        Cistern.Linq.FSharp.Links.ChunkBySize chunkSize |> addLink (tryListConsumable source)
 
     let collect (f:'T->#seq<'U>) (e:seq<'T>) : seq<'U> =
         if isNull e then
-            ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
 
         let selectMany = Utils.Select (tryListConsumable e, fun x -> f x);
         Consumables.SelectMany<_,_,_> (selectMany, null) :> seq<'U>
 
     let concat (sources:seq<#seq<'Collection>>) : seq<'Collection> =
         if isNull sources then
-            ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
+            ThrowHelper.ThrowArgumentNullException ExceptionArgument.source
 
         let sources = (tryListConsumable sources) |> Cistern.Linq.Utils.AsConsumable 
         upcast Consumables.SelectMany<_,_,_> (sources, null)
@@ -154,7 +154,17 @@ module Linq =
         (tryListConsumable source).SkipWhile predicate 
 
     let take count (e:seq<'a>) =
-        (tryListConsumable e).Take count
+        if count < 0 then
+            ThrowHelper.ThrowArgumentOutOfRangeException ExceptionArgument.count
+
+        let withTake = 
+            Cistern.Linq.FSharp.Links.Take count |> addLink (tryListConsumable e)
+        
+        if count > 0 && obj.ReferenceEquals (withTake, Consumables.Empty<'a>.Instance) then
+            // this could be if we have an empty array or list
+            Cistern.Linq.FSharp.Links.Take count |> addLink ( seq { if false then yield Unchecked.defaultof<_> } )
+        else
+            withTake
 
     let inline takeWhile (f:'a->bool) (e:seq<'a>) =
         (tryListConsumable e).TakeWhile f

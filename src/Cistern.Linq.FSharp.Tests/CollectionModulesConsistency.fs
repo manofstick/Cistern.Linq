@@ -1077,7 +1077,6 @@ let take<'a when 'a : equality> (xs : 'a []) count =
     let a = runAndCheckIfAnyError (fun () -> Array.take count xs)
     consistency "take" s l a
 
-[<Ignore "Linq.take doesn't throw exceptions">]
 [<Test>]
 let ``take is consistent`` () =
     smallerSizeCheck take<int>
