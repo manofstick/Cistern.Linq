@@ -23,7 +23,7 @@ namespace Cistern.Linq.Benchmarking.Vanilla.Array
     */
 
     [CoreJob, MemoryDiagnoser]
-	public class VanillaArray_Aggreate : VanillaArrayBase
+	public class VanillaArray_Aggreate : VanillaDoubleArrayBase
 	{
 		[Benchmark]
 		public double ForLoop()

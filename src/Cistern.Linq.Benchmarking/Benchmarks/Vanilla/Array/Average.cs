@@ -23,7 +23,7 @@ namespace Cistern.Linq.Benchmarking.Vanilla.Array
     | CisternLinq |          1000 | 1,221.774 ns | 18.3805 ns | 17.1931 ns |  0.25 |    0.00 | 0.0114 |     - |     - |      40 B |
     */
     [CoreJob, MemoryDiagnoser]
-	public class VanillaArray_Average : VanillaArrayBase
+	public class VanillaArray_Average : VanillaDoubleArrayBase
     {
 		[Benchmark]
 		public double ForLoop()

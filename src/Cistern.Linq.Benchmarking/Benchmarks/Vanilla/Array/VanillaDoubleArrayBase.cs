@@ -2,7 +2,7 @@
 
 namespace Cistern.Linq.Benchmarking.Vanilla.Array
 {
-    public abstract class VanillaArrayBase
+    public abstract class VanillaDoubleArrayBase
     {
         [Params(0, 1, 10, 1000)]
         public int NumberOfItems;
