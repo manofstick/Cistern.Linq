@@ -43,9 +43,9 @@ namespace Playground
         static void Benchmark()
         {
 #if true
-            var z = new Cistern.Linq.Benchmarking.FSharp.Fold.Fold_ArrayMap();
+            var z = new Cistern.Linq.Benchmarking.Vanilla.Array.VanillaArray_Distinct();
 
-            z.NumberOfItems = 1000;
+            z.CustomerCount = 1000;
             z.Setup();
 
             for (var j = 0; j < 25; ++j)
@@ -53,7 +53,7 @@ namespace Playground
                 var sw = Stopwatch.StartNew();
                 for (var i = 0; i < 100000; ++i)
                 {
-                    var count = z.Cistern();
+                    var count = z.CisternLinq();
                 }
                 Console.WriteLine(sw.ElapsedMilliseconds);
             }

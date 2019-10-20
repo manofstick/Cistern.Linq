@@ -283,6 +283,8 @@ namespace Cistern.Linq
     /// <typeparam name="TElement">The type of the set's items.</typeparam>
     internal sealed class SetDefaultComparer<TElement> : SetBase<TElement>
     {
+        private readonly EqualityComparer<TElement> comparer = EqualityComparer<TElement>.Default;
+
         /// <summary>
         /// Attempts to add an item to this set.
         /// </summary>
@@ -304,7 +306,7 @@ namespace Cistern.Linq
                     return DoAdd(value, hashCode);
                 }
 
-                if (_slots[i]._hashCode == hashCode && EqualityComparer<TElement>.Default.Equals(_slots[i]._value, value))
+                if (_slots[i]._hashCode == hashCode && comparer.Equals(_slots[i]._value, value))
                 {
                     return false;
                 }
@@ -330,7 +332,7 @@ namespace Cistern.Linq
             int last = -1;
             for (int i = _buckets[bucket] - 1; i >= 0; last = i, i = _slots[i]._next)
             {
-                if (_slots[i]._hashCode == hashCode && EqualityComparer<TElement>.Default.Equals(_slots[i]._value, value))
+                if (_slots[i]._hashCode == hashCode && comparer.Equals(_slots[i]._value, value))
                 {
                     if (last < 0)
                     {
@@ -371,6 +373,6 @@ namespace Cistern.Linq
         /// <param name="value">The value to hash.</param>
         /// <returns>The lower 31 bits of the value's hash code.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int InternalGetHashCode(TElement value) => value == null ? 0 : EqualityComparer<TElement>.Default.GetHashCode(value) & 0x7FFFFFFF;
+        private int InternalGetHashCode(TElement value) => value == null ? 0 : comparer.GetHashCode(value) & 0x7FFFFFFF;
     }
 }
