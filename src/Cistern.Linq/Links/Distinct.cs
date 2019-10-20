@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Cistern.Linq.Links
 {
@@ -35,12 +36,44 @@ namespace Cistern.Linq.Links
         Chain<T> ILink<T,T>.Compose(Chain<T> activity) =>
             new Activity(activity);
 
-        sealed class Activity : Activity<T, T>
+        sealed class Activity
+            : Activity<T, T>
+            , Optimizations.IHeadStart<T>
         {
             private SetDefaultComparer<T> _seen;
 
             public Activity(Chain<T> next) : base(next) =>
                 _seen = new SetDefaultComparer<T>();
+
+            ChainStatus Optimizations.IHeadStart<T>.Execute(ReadOnlySpan<T> source)
+            {
+                ChainStatus status = ChainStatus.Flow;
+                foreach (var input in source)
+                {
+                    if (_seen.Add(input))
+                    { 
+                        status = Next(input);
+                        if (status.IsStopped())
+                            break;
+                    }
+                }
+                return status;
+            }
+
+            ChainStatus Optimizations.IHeadStart<T>.Execute<Enumerable, Enumerator>(Enumerable source)
+            {
+                ChainStatus status = ChainStatus.Flow;
+                foreach (var input in source)
+                {
+                    if (_seen.Add(input))
+                    {
+                        status = Next(input);
+                        if (status.IsStopped())
+                            break;
+                    }
+                }
+                return status;
+            }
 
             public override ChainStatus ProcessNext(T input) =>
                 _seen.Add(input) ? Next(input) : ChainStatus.Filter;
