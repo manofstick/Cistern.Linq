@@ -6,19 +6,19 @@ using System.Text;
 namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 {
     /*
-    |      Method | NumberOfItems |         Mean |       Error |      StdDev | Ratio | RatioSD |   Gen 0 | Gen 1 | Gen 2 | Allocated |
-    |------------ |-------------- |-------------:|------------:|------------:|------:|--------:|--------:|------:|------:|----------:|
-    |  SystemLinq |             0 |     53.18 ns |   0.5987 ns |   0.5601 ns |  1.00 |    0.00 |  0.0178 |     - |     - |      56 B |
-    | CisternLinq |             0 |     64.26 ns |   0.5131 ns |   0.4549 ns |  1.21 |    0.02 |  0.0178 |     - |     - |      56 B |
-    |             |               |              |             |             |       |         |         |       |       |           |
-    |  SystemLinq |             1 |    139.36 ns |   2.0147 ns |   1.8845 ns |  1.00 |    0.00 |  0.1044 |     - |     - |     328 B |
-    | CisternLinq |             1 |    208.62 ns |   2.8403 ns |   2.6568 ns |  1.50 |    0.02 |  0.1376 |     - |     - |     432 B |
-    |             |               |              |             |             |       |         |         |       |       |           |
-    |  SystemLinq |            10 |    319.64 ns |   4.0156 ns |   3.7562 ns |  1.00 |    0.00 |  0.2036 |     - |     - |     640 B |
-    | CisternLinq |            10 |    401.95 ns |   4.7639 ns |   4.2231 ns |  1.26 |    0.02 |  0.2599 |     - |     - |     816 B |
-    |             |               |              |             |             |       |         |         |       |       |           |
-    |  SystemLinq |          1000 | 71,615.09 ns | 884.0836 ns | 826.9723 ns |  1.00 |    0.00 |  8.9111 |     - |     - |   28360 B |
-    | CisternLinq |          1000 | 65,952.84 ns | 945.0235 ns | 883.9756 ns |  0.92 |    0.02 | 11.5967 |     - |     - |   36456 B |
+    |      Method | NumberOfItems |         Mean |       Error |      StdDev | Ratio | RatioSD |  Gen 0 | Gen 1 | Gen 2 | Allocated |
+    |------------ |-------------- |-------------:|------------:|------------:|------:|--------:|-------:|------:|------:|----------:|
+    |  SystemLinq |             0 |     52.78 ns |   0.7952 ns |   0.7438 ns |  1.00 |    0.00 | 0.0178 |     - |     - |      56 B |
+    | CisternLinq |             0 |     65.55 ns |   1.3331 ns |   1.1817 ns |  1.24 |    0.03 | 0.0178 |     - |     - |      56 B |
+    |             |               |              |             |             |       |         |        |       |       |           |
+    |  SystemLinq |             1 |    141.30 ns |   1.9586 ns |   1.6356 ns |  1.00 |    0.00 | 0.1044 |     - |     - |     328 B |
+    | CisternLinq |             1 |    203.17 ns |   3.0812 ns |   2.8822 ns |  1.44 |    0.02 | 0.1273 |     - |     - |     400 B |
+    |             |               |              |             |             |       |         |        |       |       |           |
+    |  SystemLinq |            10 |    320.91 ns |   2.7937 ns |   2.6132 ns |  1.00 |    0.00 | 0.2036 |     - |     - |     640 B |
+    | CisternLinq |            10 |    395.58 ns |   5.8237 ns |   5.4475 ns |  1.23 |    0.02 | 0.2265 |     - |     - |     712 B |
+    |             |               |              |             |             |       |         |        |       |       |           |
+    |  SystemLinq |          1000 | 73,771.50 ns | 891.7868 ns | 744.6824 ns |  1.00 |    0.00 | 8.9111 |     - |     - |   28360 B |
+    | CisternLinq |          1000 | 65,500.02 ns | 734.7518 ns | 687.2873 ns |  0.89 |    0.01 | 9.0332 |     - |     - |   28432 B |
     */
     [CoreJob, MemoryDiagnoser]
 	public class OrderByAscendingBenchmark : NumericBenchmarkBase

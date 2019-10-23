@@ -34,14 +34,20 @@ namespace Cistern.Linq.Consumables
             if (buffer.Length == 0)
                 return Empty<TElement>.Instance;
 
-            var results = new TElement[buffer.Length];
             int[] map = SortedMap(buffer);
-            for (int i = 0; i < map.Length && i < results.Length; i++)
+            for (int i = 0; i < map.Length && i < buffer.Length; i++)
             {
-                results[i] = buffer[map[i]];
+                var j = map[i];
+                while (j < i)
+                    j = map[j];
+                if (i == j)
+                    continue;
+                var tmp = buffer[j];
+                buffer[j] = buffer[i];
+                buffer[i] = tmp;
             }
 
-            return new Array<TElement, TElement>(results, 0, results.Length, null);
+            return new Array<TElement, TElement>(buffer, 0, buffer.Length, null);
         }
 
         internal IEnumerator<TElement> GetEnumerator(int minIdx, int maxIdx)
