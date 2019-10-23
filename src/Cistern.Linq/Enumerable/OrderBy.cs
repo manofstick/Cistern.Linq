@@ -10,16 +10,16 @@ namespace Cistern.Linq
     public static partial class Enumerable
     {
         public static System.Linq.IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) =>
-            new OrderedEnumerable<TSource, TKey>(source, keySelector, null, false, null);
+            new Consumables.OrderBy<TSource, TKey>(source, keySelector, null, false, null);
 
         public static System.Linq.IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer) =>
-            new OrderedEnumerable<TSource, TKey>(source, keySelector, comparer, false, null);
+            new Consumables.OrderBy<TSource, TKey>(source, keySelector, comparer, false, null);
 
         public static System.Linq.IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) =>
-            new OrderedEnumerable<TSource, TKey>(source, keySelector, null, true, null);
+            new Consumables.OrderBy<TSource, TKey>(source, keySelector, null, true, null);
 
         public static System.Linq.IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer) =>
-            new OrderedEnumerable<TSource, TKey>(source, keySelector, comparer, true, null);
+            new Consumables.OrderBy<TSource, TKey>(source, keySelector, comparer, true, null);
 
         public static System.Linq.IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(this System.Linq.IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector)
         {

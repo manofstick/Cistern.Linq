@@ -1,14 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 
-namespace Cistern.Linq
+namespace Cistern.Linq.Consumables
 {
-    internal abstract partial class OrderedEnumerable<TElement> : System.Linq.IOrderedEnumerable<TElement>
+    abstract class OrderBy<TElement>
+        : Consumable<TElement>
+        , System.Linq.IOrderedEnumerable<TElement>
     {
         internal IEnumerable<TElement> _source;
 
@@ -17,7 +14,7 @@ namespace Cistern.Linq
         private int[] SortedMap(Buffer<TElement> buffer, int minIdx, int maxIdx) =>
             GetEnumerableSorter().Sort(buffer._items, buffer._count, minIdx, maxIdx);
 
-        public IEnumerator<TElement> GetEnumerator()
+        public override IEnumerator<TElement> GetEnumerator()
         {
             Buffer<TElement> buffer = new Buffer<TElement>(_source);
             if (buffer._count > 0)
@@ -65,86 +62,80 @@ namespace Cistern.Linq
 
         internal abstract CachingComparer<TElement> GetComparer(CachingComparer<TElement> childComparer);
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
         System.Linq.IOrderedEnumerable<TElement> System.Linq.IOrderedEnumerable<TElement>.CreateOrderedEnumerable<TKey>(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending) =>
-            new OrderedEnumerable<TElement, TKey>(_source, keySelector, comparer, @descending, this);
+            new OrderBy<TElement, TKey>(_source, keySelector, comparer, @descending, this);
 
         public TElement TryGetFirst(Func<TElement, bool> predicate, out bool found)
         {
             CachingComparer<TElement> comparer = GetComparer();
-            using (IEnumerator<TElement> e = _source.GetEnumerator())
+            using IEnumerator<TElement> e = _source.GetEnumerator();
+            TElement value;
+            do
             {
-                TElement value;
-                do
+                if (!e.MoveNext())
                 {
-                    if (!e.MoveNext())
-                    {
-                        found = false;
-                        return default(TElement);
-                    }
-
-                    value = e.Current;
-                }
-                while (!predicate(value));
-
-                comparer.SetElement(value);
-                while (e.MoveNext())
-                {
-                    TElement x = e.Current;
-                    if (predicate(x) && comparer.Compare(x, true) < 0)
-                    {
-                        value = x;
-                    }
+                    found = false;
+                    return default;
                 }
 
-                found = true;
-                return value;
+                value = e.Current;
             }
+            while (!predicate(value));
+
+            comparer.SetElement(value);
+            while (e.MoveNext())
+            {
+                TElement x = e.Current;
+                if (predicate(x) && comparer.Compare(x, true) < 0)
+                {
+                    value = x;
+                }
+            }
+
+            found = true;
+            return value;
         }
 
         public TElement TryGetLast(Func<TElement, bool> predicate, out bool found)
         {
             CachingComparer<TElement> comparer = GetComparer();
-            using (IEnumerator<TElement> e = _source.GetEnumerator())
+            using IEnumerator<TElement> e = _source.GetEnumerator();
+            TElement value;
+            do
             {
-                TElement value;
-                do
+                if (!e.MoveNext())
                 {
-                    if (!e.MoveNext())
-                    {
-                        found = false;
-                        return default(TElement);
-                    }
-
-                    value = e.Current;
-                }
-                while (!predicate(value));
-
-                comparer.SetElement(value);
-                while (e.MoveNext())
-                {
-                    TElement x = e.Current;
-                    if (predicate(x) && comparer.Compare(x, false) >= 0)
-                    {
-                        value = x;
-                    }
+                    found = false;
+                    return default;
                 }
 
-                found = true;
-                return value;
+                value = e.Current;
             }
+            while (!predicate(value));
+
+            comparer.SetElement(value);
+            while (e.MoveNext())
+            {
+                TElement x = e.Current;
+                if (predicate(x) && comparer.Compare(x, false) >= 0)
+                {
+                    value = x;
+                }
+            }
+
+            found = true;
+            return value;
         }
     }
 
-    internal sealed class OrderedEnumerable<TElement, TKey> : OrderedEnumerable<TElement>
+    internal sealed class OrderBy<TElement, TKey> : OrderBy<TElement>
     {
-        private readonly OrderedEnumerable<TElement> _parent;
+        private readonly OrderBy<TElement> _parent;
         private readonly Func<TElement, TKey> _keySelector;
         private readonly IComparer<TKey> _comparer;
         private readonly bool _descending;
 
-        internal OrderedEnumerable(IEnumerable<TElement> source, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending, OrderedEnumerable<TElement> parent)
+        internal OrderBy(IEnumerable<TElement> source, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending, OrderBy<TElement> parent)
         {
             if (source is null)
             {
@@ -179,8 +170,23 @@ namespace Cistern.Linq
                 ? new CachingComparer<TElement, TKey>(_keySelector, _comparer, _descending)
                 : new CachingComparerWithChild<TElement, TKey>(_keySelector, _comparer, _descending, childComparer);
             return _parent != null ? _parent.GetComparer(cmp) : cmp;
+
         }
+
+        // TODO: Just piggy-backing on standard Enumerables here - can probably do better
+        public override void Consume(Consumer<TElement> consumer) =>
+            Cistern.Linq.Consume.Enumerable.Invoke<Optimizations.IEnumerableEnumerable<TElement>, System.Collections.Generic.IEnumerator<TElement>, TElement>(new Optimizations.IEnumerableEnumerable<TElement>(this), consumer);
+
+        public override IConsumable<TElement> AddTail(ILink<TElement, TElement> transform) =>
+            new Enumerable<Optimizations.IEnumerableEnumerable<TElement>, System.Collections.Generic.IEnumerator<TElement>, TElement, TElement>(new Optimizations.IEnumerableEnumerable<TElement>(this), transform);
+
+        public override IConsumable<U> AddTail<U>(ILink<TElement, U> transform) =>
+            new Enumerable<Optimizations.IEnumerableEnumerable<TElement>, System.Collections.Generic.IEnumerator<TElement>, TElement, U>(new Optimizations.IEnumerableEnumerable<TElement>(this), transform);
+
+        public override IConsumable<V> ReplaceTailLink<Unknown, V>(ILink<Unknown, V> newLink) => throw new NotSupportedException();
+        public override object TailLink => null;
     }
+
 
     // A comparer that chains comparisons, and pushes through the last element found to be
     // lower or higher (depending on use), so as to represent the sort of comparisons
@@ -258,6 +264,7 @@ namespace Cistern.Linq
             _child.SetElement(element);
         }
     }
+
 
     internal abstract class EnumerableSorter<TElement>
     {
@@ -358,7 +365,7 @@ namespace Cistern.Linq
             return (_descending != (c > 0)) ? 1 : -1;
         }
 
-        
+
         private int CompareKeys(int index1, int index2) => index1 == index2 ? 0 : CompareAnyKeys(index1, index2);
 
         protected override void QuickSort(int[] keys, int lo, int hi) =>
@@ -520,4 +527,5 @@ namespace Cistern.Linq
             return map[index];
         }
     }
+
 }
