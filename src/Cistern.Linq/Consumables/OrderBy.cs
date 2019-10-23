@@ -1,8 +1,101 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Cistern.Linq.Consumables
 {
+    static class OrderByImpl
+    {
+        public static IEnumerator<TElement> GetEnumerator<TElement>(TElement[] buffer, int[] map)
+        {
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                yield return buffer[map[i]];
+            }
+        }
+    }
+
+    struct OrderByEnumerator<TElement>
+        : IEnumerator<TElement>
+    {
+        private readonly TElement[] buffer;
+        private readonly int[] map;
+
+        int index;
+
+        public OrderByEnumerator(TElement[] buffer, int[] map) =>
+            (this.buffer, this.map, this.index) = (buffer, map, -1);
+
+        public TElement Current => buffer[map[index]];
+
+        object IEnumerator.Current => Current;
+
+        public void Dispose() { }
+
+        public bool MoveNext()
+        {
+            if (++index < buffer.Length)
+            {
+                return true;
+            }
+            --index;
+            return false;
+        }
+
+        public void Reset() => throw new NotSupportedException();
+    }
+
+    struct OrderByEnumerable<TElement>
+        : Optimizations.ITypedEnumerable<TElement, OrderByEnumerator<TElement>>
+    {
+        private readonly TElement[] buffer;
+        private readonly int[] map;
+
+        public OrderByEnumerable(TElement[] buffer, int[] map) =>
+            (this.buffer, this.map) = (buffer, map);
+
+        public IEnumerable<TElement> Source => null;
+
+        public int? TryLength => buffer.Length;
+
+        public OrderByEnumerator<TElement> GetEnumerator() => new OrderByEnumerator<TElement>(buffer, map);
+
+        public bool TryGetSourceAsSpan(out ReadOnlySpan<TElement> readOnlySpan)
+        {
+            readOnlySpan = default;
+            return false;
+        }
+
+        public bool TryLast(out TElement result)
+        {
+            result = default;
+            return false;
+        }
+    }
+
+    abstract class OrderByForced<TElement>
+        : IConsumable<TElement>
+    {
+        private readonly TElement[] buffer;
+        private readonly int[] map;
+
+        public OrderByForced(TElement[] buffer, int[] map) =>
+            (this.buffer, this.map) = (buffer, map);
+
+        public IConsumable<TElement> AddTail(ILink<TElement, TElement> transform) => throw new NotSupportedException();
+
+        public IConsumable<U> AddTail<U>(ILink<TElement, U> transform) => throw new NotSupportedException();
+
+        public void Consume(Consumer<TElement> consumer)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerator<TElement> GetEnumerator() => OrderByImpl.GetEnumerator(buffer, map);
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
     abstract class OrderBy<TElement>
         : Consumable<TElement>
         , System.Linq.IOrderedEnumerable<TElement>
@@ -10,10 +103,12 @@ namespace Cistern.Linq.Consumables
     {
         internal IEnumerable<TElement> _source;
 
-        private int[] SortedMap(TElement[] buffer) => GetEnumerableSorter().Sort(buffer);
+        protected int[] SortedMap(TElement[] buffer) => GetEnumerableSorter().Sort(buffer);
 
+/*
         private int[] SortedMap(TElement[] buffer, int minIdx, int maxIdx) =>
             GetEnumerableSorter().Sort(buffer, minIdx, maxIdx);
+*/
 
         public override IEnumerator<TElement> GetEnumerator()
         {
@@ -21,13 +116,12 @@ namespace Cistern.Linq.Consumables
             if (buffer.Length > 0)
             {
                 int[] map = SortedMap(buffer);
-                for (int i = 0; i < buffer.Length; i++)
-                {
-                    yield return buffer[map[i]];
-                }
+                return OrderByImpl.GetEnumerator(buffer, map);
             }
+            return Empty<TElement>.Instance.GetEnumerator();
         }
 
+#if ORDERBY_FORCE_CREATE_ARRAY
         IConsumable<TElement> Optimizations.IDelayed<TElement>.Force()
         {
             var buffer = _source.ToArray();
@@ -49,33 +143,46 @@ namespace Cistern.Linq.Consumables
 
             return new Array<TElement, TElement>(buffer, 0, buffer.Length, null);
         }
-
-        internal IEnumerator<TElement> GetEnumerator(int minIdx, int maxIdx)
+#else
+        IConsumable<TElement> Optimizations.IDelayed<TElement>.Force()
         {
             var buffer = _source.ToArray();
-            if (buffer.Length > minIdx)
-            {
-                if (buffer.Length <= maxIdx)
-                {
-                    maxIdx = buffer.Length - 1;
-                }
+            if (buffer.Length == 0)
+                return Empty<TElement>.Instance;
 
-                if (minIdx == maxIdx)
-                {
-                    yield return GetEnumerableSorter().ElementAt(buffer, minIdx);
-                }
-                else
-                {
-                    int[] map = SortedMap(buffer, minIdx, maxIdx);
-                    while (minIdx <= maxIdx)
-                    {
-                        yield return buffer[map[minIdx]];
-                        ++minIdx;
-                    }
-                }
-            }
+            int[] map = SortedMap(buffer);
+
+            return new Enumerable<OrderByEnumerable<TElement>, OrderByEnumerator<TElement>, TElement, TElement>(new OrderByEnumerable<TElement>(buffer, map), null);
         }
 
+#endif
+        /*
+                internal IEnumerator<TElement> GetEnumerator(int minIdx, int maxIdx)
+                {
+                    var buffer = _source.ToArray();
+                    if (buffer.Length > minIdx)
+                    {
+                        if (buffer.Length <= maxIdx)
+                        {
+                            maxIdx = buffer.Length - 1;
+                        }
+
+                        if (minIdx == maxIdx)
+                        {
+                            yield return GetEnumerableSorter().ElementAt(buffer, minIdx);
+                        }
+                        else
+                        {
+                            int[] map = SortedMap(buffer, minIdx, maxIdx);
+                            while (minIdx <= maxIdx)
+                            {
+                                yield return buffer[map[minIdx]];
+                                ++minIdx;
+                            }
+                        }
+                    }
+                }
+        */
         System.Linq.IOrderedEnumerable<TElement> System.Linq.IOrderedEnumerable<TElement>.CreateOrderedEnumerable<TKey>(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending) =>
             new OrderBy<TElement, TKey>(_source, keySelector, comparer, @descending, this);
 
@@ -187,19 +294,37 @@ namespace Cistern.Linq.Consumables
 
             return sorter;
         }
-/*
-        internal override CachingComparer<TElement> GetComparer(CachingComparer<TElement> childComparer)
-        {
-            CachingComparer<TElement> cmp = childComparer == null
-                ? new CachingComparer<TElement, TKey>(_keySelector, _comparer, _descending)
-                : new CachingComparerWithChild<TElement, TKey>(_keySelector, _comparer, _descending, childComparer);
-            return _parent != null ? _parent.GetComparer(cmp) : cmp;
+        /*
+                internal override CachingComparer<TElement> GetComparer(CachingComparer<TElement> childComparer)
+                {
+                    CachingComparer<TElement> cmp = childComparer == null
+                        ? new CachingComparer<TElement, TKey>(_keySelector, _comparer, _descending)
+                        : new CachingComparerWithChild<TElement, TKey>(_keySelector, _comparer, _descending, childComparer);
+                    return _parent != null ? _parent.GetComparer(cmp) : cmp;
 
-        }
-*/
+                }
+        */
         // TODO: Just piggy-backing on standard Enumerables here - can probably do better
-        public override void Consume(Consumer<TElement> consumer) =>
-            Cistern.Linq.Consume.Enumerable.Invoke<Optimizations.IEnumerableEnumerable<TElement>, System.Collections.Generic.IEnumerator<TElement>, TElement>(new Optimizations.IEnumerableEnumerable<TElement>(this), consumer);
+        public override void Consume(Consumer<TElement> consumer)
+        {
+            var buffer = _source.ToArray();
+            if (buffer.Length > 0)
+            {
+                int[] map = SortedMap(buffer);
+                Linq.Consume.Enumerable.Invoke<OrderByEnumerable<TElement>, OrderByEnumerator<TElement>, TElement>(new OrderByEnumerable<TElement>(buffer, map), consumer);
+            }
+            else
+            {
+                try
+                {
+                    consumer.ChainComplete(ChainStatus.Filter);
+                }
+                finally
+                {
+                    consumer.ChainDispose();
+                }
+            }
+        }
 
         public override IConsumable<TElement> AddTail(ILink<TElement, TElement> transform) =>
             new Enumerable<Optimizations.IEnumerableEnumerable<TElement>, System.Collections.Generic.IEnumerator<TElement>, TElement, TElement>(new Optimizations.IEnumerableEnumerable<TElement>(this), transform);
@@ -316,7 +441,7 @@ namespace Cistern.Linq.Consumables
 
             return map;
         }
-
+/*
         internal int[] Sort(TElement[] elements, int minIdx, int maxIdx)
         {
             int[] map = ComputeMap(elements);
@@ -333,9 +458,10 @@ namespace Cistern.Linq.Consumables
                 elements[Min(map, elements.Length)] :
                 elements[QuickSelect(map, elements.Length - 1, idx)];
         }
-
+*/
         protected abstract void QuickSort(int[] map, int left, int right);
 
+/*
         // Sorts the k elements between minIdx and maxIdx without sorting all elements
         // Time complexity: O(n + k log k) best and average case. O(n^2) worse case.
         protected abstract void PartialQuickSort(int[] map, int left, int right, int minIdx, int maxIdx);
@@ -345,6 +471,7 @@ namespace Cistern.Linq.Consumables
         protected abstract int QuickSelect(int[] map, int right, int idx);
 
         protected abstract int Min(int[] map, int count);
+*/
         public abstract int Compare(int x, int y);
     }
 
@@ -423,10 +550,12 @@ namespace Cistern.Linq.Consumables
             _next?.ComputeKeys(elements);
         }
 
-        private int CompareKeys(int index1, int index2) => index1 == index2 ? 0 : Compare(index1, index2);
 
         protected override void QuickSort(int[] keys, int lo, int hi) =>
             Array.Sort(keys, lo, hi - lo + 1, this);
+
+/*
+        private int CompareKeys(int index1, int index2) => index1 == index2 ? 0 : Compare(index1, index2);
 
         // Sorts the k elements between minIdx and maxIdx without sorting all elements
         // Time complexity: O(n + k log k) best and average case. O(n^2) worse case.
@@ -581,7 +710,7 @@ namespace Cistern.Linq.Consumables
             }
             return map[index];
         }
-
+*/
         internal static EnumerableSorter<TElement> FactoryCreate(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending, EnumerableSorter<TElement> next) =>
             descending
             ? (EnumerableSorter<TElement>)new DescendingEnumerableSorter<TElement, TKey>(keySelector, comparer, next)
