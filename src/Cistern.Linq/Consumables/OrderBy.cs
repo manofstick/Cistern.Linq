@@ -76,16 +76,17 @@ namespace Cistern.Linq.Consumables
             }
         }
 
+        System.Linq.IOrderedEnumerable<TElement> System.Linq.IOrderedEnumerable<TElement>.CreateOrderedEnumerable<TKey>(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending) =>
+            new OrderBy<TElement, TKey>(_source, keySelector, comparer, @descending, this);
+
         private EnumerableSorter<TElement> GetEnumerableSorter() => GetEnumerableSorter(null);
 
         internal abstract EnumerableSorter<TElement> GetEnumerableSorter(EnumerableSorter<TElement> next);
-
+/*
         private CachingComparer<TElement> GetComparer() => GetComparer(null);
 
         internal abstract CachingComparer<TElement> GetComparer(CachingComparer<TElement> childComparer);
 
-        System.Linq.IOrderedEnumerable<TElement> System.Linq.IOrderedEnumerable<TElement>.CreateOrderedEnumerable<TKey>(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending) =>
-            new OrderBy<TElement, TKey>(_source, keySelector, comparer, @descending, this);
 
         public TElement TryGetFirst(Func<TElement, bool> predicate, out bool found)
         {
@@ -148,6 +149,7 @@ namespace Cistern.Linq.Consumables
             found = true;
             return value;
         }
+*/
     }
 
     internal sealed class OrderBy<TElement, TKey> : OrderBy<TElement>
@@ -177,7 +179,7 @@ namespace Cistern.Linq.Consumables
 
         internal override EnumerableSorter<TElement> GetEnumerableSorter(EnumerableSorter<TElement> next)
         {
-            EnumerableSorter<TElement> sorter = new EnumerableSorter<TElement, TKey>(_keySelector, _comparer, _descending, next);
+            EnumerableSorter<TElement> sorter = EnumerableSorter<TElement, TKey>.FactoryCreate(_keySelector, _comparer, _descending, next);
             if (_parent != null)
             {
                 sorter = _parent.GetEnumerableSorter(sorter);
@@ -185,7 +187,7 @@ namespace Cistern.Linq.Consumables
 
             return sorter;
         }
-
+/*
         internal override CachingComparer<TElement> GetComparer(CachingComparer<TElement> childComparer)
         {
             CachingComparer<TElement> cmp = childComparer == null
@@ -194,7 +196,7 @@ namespace Cistern.Linq.Consumables
             return _parent != null ? _parent.GetComparer(cmp) : cmp;
 
         }
-
+*/
         // TODO: Just piggy-backing on standard Enumerables here - can probably do better
         public override void Consume(Consumer<TElement> consumer) =>
             Cistern.Linq.Consume.Enumerable.Invoke<Optimizations.IEnumerableEnumerable<TElement>, System.Collections.Generic.IEnumerator<TElement>, TElement>(new Optimizations.IEnumerableEnumerable<TElement>(this), consumer);
@@ -209,7 +211,7 @@ namespace Cistern.Linq.Consumables
         public override object TailLink => null;
     }
 
-
+/*
     // A comparer that chains comparisons, and pushes through the last element found to be
     // lower or higher (depending on use), so as to represent the sort of comparisons
     // done by OrderBy().ThenBy() combinations.
@@ -286,18 +288,18 @@ namespace Cistern.Linq.Consumables
             _child.SetElement(element);
         }
     }
-
+*/
 
     internal abstract class EnumerableSorter<TElement>
+        : IComparer<int>
     {
-        internal abstract void ComputeKeys(TElement[] elements, int count);
+        internal abstract void ComputeKeys(TElement[] elements);
 
-        internal abstract int CompareAnyKeys(int index1, int index2);
-
-        private int[] ComputeMap(TElement[] elements, int count)
+        private int[] ComputeMap(TElement[] elements)
         {
-            ComputeKeys(elements, count);
-            int[] map = new int[count];
+            ComputeKeys(elements);
+
+            int[] map = new int[elements.Length];
             for (int i = 0; i < map.Length; i++)
             {
                 map[i] = i;
@@ -308,21 +310,25 @@ namespace Cistern.Linq.Consumables
 
         internal int[] Sort(TElement[] elements)
         {
-            int[] map = ComputeMap(elements, elements.Length);
+            int[] map = ComputeMap(elements);
+
             QuickSort(map, 0, elements.Length - 1);
+
             return map;
         }
 
         internal int[] Sort(TElement[] elements, int minIdx, int maxIdx)
         {
-            int[] map = ComputeMap(elements, elements.Length);
+            int[] map = ComputeMap(elements);
+
             PartialQuickSort(map, 0, elements.Length - 1, minIdx, maxIdx);
+
             return map;
         }
 
         internal TElement ElementAt(TElement[] elements, int idx)
         {
-            int[] map = ComputeMap(elements, elements.Length);
+            int[] map = ComputeMap(elements);
             return idx == 0 ?
                 elements[Min(map, elements.Length)] :
                 elements[QuickSelect(map, elements.Length - 1, idx)];
@@ -339,36 +345,17 @@ namespace Cistern.Linq.Consumables
         protected abstract int QuickSelect(int[] map, int right, int idx);
 
         protected abstract int Min(int[] map, int count);
+        public abstract int Compare(int x, int y);
     }
 
-    internal sealed class EnumerableSorter<TElement, TKey> : EnumerableSorter<TElement>
+    internal sealed class AscendingEnumerableSorter<TElement, TKey>
+        : EnumerableSorter<TElement, TKey>
     {
-        private readonly Func<TElement, TKey> _keySelector;
-        private readonly IComparer<TKey> _comparer;
-        private readonly bool _descending;
-        private readonly EnumerableSorter<TElement> _next;
-        private TKey[] _keys;
+        public AscendingEnumerableSorter(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, EnumerableSorter<TElement> next)
+            : base(keySelector, comparer, next)
+        {}
 
-        internal EnumerableSorter(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending, EnumerableSorter<TElement> next)
-        {
-            _keySelector = keySelector;
-            _comparer = comparer;
-            _descending = descending;
-            _next = next;
-        }
-
-        internal override void ComputeKeys(TElement[] elements, int count)
-        {
-            _keys = new TKey[count];
-            for (int i = 0; i < count; i++)
-            {
-                _keys[i] = _keySelector(elements[i]);
-            }
-
-            _next?.ComputeKeys(elements, count);
-        }
-
-        internal override int CompareAnyKeys(int index1, int index2)
+        public override int Compare(int index1, int index2)
         {
             int c = _comparer.Compare(_keys[index1], _keys[index2]);
             if (c == 0)
@@ -378,22 +365,68 @@ namespace Cistern.Linq.Consumables
                     return index1 - index2; // ensure stability of sort
                 }
 
-                return _next.CompareAnyKeys(index1, index2);
+                return _next.Compare(index1, index2);
             }
 
             // -c will result in a negative value for int.MinValue (-int.MinValue == int.MinValue).
             // Flipping keys earlier is more likely to trigger something strange in a comparer,
             // particularly as it comes to the sort being stable.
-            return (_descending != (c > 0)) ? 1 : -1;
+            return c;
+        }
+    }
+
+    internal sealed class DescendingEnumerableSorter<TElement, TKey>
+        : EnumerableSorter<TElement, TKey>
+    {
+        public DescendingEnumerableSorter(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, EnumerableSorter<TElement> next)
+            : base(keySelector, comparer, next)
+        { }
+
+        public override int Compare(int index1, int index2)
+        {
+            int c = _comparer.Compare(_keys[index1], _keys[index2]);
+
+            if (c < 0) return 1;
+            if (c > 0) return -1;
+
+            if (_next == null)
+            {
+                return index1 - index2; // ensure stability of sort
+            }
+
+            return _next.Compare(index1, index2);
+        }
+    }
+
+    internal abstract class EnumerableSorter<TElement, TKey> : EnumerableSorter<TElement>
+    {
+        protected readonly Func<TElement, TKey> _keySelector;
+        protected readonly IComparer<TKey> _comparer;
+        protected readonly EnumerableSorter<TElement> _next;
+        protected TKey[] _keys;
+
+        internal EnumerableSorter(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, EnumerableSorter<TElement> next)
+        {
+            _keySelector = keySelector;
+            _comparer = comparer;
+            _next = next;
         }
 
+        internal override void ComputeKeys(TElement[] elements)
+        {
+            _keys = new TKey[elements.Length];
+            for (int i = 0; i < _keys.Length; i++)
+            {
+                _keys[i] = _keySelector(elements[i]);
+            }
 
-        private int CompareKeys(int index1, int index2) => index1 == index2 ? 0 : CompareAnyKeys(index1, index2);
+            _next?.ComputeKeys(elements);
+        }
+
+        private int CompareKeys(int index1, int index2) => index1 == index2 ? 0 : Compare(index1, index2);
 
         protected override void QuickSort(int[] keys, int lo, int hi) =>
-            Array.Sort(keys, lo, hi - lo + 1, Comparer<int>.Create(CompareAnyKeys)); // TODO #24115: Remove Create call when delegate-based overload is available
-
-
+            Array.Sort(keys, lo, hi - lo + 1, this);
 
         // Sorts the k elements between minIdx and maxIdx without sorting all elements
         // Time complexity: O(n + k log k) best and average case. O(n^2) worse case.
@@ -548,6 +581,10 @@ namespace Cistern.Linq.Consumables
             }
             return map[index];
         }
-    }
 
+        internal static EnumerableSorter<TElement> FactoryCreate(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending, EnumerableSorter<TElement> next) =>
+            descending
+            ? (EnumerableSorter<TElement>)new DescendingEnumerableSorter<TElement, TKey>(keySelector, comparer, next)
+            : (EnumerableSorter<TElement>)new AscendingEnumerableSorter<TElement, TKey>(keySelector, comparer, next);
+    }
 }

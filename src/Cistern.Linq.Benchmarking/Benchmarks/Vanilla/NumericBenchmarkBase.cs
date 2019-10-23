@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using System;
 
 namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
 {
@@ -16,6 +17,15 @@ namespace Cistern.Linq.Benchmarking.Benchmarks.Numeric
             for (int i = 0; i < NumberOfItems; i++)
             {
                 Numbers[i] = i + 1;
+            }
+
+            var r = new Random(42);
+            for (var i=0; i< Numbers.Length; ++i)
+            {
+                var j = r.Next(i, Numbers.Length);
+                var t = Numbers[i];
+                Numbers[i] = Numbers[j];
+                Numbers[j] = t;
             }
         }
     }
