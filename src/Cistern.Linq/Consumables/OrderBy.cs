@@ -6,48 +6,64 @@ namespace Cistern.Linq.Consumables
     abstract class OrderBy<TElement>
         : Consumable<TElement>
         , System.Linq.IOrderedEnumerable<TElement>
+        , Optimizations.IDelayed<TElement>
     {
         internal IEnumerable<TElement> _source;
 
-        private int[] SortedMap(Buffer<TElement> buffer) => GetEnumerableSorter().Sort(buffer._items, buffer._count);
+        private int[] SortedMap(TElement[] buffer) => GetEnumerableSorter().Sort(buffer);
 
-        private int[] SortedMap(Buffer<TElement> buffer, int minIdx, int maxIdx) =>
-            GetEnumerableSorter().Sort(buffer._items, buffer._count, minIdx, maxIdx);
+        private int[] SortedMap(TElement[] buffer, int minIdx, int maxIdx) =>
+            GetEnumerableSorter().Sort(buffer, minIdx, maxIdx);
 
         public override IEnumerator<TElement> GetEnumerator()
         {
-            Buffer<TElement> buffer = new Buffer<TElement>(_source);
-            if (buffer._count > 0)
+            var buffer = _source.ToArray();
+            if (buffer.Length > 0)
             {
                 int[] map = SortedMap(buffer);
-                for (int i = 0; i < buffer._count; i++)
+                for (int i = 0; i < buffer.Length; i++)
                 {
-                    yield return buffer._items[map[i]];
+                    yield return buffer[map[i]];
                 }
             }
         }
 
+        IConsumable<TElement> Optimizations.IDelayed<TElement>.Force()
+        {
+            var buffer = _source.ToArray();
+            if (buffer.Length == 0)
+                return Empty<TElement>.Instance;
+
+            var results = new TElement[buffer.Length];
+            int[] map = SortedMap(buffer);
+            for (int i = 0; i < map.Length && i < results.Length; i++)
+            {
+                results[i] = buffer[map[i]];
+            }
+
+            return new Array<TElement, TElement>(results, 0, results.Length, null);
+        }
+
         internal IEnumerator<TElement> GetEnumerator(int minIdx, int maxIdx)
         {
-            Buffer<TElement> buffer = new Buffer<TElement>(_source);
-            int count = buffer._count;
-            if (count > minIdx)
+            var buffer = _source.ToArray();
+            if (buffer.Length > minIdx)
             {
-                if (count <= maxIdx)
+                if (buffer.Length <= maxIdx)
                 {
-                    maxIdx = count - 1;
+                    maxIdx = buffer.Length - 1;
                 }
 
                 if (minIdx == maxIdx)
                 {
-                    yield return GetEnumerableSorter().ElementAt(buffer._items, count, minIdx);
+                    yield return GetEnumerableSorter().ElementAt(buffer, minIdx);
                 }
                 else
                 {
                     int[] map = SortedMap(buffer, minIdx, maxIdx);
                     while (minIdx <= maxIdx)
                     {
-                        yield return buffer._items[map[minIdx]];
+                        yield return buffer[map[minIdx]];
                         ++minIdx;
                     }
                 }
@@ -284,26 +300,26 @@ namespace Cistern.Linq.Consumables
             return map;
         }
 
-        internal int[] Sort(TElement[] elements, int count)
+        internal int[] Sort(TElement[] elements)
         {
-            int[] map = ComputeMap(elements, count);
-            QuickSort(map, 0, count - 1);
+            int[] map = ComputeMap(elements, elements.Length);
+            QuickSort(map, 0, elements.Length - 1);
             return map;
         }
 
-        internal int[] Sort(TElement[] elements, int count, int minIdx, int maxIdx)
+        internal int[] Sort(TElement[] elements, int minIdx, int maxIdx)
         {
-            int[] map = ComputeMap(elements, count);
-            PartialQuickSort(map, 0, count - 1, minIdx, maxIdx);
+            int[] map = ComputeMap(elements, elements.Length);
+            PartialQuickSort(map, 0, elements.Length - 1, minIdx, maxIdx);
             return map;
         }
 
-        internal TElement ElementAt(TElement[] elements, int count, int idx)
+        internal TElement ElementAt(TElement[] elements, int idx)
         {
-            int[] map = ComputeMap(elements, count);
+            int[] map = ComputeMap(elements, elements.Length);
             return idx == 0 ?
-                elements[Min(map, count)] :
-                elements[QuickSelect(map, count - 1, idx)];
+                elements[Min(map, elements.Length)] :
+                elements[QuickSelect(map, elements.Length - 1, idx)];
         }
 
         protected abstract void QuickSort(int[] map, int left, int right);
