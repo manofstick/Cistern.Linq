@@ -475,12 +475,41 @@ namespace Cistern.Linq.Consumables
         public abstract int Compare(int x, int y);
     }
 
+    internal sealed class AscendingEnumerableDefaultSorter<TElement, TKey>
+        : EnumerableSorter<TElement, TKey>
+    {
+        private readonly Comparer<TKey> Comparer = Comparer<TKey>.Default;
+
+        public AscendingEnumerableDefaultSorter(Func<TElement, TKey> keySelector, EnumerableSorter<TElement> next)
+            : base(keySelector, Comparer<TKey>.Default, next)
+        {}
+
+        public override int Compare(int index1, int index2)
+        {
+            int c = Comparer.Compare(_keys[index1], _keys[index2]);
+            if (c == 0)
+            {
+                if (_next == null)
+                {
+                    return index1 - index2; // ensure stability of sort
+                }
+
+                return _next.Compare(index1, index2);
+            }
+
+            // -c will result in a negative value for int.MinValue (-int.MinValue == int.MinValue).
+            // Flipping keys earlier is more likely to trigger something strange in a comparer,
+            // particularly as it comes to the sort being stable.
+            return c;
+        }
+    }
+
     internal sealed class AscendingEnumerableSorter<TElement, TKey>
         : EnumerableSorter<TElement, TKey>
     {
         public AscendingEnumerableSorter(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, EnumerableSorter<TElement> next)
             : base(keySelector, comparer, next)
-        {}
+        { }
 
         public override int Compare(int index1, int index2)
         {
@@ -499,6 +528,31 @@ namespace Cistern.Linq.Consumables
             // Flipping keys earlier is more likely to trigger something strange in a comparer,
             // particularly as it comes to the sort being stable.
             return c;
+        }
+    }
+
+    internal sealed class DescendingEnumerableDefaultSorter<TElement, TKey>
+        : EnumerableSorter<TElement, TKey>
+    {
+        private readonly Comparer<TKey> Comparer = Comparer<TKey>.Default;
+
+        public DescendingEnumerableDefaultSorter(Func<TElement, TKey> keySelector, EnumerableSorter<TElement> next)
+            : base(keySelector, Comparer<TKey>.Default, next)
+        { }
+
+        public override int Compare(int index1, int index2)
+        {
+            int c = Comparer.Compare(_keys[index1], _keys[index2]);
+
+            if (c < 0) return 1;
+            if (c > 0) return -1;
+
+            if (_next == null)
+            {
+                return index1 - index2; // ensure stability of sort
+            }
+
+            return _next.Compare(index1, index2);
         }
     }
 
@@ -711,9 +765,18 @@ namespace Cistern.Linq.Consumables
             return map[index];
         }
 */
-        internal static EnumerableSorter<TElement> FactoryCreate(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending, EnumerableSorter<TElement> next) =>
-            descending
-            ? (EnumerableSorter<TElement>)new DescendingEnumerableSorter<TElement, TKey>(keySelector, comparer, next)
-            : (EnumerableSorter<TElement>)new AscendingEnumerableSorter<TElement, TKey>(keySelector, comparer, next);
+        internal static EnumerableSorter<TElement> FactoryCreate(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending, EnumerableSorter<TElement> next)
+        {
+            var isDefault = comparer == null || comparer == Comparer<TKey>.Default;
+            if (descending)
+            {
+                if (isDefault)
+                    return new DescendingEnumerableDefaultSorter<TElement, TKey>(keySelector, next);
+                return new DescendingEnumerableSorter<TElement, TKey>(keySelector, comparer, next);
+            }
+            if (isDefault)
+                return new AscendingEnumerableDefaultSorter<TElement, TKey>(keySelector, next);
+            return new AscendingEnumerableSorter<TElement, TKey>(keySelector, comparer, next);
+        }
     }
 }
