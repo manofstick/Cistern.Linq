@@ -156,6 +156,7 @@ namespace Cistern.Linq.Consumables
 
     internal class OrderBySimple<TElement, TKey>
         : OrderByCommon<TElement, TKey>
+        , IEnumerableSorter<TElement>
     {
         internal OrderBySimple(IEnumerable<TElement> source, Func<TElement, TKey> keySelector, OrderBy<TElement> parent)
             : base(source, keySelector, parent)
@@ -175,18 +176,69 @@ namespace Cistern.Linq.Consumables
         public override System.Linq.IOrderedEnumerable<TElement> CreateOrderedEnumerable<TKey2>(Func<TElement, TKey2> keySelector, IComparer<TKey2> comparer, bool descending)
         {
             if (!descending && (comparer == null || ReferenceEquals(comparer, Comparer<TKey2>.Default)))
-                return new OrderBySimple<TElement, TKey2>(_source, keySelector, this);
+                return new ThenBySimple<TElement, TKey, TKey2>(_source, _keySelector, keySelector, this);
 
             return new OrderBy<TElement, TKey2>(_source, keySelector, comparer, @descending, this);
         }
 
-        /* TBD 
-        protected override IEnumerableSorter<TElement> GetEnumerableSorter()
+        protected override IEnumerableSorter<TElement> GetEnumerableSorter() => this;
+
+        protected virtual TElement[] GetSortedElements(IEnumerable<TElement> elements)
         {
-            // here we'll do a faster sorter...
+            var data = elements.ToArray();
+            var key = new (TKey, int)[data.Length];
+            for (var i = 0; i < data.Length && i < key.Length; ++i)
+                key[i] = (_keySelector(data[i]), i);
+            Array.Sort(key, data);
+            return data;
         }
-        */
+
+        public IEnumerator<TElement> GetEnumerator(IEnumerable<TElement> elements) =>
+            ((IEnumerable<TElement>)GetSortedElements(elements)).GetEnumerator();
+        
+        public IConsumable<TElement> Force(IEnumerable<TElement> elements)
+        {
+            var data = GetSortedElements(elements);
+            return new Array<TElement, TElement>(data, 0, data.Length, null);
+        }
+
+        public void Consume(IEnumerable<TElement> elements, Consumer<TElement> consumer)
+        {
+            var data = GetSortedElements(elements);
+            Cistern.Linq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<TElement>(data, 0, data.Length), Links.Identity<TElement>.Instance, consumer);
+        }
+
+        public int Compare(int x, int y) => throw new NotSupportedException();
+        public void ComputeKeys(TElement[] elements) => throw new NotSupportedException();
     }
+
+    internal class ThenBySimple<TElement, TKey1, TKey2>
+        : OrderBySimple<TElement, TKey1>
+    {
+        Func<TElement, TKey2> _key2Selector;
+
+        internal ThenBySimple(IEnumerable<TElement> source, Func<TElement, TKey1> key1Selector, Func<TElement, TKey2> key2Selector, OrderBy<TElement> parent)
+            : base(source, key1Selector, parent)
+        {
+            _key2Selector = key2Selector;
+        }
+
+        protected override TElement[] GetSortedElements(IEnumerable<TElement> elements)
+        {
+            var data = elements.ToArray();
+            var key = new (TKey1, TKey2, int)[data.Length];
+            for (var i = 0; i < data.Length && i < key.Length; ++i)
+                key[i] = (_keySelector(data[i]), _key2Selector(data[i]), i);
+            Array.Sort(key, data);
+            return data;
+        }
+
+        // can possibly go deeper?
+        public override System.Linq.IOrderedEnumerable<TElement> CreateOrderedEnumerable<TKey3>(Func<TElement, TKey3> keySelector, IComparer<TKey3> comparer, bool descending) =>
+            new OrderBy<TElement, TKey3>(_source, keySelector, comparer, @descending, this);
+    }
+
+
     internal class OrderBy<TElement, TKey> 
         : OrderByCommon<TElement, TKey>
     {
