@@ -154,6 +154,99 @@ namespace Cistern.Linq.Consumables
         }
     }
 
+    abstract class IndexSorter<TElement>
+    {
+        public abstract void IndexSort(TElement[] data, int[] indexes, int startIdx, int count);
+        public abstract void Initialize(int size);
+    }
+
+    class IndexSorterTail<TElement>
+        : IndexSorter<TElement>
+    {
+        public static IndexSorter<TElement> Instance { get; } = new IndexSorterTail<TElement>();
+
+        private IndexSorterTail() { }
+
+        public override void IndexSort(TElement[] data, int[] indexes, int startIdx, int count) => Array.Sort(indexes, startIdx, count);
+        public override void Initialize(int size) {}
+    }
+
+    abstract class IndexSorterChain<TElement> : IndexSorter<TElement>
+    {
+        protected IndexSorter<TElement> lower;
+        public IndexSorterChain(IndexSorter<TElement> lower) => this.lower = lower;
+    }
+
+    class IndexSorterKeyed<TElement, TKey>
+        : IndexSorterChain<TElement>
+    {
+        readonly IComparer<TKey> comparer;
+        readonly Func<TElement, TKey> keySelector;
+        
+        TKey[] keys;
+
+        public override void Initialize(int size)
+        {
+            keys = new TKey[size];
+            lower.Initialize(size);
+        }
+
+        public IndexSorterKeyed(Func<TElement, TKey> keySelector, IComparer<TKey> comparer, IndexSorter<TElement> lower)
+            : base(lower)
+        {
+            this.keySelector = keySelector;
+            this.comparer = comparer;
+        }
+
+        public int[] StableSortedIndexes(TElement[] data)
+        {
+            var size = data.Length;
+            Initialize(size);
+            var indexes = new int[size];
+            IndexSort(data, indexes, 0, size);
+            return indexes;
+        }
+
+        public override void IndexSort(TElement[] data, int[] indexes, int startIdx, int count)
+        {
+            var exclusiveEndIdx = startIdx + count;
+
+            // copy the keys that we need
+            for (var idx = startIdx; idx < exclusiveEndIdx; ++idx)
+            {
+                keys[idx] = keySelector(data[idx]);
+                indexes[idx] = idx;
+            }
+
+            // unstable sort
+            Array.Sort(keys, indexes, comparer); 
+
+            // now find duplicate keys, and go to the lower level to sort
+            var (examplar, examplarIdx) = (keys[startIdx], startIdx);
+
+            int batchCount;
+            for (var idx = startIdx+1; idx < exclusiveEndIdx; ++idx)
+            {
+                if (comparer.Compare(examplar, keys[idx]) != 0)
+                {
+                    batchCount = idx - examplarIdx;
+                    if (batchCount > 1)
+                    {
+                        lower.IndexSort(data, indexes, examplarIdx, batchCount);
+                    }
+                    (examplar, examplarIdx) = (keys[idx], idx);
+                }
+            }
+
+            // handle the remainders
+            batchCount = exclusiveEndIdx - examplarIdx;
+            if (batchCount > 1)
+            {
+                lower.IndexSort(data, indexes, examplarIdx, batchCount);
+            }
+        }
+    }
+
     internal class OrderBySimple<TElement, TKey>
         : OrderByCommon<TElement, TKey>
         , IEnumerableSorter<TElement>
@@ -186,40 +279,9 @@ namespace Cistern.Linq.Consumables
 
         internal int[] Sort(TElement[] data)
         {
-            var keys = new TKey[data.Length];
-            var indexes = new int[data.Length];
-            for (var i = 0; i < data.Length && i < keys.Length; ++i)
-            {
-                keys[i] = _keySelector(data[i]);
-                indexes[i] = i;
-            }
-
-            Array.Sort(keys, indexes);
-
-            var comp = Comparer<TKey>.Default;
-            var startIdx = 0;
-            var startItem = keys[startIdx];
-            for (var i = 1; i < data.Length; ++i)
-            {
-                if (comp.Compare(startItem, keys[i]) == 0)
-                    continue;
-
-                var count = i - startIdx;
-                if (count > 1)
-                {
-                    Array.Sort(indexes, startIdx, count);
-                }
-
-                startIdx = i;
-                startItem = keys[i];
-            }
-            var remaining = data.Length - startIdx;
-            if (remaining > 1)
-            {
-                Array.Sort(indexes, startIdx, remaining);
-            }
-
-            return indexes;
+            var tail = IndexSorterTail<TElement>.Instance;
+            var sorter = new IndexSorterKeyed<TElement, TKey>(_keySelector, Comparer<TKey>.Default, tail);
+            return sorter.StableSortedIndexes(data);
         }
 
         // TODO: These implementations are duplicates, so clean...
@@ -256,14 +318,8 @@ namespace Cistern.Linq.Consumables
             }
             else
             {
-                try
-                {
-                    consumer.ChainComplete(ChainStatus.Filter);
-                }
-                finally
-                {
-                    consumer.ChainDispose();
-                }
+                try { consumer.ChainComplete(ChainStatus.Filter); }
+                finally { consumer.ChainDispose(); }
             }
         }
         public int Compare(int x, int y) => throw new NotSupportedException();
