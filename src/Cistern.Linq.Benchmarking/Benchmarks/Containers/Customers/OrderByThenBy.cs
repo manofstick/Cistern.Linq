@@ -6,97 +6,97 @@ using DesiredShape = System.Collections.Generic.List<Cistern.Linq.Benchmarking.D
 namespace Cistern.Linq.Benchmarking.Benchmarks.Containers.Customers
 {
     /*
-    |      Method |  ContainerType | CustomerCount |           Mean |         Error |        StdDev | Ratio | RatioSD |   Gen 0 | Gen 1 | Gen 2 | Allocated |
-    |------------ |--------------- |-------------- |---------------:|--------------:|--------------:|------:|--------:|--------:|------:|------:|----------:|
-    |  SystemLinq |          Array |             0 |       136.2 ns |      1.290 ns |      1.207 ns |  1.00 |    0.00 |  0.0455 |     - |     - |     144 B |
-    | CisternLinq |          Array |             0 |       250.1 ns |      3.702 ns |      3.282 ns |  1.84 |    0.03 |  0.0658 |     - |     - |     208 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |          Array |             1 |       253.8 ns |      3.953 ns |      3.697 ns |  1.00 |    0.00 |  0.1602 |     - |     - |     504 B |
-    | CisternLinq |          Array |             1 |       277.5 ns |      3.965 ns |      3.709 ns |  1.09 |    0.02 |  0.0939 |     - |     - |     296 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |          Array |            10 |     1,258.3 ns |     15.198 ns |     14.216 ns |  1.00 |    0.00 |  0.2823 |     - |     - |     888 B |
-    | CisternLinq |          Array |            10 |     1,419.4 ns |     16.139 ns |     15.097 ns |  1.13 |    0.02 |  0.2060 |     - |     - |     656 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |          Array |           100 |    51,195.6 ns |    501.603 ns |    469.200 ns |  1.00 |    0.00 |  1.2207 |     - |     - |    4128 B |
-    | CisternLinq |          Array |           100 |    59,197.3 ns |    687.412 ns |    643.006 ns |  1.16 |    0.02 |  1.3428 |     - |     - |    4256 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |          Array |          1000 |   819,168.2 ns | 13,743.875 ns | 12,856.029 ns |  1.00 |    0.00 | 10.7422 |     - |     - |   36528 B |
-    | CisternLinq |          Array |          1000 |   951,299.5 ns | 13,780.694 ns | 12,890.470 ns |  1.16 |    0.03 | 12.6953 |     - |     - |   40256 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |           List |             0 |       111.2 ns |      2.199 ns |      2.444 ns |  1.00 |    0.00 |  0.0458 |     - |     - |     144 B |
-    | CisternLinq |           List |             0 |       223.8 ns |      3.845 ns |      3.597 ns |  2.02 |    0.06 |  0.0660 |     - |     - |     208 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |           List |             1 |       234.6 ns |      3.320 ns |      3.106 ns |  1.00 |    0.00 |  0.1602 |     - |     - |     504 B |
-    | CisternLinq |           List |             1 |       258.2 ns |      3.884 ns |      3.633 ns |  1.10 |    0.02 |  0.0939 |     - |     - |     296 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |           List |            10 |     1,240.2 ns |     19.207 ns |     17.027 ns |  1.00 |    0.00 |  0.2823 |     - |     - |     888 B |
-    | CisternLinq |           List |            10 |     1,394.8 ns |     14.378 ns |     13.449 ns |  1.13 |    0.02 |  0.2079 |     - |     - |     656 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |           List |           100 |    49,394.2 ns |    533.079 ns |    498.642 ns |  1.00 |    0.00 |  1.2817 |     - |     - |    4128 B |
-    | CisternLinq |           List |           100 |    53,855.2 ns |    664.352 ns |    621.435 ns |  1.09 |    0.02 |  1.3428 |     - |     - |    4256 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |           List |          1000 |   872,110.6 ns |  4,126.229 ns |  3,859.677 ns |  1.00 |    0.00 | 10.7422 |     - |     - |   36528 B |
-    | CisternLinq |           List |          1000 | 1,001,595.1 ns | 16,940.555 ns | 15,846.206 ns |  1.15 |    0.02 | 11.7188 |     - |     - |   40256 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |     Enumerable |             0 |       132.9 ns |      1.172 ns |      1.097 ns |  1.00 |    0.00 |  0.0663 |     - |     - |     208 B |
-    | CisternLinq |     Enumerable |             0 |       368.9 ns |      5.048 ns |      4.721 ns |  2.78 |    0.05 |  0.1016 |     - |     - |     320 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |     Enumerable |             1 |       256.0 ns |      3.344 ns |      3.128 ns |  1.00 |    0.00 |  0.1884 |     - |     - |     592 B |
-    | CisternLinq |     Enumerable |             1 |       431.6 ns |      6.095 ns |      5.702 ns |  1.69 |    0.03 |  0.1478 |     - |     - |     464 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |     Enumerable |            10 |     1,461.5 ns |     12.016 ns |     11.239 ns |  1.00 |    0.00 |  0.3624 |     - |     - |    1144 B |
-    | CisternLinq |     Enumerable |            10 |     1,844.9 ns |     27.237 ns |     25.477 ns |  1.26 |    0.02 |  0.3185 |     - |     - |    1000 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |     Enumerable |           100 |    49,381.8 ns |    735.381 ns |    614.076 ns |  1.00 |    0.00 |  1.6479 |     - |     - |    5528 B |
-    | CisternLinq |     Enumerable |           100 |    56,392.8 ns |    744.376 ns |    696.290 ns |  1.14 |    0.02 |  1.7700 |     - |     - |    5568 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |     Enumerable |          1000 |   861,537.5 ns |  9,176.638 ns |  8,583.833 ns |  1.00 |    0.00 | 13.6719 |     - |     - |   45136 B |
-    | CisternLinq |     Enumerable |          1000 |   999,532.8 ns | 12,517.752 ns | 11,709.113 ns |  1.16 |    0.01 | 13.6719 |     - |     - |   48896 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq | ImmutableArray |             0 |       118.2 ns |      1.755 ns |      1.642 ns |  1.00 |    0.00 |  0.0455 |     - |     - |     144 B |
-    | CisternLinq | ImmutableArray |             0 |       242.9 ns |      4.305 ns |      4.027 ns |  2.06 |    0.05 |  0.0658 |     - |     - |     208 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq | ImmutableArray |             1 |       238.8 ns |      3.461 ns |      3.238 ns |  1.00 |    0.00 |  0.1602 |     - |     - |     504 B |
-    | CisternLinq | ImmutableArray |             1 |       269.8 ns |      2.876 ns |      2.690 ns |  1.13 |    0.02 |  0.0939 |     - |     - |     296 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq | ImmutableArray |            10 |     1,196.7 ns |     14.652 ns |     13.705 ns |  1.00 |    0.00 |  0.2823 |     - |     - |     888 B |
-    | CisternLinq | ImmutableArray |            10 |     1,497.0 ns |     15.829 ns |     14.806 ns |  1.25 |    0.02 |  0.2060 |     - |     - |     656 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq | ImmutableArray |           100 |    47,563.2 ns |    435.634 ns |    407.492 ns |  1.00 |    0.00 |  1.2817 |     - |     - |    4128 B |
-    | CisternLinq | ImmutableArray |           100 |    57,340.0 ns |    649.951 ns |    607.965 ns |  1.21 |    0.02 |  1.3428 |     - |     - |    4256 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq | ImmutableArray |          1000 |   831,891.5 ns | 11,674.595 ns | 10,920.424 ns |  1.00 |    0.00 | 10.7422 |     - |     - |   36528 B |
-    | CisternLinq | ImmutableArray |          1000 | 1,007,509.5 ns | 14,671.490 ns | 13,723.720 ns |  1.21 |    0.02 | 11.7188 |     - |     - |   40256 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |  ImmutableList |             0 |       128.9 ns |      1.265 ns |      1.121 ns |  1.00 |    0.00 |  0.0455 |     - |     - |     144 B |
-    | CisternLinq |  ImmutableList |             0 |       242.0 ns |      3.807 ns |      3.561 ns |  1.88 |    0.03 |  0.0663 |     - |     - |     208 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |  ImmutableList |             1 |       569.2 ns |      8.791 ns |      8.223 ns |  1.00 |    0.00 |  0.1602 |     - |     - |     504 B |
-    | CisternLinq |  ImmutableList |             1 |       573.2 ns |      5.808 ns |      5.432 ns |  1.01 |    0.02 |  0.0935 |     - |     - |     296 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |  ImmutableList |            10 |     2,257.9 ns |     31.535 ns |     29.498 ns |  1.00 |    0.00 |  0.2823 |     - |     - |     888 B |
-    | CisternLinq |  ImmutableList |            10 |     2,520.0 ns |     31.848 ns |     29.791 ns |  1.12 |    0.02 |  0.2060 |     - |     - |     656 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |  ImmutableList |           100 |    54,663.5 ns |    433.268 ns |    384.081 ns |  1.00 |    0.00 |  1.2817 |     - |     - |    4128 B |
-    | CisternLinq |  ImmutableList |           100 |    61,824.3 ns |    947.243 ns |    886.052 ns |  1.13 |    0.02 |  1.3428 |     - |     - |    4256 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |  ImmutableList |          1000 |   946,660.0 ns |  8,736.656 ns |  7,295.504 ns |  1.00 |    0.00 | 10.7422 |     - |     - |   36528 B |
-    | CisternLinq |  ImmutableList |          1000 | 1,039,206.7 ns | 12,892.203 ns | 12,059.375 ns |  1.10 |    0.01 | 11.7188 |     - |     - |   40256 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |     FSharpList |             0 |       126.8 ns |      1.598 ns |      1.494 ns |  1.00 |    0.00 |  0.0587 |     - |     - |     184 B |
-    | CisternLinq |     FSharpList |             0 |       390.6 ns |      4.624 ns |      4.325 ns |  3.08 |    0.04 |  0.0811 |     - |     - |     256 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |     FSharpList |             1 |       254.7 ns |      3.370 ns |      3.152 ns |  1.00 |    0.00 |  0.1807 |     - |     - |     568 B |
-    | CisternLinq |     FSharpList |             1 |       451.3 ns |      6.072 ns |      5.679 ns |  1.77 |    0.03 |  0.1273 |     - |     - |     400 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |     FSharpList |            10 |     1,400.4 ns |     18.549 ns |     17.351 ns |  1.00 |    0.00 |  0.3567 |     - |     - |    1120 B |
-    | CisternLinq |     FSharpList |            10 |     1,973.8 ns |     33.094 ns |     30.957 ns |  1.41 |    0.03 |  0.2975 |     - |     - |     936 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |     FSharpList |           100 |    47,805.8 ns |    631.114 ns |    590.345 ns |  1.00 |    0.00 |  1.6479 |     - |     - |    5504 B |
-    | CisternLinq |     FSharpList |           100 |    55,731.4 ns |    830.317 ns |    776.679 ns |  1.17 |    0.02 |  1.7090 |     - |     - |    5504 B |
-    |             |                |               |                |               |               |       |         |         |       |       |           |
-    |  SystemLinq |     FSharpList |          1000 |   881,736.5 ns | 10,465.884 ns |  9,789.795 ns |  1.00 |    0.00 | 13.6719 |     - |     - |   45112 B |
-    | CisternLinq |     FSharpList |          1000 |   973,377.1 ns | 13,129.225 ns | 12,281.085 ns |  1.10 |    0.02 | 14.6484 |     - |     - |   48836 B |
+    |      Method |  ContainerType | CustomerCount |         Mean |         Error |        StdDev | Ratio | RatioSD |   Gen 0 | Gen 1 | Gen 2 | Allocated |
+    |------------ |--------------- |-------------- |-------------:|--------------:|--------------:|------:|--------:|--------:|------:|------:|----------:|
+    |  SystemLinq |          Array |             0 |     137.9 ns |      2.154 ns |      2.015 ns |  1.00 |    0.00 |  0.0455 |     - |     - |     144 B |
+    | CisternLinq |          Array |             0 |     189.7 ns |      2.503 ns |      2.341 ns |  1.38 |    0.03 |  0.0532 |     - |     - |     168 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |          Array |             1 |     264.1 ns |      5.056 ns |      4.729 ns |  1.00 |    0.00 |  0.1602 |     - |     - |     504 B |
+    | CisternLinq |          Array |             1 |     425.4 ns |      4.881 ns |      4.565 ns |  1.61 |    0.04 |  0.1478 |     - |     - |     464 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |          Array |            10 |   1,272.9 ns |      6.766 ns |      6.329 ns |  1.00 |    0.00 |  0.2823 |     - |     - |     888 B |
+    | CisternLinq |          Array |            10 |   2,410.0 ns |     19.507 ns |     17.292 ns |  1.89 |    0.02 |  0.2441 |     - |     - |     784 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |          Array |           100 |  48,279.2 ns |    411.293 ns |    384.724 ns |  1.00 |    0.00 |  1.2817 |     - |     - |    4128 B |
+    | CisternLinq |          Array |           100 |  55,230.3 ns |    548.462 ns |    513.031 ns |  1.14 |    0.02 |  1.2817 |     - |     - |    4024 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |          Array |          1000 | 909,216.4 ns |  8,938.328 ns |  8,360.918 ns |  1.00 |    0.00 | 10.7422 |     - |     - |   36528 B |
+    | CisternLinq |          Array |          1000 | 880,988.3 ns | 11,161.558 ns | 10,440.528 ns |  0.97 |    0.01 | 10.7422 |     - |     - |   36424 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |           List |             0 |     121.5 ns |      2.459 ns |      2.301 ns |  1.00 |    0.00 |  0.0455 |     - |     - |     144 B |
+    | CisternLinq |           List |             0 |     176.5 ns |      1.296 ns |      1.149 ns |  1.46 |    0.02 |  0.0532 |     - |     - |     168 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |           List |             1 |     241.6 ns |      1.839 ns |      1.720 ns |  1.00 |    0.00 |  0.1602 |     - |     - |     504 B |
+    | CisternLinq |           List |             1 |     408.6 ns |      5.096 ns |      4.767 ns |  1.69 |    0.02 |  0.1478 |     - |     - |     464 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |           List |            10 |   1,246.7 ns |      9.792 ns |      9.160 ns |  1.00 |    0.00 |  0.2823 |     - |     - |     888 B |
+    | CisternLinq |           List |            10 |   2,276.1 ns |     32.084 ns |     30.011 ns |  1.83 |    0.03 |  0.2441 |     - |     - |     784 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |           List |           100 |  49,420.8 ns |    625.939 ns |    585.504 ns |  1.00 |    0.00 |  1.2817 |     - |     - |    4128 B |
+    | CisternLinq |           List |           100 |  54,330.5 ns |    704.279 ns |    658.783 ns |  1.10 |    0.02 |  1.2207 |     - |     - |    4024 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |           List |          1000 | 898,155.5 ns |  6,624.897 ns |  5,872.799 ns |  1.00 |    0.00 | 10.7422 |     - |     - |   36528 B |
+    | CisternLinq |           List |          1000 | 880,231.1 ns | 11,939.676 ns | 11,168.380 ns |  0.98 |    0.02 | 10.7422 |     - |     - |   36424 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |     Enumerable |             0 |     136.1 ns |      1.242 ns |      1.162 ns |  1.00 |    0.00 |  0.0660 |     - |     - |     208 B |
+    | CisternLinq |     Enumerable |             0 |     317.2 ns |      3.184 ns |      2.979 ns |  2.33 |    0.03 |  0.0887 |     - |     - |     280 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |     Enumerable |             1 |     264.5 ns |      3.196 ns |      2.990 ns |  1.00 |    0.00 |  0.1884 |     - |     - |     592 B |
+    | CisternLinq |     Enumerable |             1 |     596.2 ns |      8.231 ns |      7.699 ns |  2.25 |    0.04 |  0.2012 |     - |     - |     632 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |     Enumerable |            10 |   1,441.0 ns |     14.472 ns |     13.537 ns |  1.00 |    0.00 |  0.3624 |     - |     - |    1144 B |
+    | CisternLinq |     Enumerable |            10 |   2,785.8 ns |     51.097 ns |     47.796 ns |  1.93 |    0.04 |  0.3548 |     - |     - |    1128 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |     Enumerable |           100 |  50,246.1 ns |    599.632 ns |    500.720 ns |  1.00 |    0.00 |  1.7090 |     - |     - |    5528 B |
+    | CisternLinq |     Enumerable |           100 |  58,717.3 ns |    414.063 ns |    323.273 ns |  1.17 |    0.01 |  1.6479 |     - |     - |    5336 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |     Enumerable |          1000 | 927,545.9 ns |  4,220.787 ns |  3,741.618 ns |  1.00 |    0.00 | 13.6719 |     - |     - |   45136 B |
+    | CisternLinq |     Enumerable |          1000 | 933,513.0 ns |  9,565.214 ns |  8,947.307 ns |  1.01 |    0.01 | 13.6719 |     - |     - |   45064 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq | ImmutableArray |             0 |     131.6 ns |      2.709 ns |      4.744 ns |  1.00 |    0.00 |  0.0455 |     - |     - |     144 B |
+    | CisternLinq | ImmutableArray |             0 |     180.9 ns |      3.650 ns |      4.873 ns |  1.36 |    0.08 |  0.0532 |     - |     - |     168 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq | ImmutableArray |             1 |     253.8 ns |      4.151 ns |      3.883 ns |  1.00 |    0.00 |  0.1602 |     - |     - |     504 B |
+    | CisternLinq | ImmutableArray |             1 |     422.0 ns |      5.750 ns |      5.379 ns |  1.66 |    0.04 |  0.1473 |     - |     - |     464 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq | ImmutableArray |            10 |   1,242.2 ns |     13.685 ns |     12.801 ns |  1.00 |    0.00 |  0.2823 |     - |     - |     888 B |
+    | CisternLinq | ImmutableArray |            10 |   2,394.3 ns |     31.480 ns |     29.446 ns |  1.93 |    0.03 |  0.2480 |     - |     - |     784 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq | ImmutableArray |           100 |  48,910.1 ns |    446.138 ns |    417.318 ns |  1.00 |    0.00 |  1.2207 |     - |     - |    4128 B |
+    | CisternLinq | ImmutableArray |           100 |  53,854.2 ns |    801.940 ns |    750.136 ns |  1.10 |    0.02 |  1.2817 |     - |     - |    4024 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq | ImmutableArray |          1000 | 860,965.9 ns | 12,627.308 ns | 11,811.591 ns |  1.00 |    0.00 | 10.7422 |     - |     - |   36528 B |
+    | CisternLinq | ImmutableArray |          1000 | 897,964.8 ns | 10,784.136 ns | 10,087.487 ns |  1.04 |    0.02 | 10.7422 |     - |     - |   36424 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |  ImmutableList |             0 |     116.4 ns |      1.917 ns |      1.793 ns |  1.00 |    0.00 |  0.0458 |     - |     - |     144 B |
+    | CisternLinq |  ImmutableList |             0 |     170.2 ns |      2.018 ns |      1.887 ns |  1.46 |    0.03 |  0.0534 |     - |     - |     168 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |  ImmutableList |             1 |     578.5 ns |      8.249 ns |      7.716 ns |  1.00 |    0.00 |  0.1602 |     - |     - |     504 B |
+    | CisternLinq |  ImmutableList |             1 |     760.6 ns |     10.427 ns |      9.754 ns |  1.32 |    0.03 |  0.1478 |     - |     - |     464 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |  ImmutableList |            10 |   2,324.1 ns |     22.753 ns |     21.283 ns |  1.00 |    0.00 |  0.2823 |     - |     - |     888 B |
+    | CisternLinq |  ImmutableList |            10 |   3,531.7 ns |     37.462 ns |     35.042 ns |  1.52 |    0.02 |  0.2480 |     - |     - |     784 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |  ImmutableList |           100 |  57,639.3 ns |    690.013 ns |    645.439 ns |  1.00 |    0.00 |  1.2817 |     - |     - |    4128 B |
+    | CisternLinq |  ImmutableList |           100 |  63,161.6 ns |    663.904 ns |    621.016 ns |  1.10 |    0.02 |  1.2207 |     - |     - |    4024 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |  ImmutableList |          1000 | 930,632.6 ns | 11,867.290 ns | 11,100.670 ns |  1.00 |    0.00 | 10.7422 |     - |     - |   36528 B |
+    | CisternLinq |  ImmutableList |          1000 | 946,475.0 ns | 15,655.081 ns | 14,643.773 ns |  1.02 |    0.02 | 10.7422 |     - |     - |   36424 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |     FSharpList |             0 |     134.1 ns |      2.132 ns |      1.890 ns |  1.00 |    0.00 |  0.0587 |     - |     - |     184 B |
+    | CisternLinq |     FSharpList |             0 |     357.0 ns |      3.851 ns |      3.602 ns |  2.66 |    0.06 |  0.0687 |     - |     - |     216 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |     FSharpList |             1 |     252.9 ns |      2.600 ns |      2.305 ns |  1.00 |    0.00 |  0.1807 |     - |     - |     568 B |
+    | CisternLinq |     FSharpList |             1 |     611.4 ns |      5.057 ns |      4.731 ns |  2.42 |    0.02 |  0.1802 |     - |     - |     568 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |     FSharpList |            10 |   1,396.2 ns |     20.728 ns |     19.389 ns |  1.00 |    0.00 |  0.3567 |     - |     - |    1120 B |
+    | CisternLinq |     FSharpList |            10 |   2,851.3 ns |     40.625 ns |     38.001 ns |  2.04 |    0.04 |  0.3357 |     - |     - |    1064 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |     FSharpList |           100 |  50,651.7 ns |    742.053 ns |    694.116 ns |  1.00 |    0.00 |  1.7090 |     - |     - |    5504 B |
+    | CisternLinq |     FSharpList |           100 |  56,082.3 ns |    431.205 ns |    403.349 ns |  1.11 |    0.02 |  1.6479 |     - |     - |    5272 B |
+    |             |                |               |              |               |               |       |         |         |       |       |           |
+    |  SystemLinq |     FSharpList |          1000 | 900,123.7 ns |  6,368.835 ns |  5,318.265 ns |  1.00 |    0.00 | 13.6719 |     - |     - |   45112 B |
+    | CisternLinq |     FSharpList |          1000 | 915,661.6 ns | 10,519.394 ns |  9,839.848 ns |  1.02 |    0.01 | 13.6719 |     - |     - |   45004 B |
     */
     [CoreJob, MemoryDiagnoser]
     public class Containers_OrderByThenBy : CustomersBase

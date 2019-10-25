@@ -10,12 +10,10 @@ namespace Cistern.Linq
     public static partial class Enumerable
     {
         public static System.Linq.IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) =>
-            new Consumables.OrderBySimple<TSource, TKey>(source, keySelector, null);
+            new Consumables.OrderBy<TSource, TKey>(source, keySelector, null, false, null);
 
         public static System.Linq.IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer) =>
-            comparer is null || ReferenceEquals(comparer, Comparer<TKey>.Default)
-            ? source.OrderBy(keySelector)
-            : new Consumables.OrderBy<TSource, TKey>(source, keySelector, comparer, false, null);
+            new Consumables.OrderBy<TSource, TKey>(source, keySelector, comparer, false, null);
 
         public static System.Linq.IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector) =>
             new Consumables.OrderBy<TSource, TKey>(source, keySelector, null, true, null);
