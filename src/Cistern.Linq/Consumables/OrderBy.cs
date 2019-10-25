@@ -175,43 +175,101 @@ namespace Cistern.Linq.Consumables
 
         public override System.Linq.IOrderedEnumerable<TElement> CreateOrderedEnumerable<TKey2>(Func<TElement, TKey2> keySelector, IComparer<TKey2> comparer, bool descending)
         {
+/*
             if (!descending && (comparer == null || ReferenceEquals(comparer, Comparer<TKey2>.Default)))
                 return new ThenBySimple<TElement, TKey, TKey2>(_source, _keySelector, keySelector, this);
-
+*/
             return new OrderBy<TElement, TKey2>(_source, keySelector, comparer, @descending, this);
         }
 
         protected override IEnumerableSorter<TElement> GetEnumerableSorter() => this;
 
-        protected virtual TElement[] GetSortedElements(IEnumerable<TElement> elements)
+        internal int[] Sort(TElement[] data)
         {
-            var data = elements.ToArray();
-            var key = new (TKey, int)[data.Length];
-            for (var i = 0; i < data.Length && i < key.Length; ++i)
-                key[i] = (_keySelector(data[i]), i);
-            Array.Sort(key, data);
-            return data;
+            var keys = new TKey[data.Length];
+            var indexes = new int[data.Length];
+            for (var i = 0; i < data.Length && i < keys.Length; ++i)
+            {
+                keys[i] = _keySelector(data[i]);
+                indexes[i] = i;
+            }
+
+            Array.Sort(keys, indexes);
+
+            var comp = Comparer<TKey>.Default;
+            var startIdx = 0;
+            var startItem = keys[startIdx];
+            for (var i = 1; i < data.Length; ++i)
+            {
+                if (comp.Compare(startItem, keys[i]) == 0)
+                    continue;
+
+                var count = i - startIdx;
+                if (count > 1)
+                {
+                    Array.Sort(indexes, startIdx, count);
+                }
+
+                startIdx = i;
+                startItem = keys[i];
+            }
+            var remaining = data.Length - startIdx;
+            if (remaining > 1)
+            {
+                Array.Sort(indexes, startIdx, remaining);
+            }
+
+            return indexes;
         }
 
-        public IEnumerator<TElement> GetEnumerator(IEnumerable<TElement> elements) =>
-            ((IEnumerable<TElement>)GetSortedElements(elements)).GetEnumerator();
-        
+        // TODO: These implementations are duplicates, so clean...
+
+        public IEnumerator<TElement> GetEnumerator(IEnumerable<TElement> elements)
+        {
+            var buffer = elements.ToArray();
+            if (buffer.Length > 0)
+            {
+                int[] map = Sort(buffer);
+                return OrderByImpl.GetEnumerator(buffer, map);
+            }
+            return Empty<TElement>.Instance.GetEnumerator();
+        }
+
         public IConsumable<TElement> Force(IEnumerable<TElement> elements)
         {
-            var data = GetSortedElements(elements);
-            return new Array<TElement, TElement>(data, 0, data.Length, null);
+            var buffer = elements.ToArray();
+            if (buffer.Length == 0)
+                return Empty<TElement>.Instance;
+
+            int[] map = Sort(buffer);
+
+            return new Enumerable<OrderByEnumerable<TElement>, OrderByEnumerator<TElement>, TElement, TElement>(new OrderByEnumerable<TElement>(buffer, map), null);
         }
 
         public void Consume(IEnumerable<TElement> elements, Consumer<TElement> consumer)
         {
-            var data = GetSortedElements(elements);
-            Cistern.Linq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<TElement>(data, 0, data.Length), Links.Identity<TElement>.Instance, consumer);
+            var buffer = elements.ToArray();
+            if (buffer.Length > 0)
+            {
+                int[] map = Sort(buffer);
+                Linq.Consume.Enumerable.Invoke<OrderByEnumerable<TElement>, OrderByEnumerator<TElement>, TElement>(new OrderByEnumerable<TElement>(buffer, map), consumer);
+            }
+            else
+            {
+                try
+                {
+                    consumer.ChainComplete(ChainStatus.Filter);
+                }
+                finally
+                {
+                    consumer.ChainDispose();
+                }
+            }
         }
-
         public int Compare(int x, int y) => throw new NotSupportedException();
         public void ComputeKeys(TElement[] elements) => throw new NotSupportedException();
     }
-
+/*
     internal class ThenBySimple<TElement, TKey1, TKey2>
         : OrderBySimple<TElement, TKey1>
     {
@@ -237,7 +295,7 @@ namespace Cistern.Linq.Consumables
         public override System.Linq.IOrderedEnumerable<TElement> CreateOrderedEnumerable<TKey3>(Func<TElement, TKey3> keySelector, IComparer<TKey3> comparer, bool descending) =>
             new OrderBy<TElement, TKey3>(_source, keySelector, comparer, @descending, this);
     }
-
+*/
 
     internal class OrderBy<TElement, TKey> 
         : OrderByCommon<TElement, TKey>
