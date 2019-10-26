@@ -43,17 +43,20 @@ namespace Playground
         static void Benchmark()
         {
 #if true
-            var z = new Cistern.Linq.Benchmarking.Benchmarks.Numeric.OrderByAscendingBenchmark();
+            var z = new Cistern.Linq.Benchmarking.Benchmarks.OrderBy.OrderBy_ByString();
 
-            z.NumberOfItems = 1000;
+            z.CustomerCount = 1000;
+            z.PreSorted = Cistern.Linq.Benchmarking.Benchmarks.OrderBy.SortOrder.Forward;
+
             z.Setup();
 
-            for (var j = 0; j < 25; ++j)
+            for (var j = 0; j < 10; ++j)
             {
                 var sw = Stopwatch.StartNew();
-                for (var i = 0; i < 10000; ++i)
+                for (var i = 0; i < 1000; ++i)
                 {
                     var count = z.CisternLinq();
+                    //var count = z.SystemLinq();
                 }
                 Console.WriteLine(sw.ElapsedMilliseconds);
             }
