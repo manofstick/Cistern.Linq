@@ -159,12 +159,12 @@ namespace Cistern.Linq.Consumables
         public override IEnumerator<TElement> GetEnumerator()
         {
             var buffer = _source.ToArray();
-            if (buffer.Length > 0)
-            {
-                int[] map = Sort(buffer, IndexSorterTail<TElement>.Instance);
-                return OrderByImpl.GetEnumerator(buffer, map);
-            }
-            return Empty<TElement>.Instance.GetEnumerator();
+            if (buffer.Length == 0)
+                return Empty<TElement>.Instance.GetEnumerator();
+
+            int[] map = Sort(buffer, IndexSorterTail<TElement>.Instance);
+
+            return OrderByImpl.GetEnumerator(buffer, map);
         }
 
         public override IConsumable<TElement> Force()
@@ -180,9 +180,13 @@ namespace Cistern.Linq.Consumables
     }
 
     abstract class IndexSorter<TElement>
+        : IComparer<int>
     {
         public abstract void IndexSort(TElement[] data, int[] indexes, int startIdx, int count);
         public abstract void Initialize(int size);
+        public virtual void InitializeKeys(TElement[] data) { }
+
+        public abstract int Compare(int index1, int index2); // IComparer<int>
     }
 
     class IndexSorterTail<TElement>
@@ -193,7 +197,9 @@ namespace Cistern.Linq.Consumables
         private IndexSorterTail() { }
 
         public override void IndexSort(TElement[] data, int[] indexes, int startIdx, int count) => Array.Sort(indexes, startIdx, count);
-        public override void Initialize(int size) {}
+        public override void Initialize(int size) { }
+
+        public override int Compare(int lhs, int rhs) { checked { return lhs - rhs; } }
     }
 
     abstract class IndexSorterChain<TElement> : IndexSorter<TElement>
@@ -228,9 +234,25 @@ namespace Cistern.Linq.Consumables
             var size = data.Length;
             Initialize(size);
             var indexes = new int[size];
-            for (var idx=0; idx < indexes.Length; ++idx)
+            for (var idx = 0; idx < indexes.Length; ++idx)
                 indexes[idx] = idx;
-            IndexSort(data, indexes, 0, size);
+
+            if (size >= 1000 || typeof(TKey).IsValueType)
+                return LayeredSort(data, indexes);
+
+            return CombinedComparerSort(data, indexes);
+        }
+
+        private int[] CombinedComparerSort(TElement[] data, int[] indexes)
+        {
+            InitializeKeys(data);
+            Array.Sort(indexes, this);
+            return indexes;
+        }
+
+        private int[] LayeredSort(TElement[] data, int[] indexes)
+        {
+            IndexSort(data, indexes, 0, data.Length);
             return indexes;
         }
 
@@ -271,5 +293,20 @@ namespace Cistern.Linq.Consumables
                 lower.IndexSort(data, indexes, examplarIdx, batchCount);
             }
         }
+
+        public override void InitializeKeys(TElement[] data)
+        {
+            for (var idx=0; idx < keys.Length; ++idx)
+                keys[idx] = keySelector(data[idx]);
+
+            lower.InitializeKeys(data);
+        }
+
+        public override int Compare(int x, int y) =>
+            comparer.Compare(keys[x], keys[y]) switch
+            {
+                0 => lower.Compare(x, y),
+                var c => c
+            };
     }
 }
