@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cistern.Linq.UtilsTmp;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -12,6 +13,13 @@ namespace Cistern.Linq.Consumables
             {
                 yield return buffer[map[i]];
             }
+        }
+
+        public static int[] Sort<TElement, TKey>(TElement[] data, Func<TElement, TKey> _keySelector, IComparer<TKey> _comparer, bool _descending, OrderBy<TElement> _parent, IndexSorter<TElement> tail)
+        {
+            var comparer = _descending ? new DescendingComparer<TKey>(_comparer) : _comparer;
+            var sorter = new IndexSorterKeyed<TElement, TKey>(_keySelector, comparer, tail);
+            return _parent != null ? _parent.Sort(data, sorter) : sorter.StableSortedIndexes(data);
         }
     }
 
@@ -149,12 +157,8 @@ namespace Cistern.Linq.Consumables
         public override IConsumable<U> AddTail<U>(ILink<TElement, U> transform) =>
             new Enumerable<Optimizations.IEnumerableEnumerable<TElement>, System.Collections.Generic.IEnumerator<TElement>, TElement, U>(new Optimizations.IEnumerableEnumerable<TElement>(this), transform);
 
-        public override int[] Sort(TElement[] data, IndexSorter<TElement> tail)
-        {
-            var comparer = _descending ? new DescendingComparer<TKey>(_comparer) : _comparer;
-            var sorter = new IndexSorterKeyed<TElement, TKey>(_keySelector, comparer, tail);
-            return _parent != null ? _parent.Sort(data, sorter) : sorter.StableSortedIndexes(data);
-        }
+        public override int[] Sort(TElement[] data, IndexSorter<TElement> tail) =>
+            OrderByImpl.Sort(data, _keySelector, _comparer, _descending, _parent, tail);
 
         public override IEnumerator<TElement> GetEnumerator()
         {
@@ -237,7 +241,7 @@ namespace Cistern.Linq.Consumables
             for (var idx = 0; idx < indexes.Length; ++idx)
                 indexes[idx] = idx;
 
-            if (size >= 1000 || typeof(TKey).IsValueType)
+            if (size >= 1000 || FastTypeInfo<TKey>.IsValueType)
                 return LayeredSort(data, indexes);
 
             return CombinedComparerSort(data, indexes);
