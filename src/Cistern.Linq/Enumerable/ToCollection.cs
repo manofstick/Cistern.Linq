@@ -11,16 +11,22 @@ namespace Cistern.Linq
     {
         public static TSource[] ToArray<TSource>(this IEnumerable<TSource> source)
         {
-            return source switch
+            if (source == null)
+                ThrowHelper.ThrowArgumentNullException<TSource[]>(ExceptionArgument.source);
+
+            return Step1();
+
+            TSource[] Step1()
             {
-                null                            => ThrowHelper.ThrowArgumentNullException<TSource[]>(ExceptionArgument.source),
-                ICollection<TSource> collection => ForCollection(collection),
-                IConsumable<TSource> consumable => ForConsumable(consumable),
-                _                               => Utils.ToArray(source)
-            };
+                var collection = source as ICollection<TSource>;
+                if (collection == null)
+                    return Step2();
+
+                return ForCollection(collection);
+            }
 
             static TSource[] ForCollection(ICollection<TSource> collection)
-            {
+            { 
                 var count = collection.Count;
 
                 if (count == 0)
@@ -35,8 +41,12 @@ namespace Cistern.Linq
                 }
             }
 
-            static TSource[] ForConsumable(IConsumable<TSource> consumable)
+            TSource[] Step2()
             {
+                var consumable = source as IConsumable<TSource>;
+                if (consumable == null)
+                    return Step3();
+
                 Consumer<TSource, TSource[]> toArray = null;
 
                 if (consumable is Optimizations.IDelayed<TSource> delayed)
@@ -69,6 +79,8 @@ namespace Cistern.Linq
 
                 return Utils.Consume(consumable, toArray);
             }
+
+            TSource[] Step3() => Utils.ToArray(source);
         }
 
         public static List<TSource> ToList<TSource>(this IEnumerable<TSource> source)
