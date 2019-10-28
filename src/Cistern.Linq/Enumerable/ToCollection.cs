@@ -16,7 +16,7 @@ namespace Cistern.Linq
                 null                            => ThrowHelper.ThrowArgumentNullException<TSource[]>(ExceptionArgument.source),
                 ICollection<TSource> collection => ForCollection(collection),
                 IConsumable<TSource> consumable => ForConsumable(consumable),
-                _                               => Utils.Consume(source, new Consumer.ToArrayViaBuilder<TSource>())
+                _                               => Utils.ToArray(source)
             };
 
             static TSource[] ForCollection(ICollection<TSource> collection)

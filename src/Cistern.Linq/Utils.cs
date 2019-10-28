@@ -451,5 +451,104 @@ namespace Cistern.Linq
 
             return consumer.Result;
         }
+
+        /// <summary>
+        /// Manually "stackalloc" (via recursive function calls) for small arrays
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="enumerable"></param>
+        /// <returns></returns>
+        internal static T[] ToArray<T>(IEnumerable<T> enumerable)
+        {
+            const int maxSizeForNoAllocations = 50;
+
+            using var e = enumerable.GetEnumerator();
+            return InitiallyTryWithNoAllocations(e, 0);
+
+            static T[] FinishViaAllocations(IEnumerator<T> e, int count)
+            {
+                T[] result;
+                var bufferSize = Math.Min((long)int.MaxValue, (long)count * 3) - count;
+                var buffer = new T[bufferSize];
+                var index = 0;
+                do
+                {
+                    if (index == bufferSize)
+                    {
+                        result = FinishViaAllocations(e, count + index);
+                        buffer.CopyTo(result, count);
+                        return result;
+                    }
+                    buffer[index++] = e.Current;
+                } while (e.MoveNext());
+
+                result = new T[count + index];
+                Array.Copy(buffer, 0, result, count, index);
+                return result;
+            }
+
+            static T[] InitiallyTryWithNoAllocations(IEnumerator<T> e, int count)
+            {
+                if (!e.MoveNext())
+                {
+                    if (count == 0)
+                        return Array.Empty<T>();
+
+                    return new T[count];
+                }
+
+                if (count >= maxSizeForNoAllocations)
+                {
+                    return FinishViaAllocations(e, count);
+                }
+
+                T[] result;
+
+                var _1 = e.Current;
+                ++count;
+
+                if (!e.MoveNext())
+                {
+                    result = new T[count];
+                    result[--count] = _1;
+                    return result;
+                }
+
+                var _2 = e.Current;
+                ++count;
+
+                if (!e.MoveNext())
+                {
+                    result = new T[count];
+                    result[--count] = _2;
+                    result[--count] = _1;
+                    return result;
+                }
+
+                var _3 = e.Current;
+                ++count;
+
+                if (!e.MoveNext())
+                {
+                    result = new T[count];
+                    result[--count] = _3;
+                    result[--count] = _2;
+                    result[--count] = _1;
+                    return result;
+                }
+
+                var _4 = e.Current;
+                ++count;
+
+                result = InitiallyTryWithNoAllocations(e, count);
+
+                result[--count] = _4;
+                result[--count] = _3;
+                result[--count] = _2;
+                result[--count] = _1;
+
+                return result;
+            }
+        }
     }
 }
