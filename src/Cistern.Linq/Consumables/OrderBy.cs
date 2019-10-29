@@ -15,11 +15,24 @@ namespace Cistern.Linq.Consumables
             }
         }
 
-        public static int[] Sort<TElement, TKey>(TElement[] data, Func<TElement, TKey> _keySelector, IComparer<TKey> _comparer, bool _descending, OrderBy<TElement> _parent, IndexSorter<TElement> tail)
+        public static int[] Sort<TElement, TKey>(TElement[] data, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool _descending, OrderBy<TElement> parent, IndexSorter<TElement> tail)
         {
-            var comparer = _descending ? new DescendingComparer<TKey>(_comparer) : _comparer;
-            var sorter = new IndexSorterKeyed<TElement, TKey>(_keySelector, comparer, tail);
-            return _parent != null ? _parent.Sort(data, sorter) : sorter.StableSortedIndexes(data);
+            // Comparer<string>.Default creates a string comparer that will always get the threads current culture,
+            // but as we're going to do a sort where we are not changing the culture until the operation is over
+            // we can lock in the StringComparer.CurrentCulture up front.
+            comparer =
+                typeof(TKey) == typeof(string) && comparer == Comparer<string>.Default
+                ? (IComparer<TKey>)StringComparer.CurrentCulture
+                : comparer;
+
+            comparer =
+                _descending 
+                ? new DescendingComparer<TKey>(comparer) :
+                comparer;
+
+            var sorter = new IndexSorterKeyed<TElement, TKey>(keySelector, comparer, tail);
+
+            return parent != null ? parent.Sort(data, sorter) : sorter.StableSortedIndexes(data);
         }
     }
 
