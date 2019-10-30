@@ -1,8 +1,10 @@
-﻿namespace Cistern.Linq.UtilsTmp
+﻿using System.Runtime.CompilerServices;
+
+namespace Cistern.Linq.UtilsTmp
 {
     static class FastTypeInfo<T>
     {
-        static private bool? isValueType;
-        static public bool IsValueType => isValueType ??= typeof(T).IsValueType;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static public bool IsValueType() => !(default(T) is null);
     }
 }

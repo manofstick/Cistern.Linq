@@ -254,7 +254,10 @@ namespace Cistern.Linq.Consumables
             for (var idx = 0; idx < indexes.Length; ++idx)
                 indexes[idx] = idx;
 
-            if (size >= 1000 || FastTypeInfo<TKey>.IsValueType)
+            // There is some point at which LateredSort is just better, but depends on what is
+            // being sorted on. 1000 didn't seem unreasonable, but not particularly scientific,
+            // although there were a few benchmarks.
+            if (size >= 1000 || FastTypeInfo<TKey>.IsValueType())
                 return LayeredSort(data, indexes);
 
             return CombinedComparerSort(data, indexes);
