@@ -27,7 +27,7 @@ namespace Cistern.Linq.Consumables
             // we don't care about the count in _selectMany, but if asCountConsumer is false, then we need to ensure
             // that we can Consume it without causing side effects
             if (asCountConsumer || (_selectMany is Optimizations.IConsumableFastCount fast && fast.TryFastCount(true).HasValue))
-                return Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
+                return Optimizations.Count.TryGetCount(this, LinkOrNull, asCountConsumer);
             return null;
         }
 

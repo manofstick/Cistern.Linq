@@ -38,7 +38,7 @@ namespace Cistern.Linq.Consumables
             (IConsumable<U>)(object)new WhereEnumerable<TEnumerable, TEnumerator, T>(Underlying, (Func<T, bool>)(object)predicate);
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
-            Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
+            Optimizations.Count.TryGetCount(this, LinkOrNull, asCountConsumer);
 
         int? Optimizations.IConsumableFastCount.TryRawCount(bool asCountConsumer) =>
             Underlying.TryLength;

@@ -25,7 +25,7 @@ namespace Cistern.Linq.Consumables
             Cistern.Linq.Consume.ReadOnlySpan.Invoke(new ReadOnlySpan<T>(Underlying, _start, _length), Link, consumer);
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
-            Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
+            Optimizations.Count.TryGetCount(this, LinkOrNull, asCountConsumer);
         int? Optimizations.IConsumableFastCount.TryRawCount(bool asCountConsumer) =>
             _length;
     }

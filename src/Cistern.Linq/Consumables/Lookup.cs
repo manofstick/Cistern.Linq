@@ -216,7 +216,7 @@ namespace Cistern.Linq.Consumables
             Cistern.Linq.Consume.Lookup.Invoke(_lastGrouping, _count, Link, consumer);
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
-            Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
+            Optimizations.Count.TryGetCount(this, LinkOrNull, asCountConsumer);
 
         int? Optimizations.IConsumableFastCount.TryRawCount(bool asCountConsumer) =>
             _count;
@@ -276,7 +276,7 @@ namespace Cistern.Linq.Consumables
             Cistern.Linq.Consume.Lookup.Invoke(_lastGrouping, _resultSelector, Link, consumer);
 
         int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
-            Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
+            Optimizations.Count.TryGetCount(this, LinkOrNull, asCountConsumer);
         int? Optimizations.IConsumableFastCount.TryRawCount(bool asCountConsumer) =>
             _count;
     }

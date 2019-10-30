@@ -25,7 +25,7 @@ namespace Cistern.Linq.Consumables
             Cistern.Linq.Consume.Repeat.Invoke(_element, _count, Link, consumer);
 
         public int? TryFastCount(bool asCountConsumer) =>
-            Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
+            Optimizations.Count.TryGetCount(this, LinkOrNull, asCountConsumer);
 
         public int? TryRawCount(bool asCountConsumer) => _count;
 

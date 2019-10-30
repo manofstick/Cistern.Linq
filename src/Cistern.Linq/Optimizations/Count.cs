@@ -14,14 +14,18 @@
 
     internal static class Count
     {
-        public static int? TryGetCount(IConsumableFastCount c, object link, bool asConsumer)
+        public static int? TryGetCount(IConsumableFastCount c, object linkOrNull, bool asConsumer)
         {
-            if (link is ILinkFastCount fast && (!asConsumer || fast.SupportedAsConsumer))
+            if (linkOrNull is null)
+                return c.TryRawCount(asConsumer);
+
+            if (linkOrNull is ILinkFastCount fast && (!asConsumer || fast.SupportedAsConsumer))
             {
                 var rawCount = c.TryRawCount(asConsumer);
                 if (rawCount.HasValue)
                     return fast.FastCountAdjustment(rawCount.Value);
             }
+
             return null;
         }
     }

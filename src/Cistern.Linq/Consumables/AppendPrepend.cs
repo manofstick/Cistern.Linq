@@ -183,7 +183,7 @@ namespace Cistern.Linq.Consumables
                 }
             }
             int? Optimizations.IConsumableFastCount.TryFastCount(bool asCountConsumer) =>
-                Optimizations.Count.TryGetCount(this, Link, asCountConsumer);
+                Optimizations.Count.TryGetCount(this, LinkOrNull, asCountConsumer);
         }
     }
 }
