@@ -15,7 +15,7 @@ namespace Cistern.Linq.Consumables
             }
         }
 
-        public static int[] Sort<TElement, TKey>(TElement[] data, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool _descending, OrderBy<TElement> parent, IndexSorter<TElement> tail)
+        public static int[] Sort<TElement, TKey>(TElement[] data, Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending, OrderBy<TElement> parent, IndexSorter<TElement> tail)
         {
             // Comparer<string>.Default creates a string comparer that will always get the threads current culture,
             // but as we're going to do a sort where we are not changing the culture until the operation is over
@@ -25,15 +25,40 @@ namespace Cistern.Linq.Consumables
                 ? (IComparer<TKey>)StringComparer.CurrentCulture
                 : comparer;
 
-            comparer =
-                _descending 
-                ? new DescendingComparer<TKey>(comparer) :
-                comparer;
+            if (descending && FastTypeInfo<TKey>.IsValueType() && comparer == Comparer<TKey>.Default)
+            {
+                DescendingWrapperForValueTypeWithDefaultComparer<TKey> keySelectorWrapper(TElement element) =>
+                    new DescendingWrapperForValueTypeWithDefaultComparer<TKey>(keySelector(element));
 
-            var sorter = new IndexSorterKeyed<TElement, TKey>(keySelector, comparer, tail);
+                var sorter =
+                    new IndexSorterKeyed<TElement, DescendingWrapperForValueTypeWithDefaultComparer<TKey>>(keySelectorWrapper, Comparer<DescendingWrapperForValueTypeWithDefaultComparer<TKey>>.Default, tail);
 
-            return parent != null ? parent.Sort(data, sorter) : sorter.StableSortedIndexes(data);
+                return parent != null ? parent.Sort(data, sorter) : sorter.StableSortedIndexes(data);
+            }
+            else
+            {
+                comparer =
+                    descending
+                    ? new DescendingComparer<TKey>(comparer) :
+                    comparer;
+
+                var sorter = new IndexSorterKeyed<TElement, TKey>(keySelector, comparer, tail);
+
+                return parent != null ? parent.Sort(data, sorter) : sorter.StableSortedIndexes(data);
+            }
         }
+    }
+
+    internal class DescendingWrapperForValueTypeWithDefaultComparer<TKey>
+        : IComparable<DescendingWrapperForValueTypeWithDefaultComparer<TKey>>
+    {
+        private readonly TKey _key;
+
+        public DescendingWrapperForValueTypeWithDefaultComparer(TKey key) =>
+            _key = key;
+
+        public int CompareTo(DescendingWrapperForValueTypeWithDefaultComparer<TKey> other) =>
+            Comparer<TKey>.Default.Compare(other._key, _key);
     }
 
     internal class DescendingComparer<TKey>
